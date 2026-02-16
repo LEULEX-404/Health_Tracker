@@ -1,5 +1,5 @@
-const mongoose = require("mongoose");
-const bcrypt = require("bcryptjs");
+import mongoose from "mongoose";
+import bcrypt from "bcryptjs";
 
 const userSchema = new mongoose.Schema(
   {
@@ -86,17 +86,24 @@ const userSchema = new mongoose.Schema(
 );
 
 //Password Hash Middleware
-userSchema.pre("save", async function (next) {
-  if (!this.isModified("password")) return next();
-
-  const salt = await bcrypt.genSalt(12);
-  this.password = await bcrypt.hash(this.password, salt);
-  next();
+userSchema.pre("save", async function () {
+  if (!this.isModified("password")) return;
+  
+  try {
+    const salt = await bcrypt.genSalt(12);
+    this.password = await bcrypt.hash(this.password, salt);
+  } catch (error) {
+    throw new Error(`Password hashing failed: ${error.message}`);
+  }
 });
 
-//Password Compare Method
+// Password Compare Method
 userSchema.methods.comparePassword = async function (candidatePassword) {
-  return bcrypt.compare(candidatePassword, this.password);
+  try {
+    return await bcrypt.compare(candidatePassword, this.password);
+  } catch (error) {
+    throw new Error(`Password comparison failed: ${error.message}`);
+  }
 };
 
-module.exports = mongoose.model("User", userSchema);
+export default mongoose.model("User", userSchema);
