@@ -3,6 +3,8 @@ import cors from 'cors';
 import helmet from 'helmet';
 import morgan from 'morgan';
 import cookieParser from 'cookie-parser';
+import path from "path";
+import { fileURLToPath } from "url";
 import { connectDB } from './database.js';
 import { PORT, NODE_ENV, CLIENT_URL, ADMIN_DASHBOARD_URL, COOKIE_SECRET } from './config.js';
 import authRoutes from './routes/Imasha/authRoutes.js';
@@ -14,6 +16,28 @@ import {
   handleValidationError,
   handleCastError,
 } from './middleware/Imasha/errorMiddleware.js';
+
+
+// ─────────────────────────────────────────────
+// ROUTES
+// ─────────────────────────────────────────────
+import healthDataRoutes from "./routes/Tharuka/healthDataRoutes.js";
+import simulatorRoutes from "./routes/Tharuka/simulatorRoutes.js";
+import reportRoutes from "./routes/Tharuka/reportRoutes.js";
+
+// ─────────────────────────────────────────────
+// SERVICES
+// ─────────────────────────────────────────────
+import simulatorService from "./services/Tharuka/simulatorService.js";
+const { runSimulator } = simulatorService;
+
+import User from "./models/Imasha/User.js";
+
+// ─────────────────────────────────────────────
+// ES MODULE __dirname FIX
+// ─────────────────────────────────────────────
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 // ==========================================
 // CREATE EXPRESS APP
@@ -66,6 +90,11 @@ if (NODE_ENV === 'development') {
   app.use(morgan('combined'));
 }
 
+// ─────────────────────────────────────────────
+// STATIC FILES (Uploads)
+// ─────────────────────────────────────────────
+app.use("/uploads", express.static(path.join(__dirname, "uploads")));
+
 // ==========================================
 // API ROUTES
 // ==========================================
@@ -89,6 +118,8 @@ app.get('/', (req, res) => {
     endpoints: {
       health: '/health',
       auth: '/api/auth',
+      healthData: "/api/health-data",
+      reports: "/api/reports",
       docs: 'See API_DOCUMENTATION.md',
     },
   });
@@ -99,6 +130,49 @@ app.use('/api/auth', authRoutes);
 
 // User management routes
 app.use('/api/users', userRoutes);
+// Health System Routes
+app.use("/api/health-data", healthDataRoutes);
+app.use("/api/health-data", simulatorRoutes);
+app.use("/api/reports", reportRoutes);
+
+// ─────────────────────────────────────────────
+// CONTINUOUS SIMULATOR
+// ─────────────────────────────────────────────
+const startContinuousSimulator = () => {
+  console.log("🤖 Continuous simulator started for all users...");
+
+  setInterval(async () => {
+    try {
+      const users = await User.find({}, "_id");
+
+      if (!users.length) {
+        console.log("[Simulator] No users found, skipping...");
+        return;
+      }
+
+      for (const user of users) {
+        const roll = Math.random();
+        const scenario =
+          roll < 0.15
+            ? "emergency"
+            : roll < 0.25
+            ? "oxygen_drop"
+            : "normal";
+
+        const result = await runSimulator(user._id.toString(), scenario);
+
+        console.log(
+          `[Simulator] userId=${user._id} | scenario=${scenario} | alerts=${result.alerts.length}`
+        );
+      }
+    } catch (err) {
+      console.error("[Simulator] Error:", err.message);
+    }
+  }, process.env.SIMULATOR_INTERVAL_MS || 30000);
+};
+
+// Start simulator AFTER DB is connected
+startContinuousSimulator();
 
 // ==========================================
 // ERROR HANDLING MIDDLEWARE
