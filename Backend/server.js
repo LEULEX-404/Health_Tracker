@@ -6,6 +6,7 @@ import cookieParser from 'cookie-parser';
 import { connectDB } from './database.js';
 import { PORT, NODE_ENV, CLIENT_URL, ADMIN_DASHBOARD_URL, COOKIE_SECRET } from './config.js';
 import authRoutes from './routes/Imasha/authRoutes.js';
+import userRoutes from './routes/Imasha/userRoutes.js';
 import {
   errorHandler,
   notFound,
@@ -95,6 +96,9 @@ app.get('/', (req, res) => {
 
 // Authentication routes
 app.use('/api/auth', authRoutes);
+
+// User management routes
+app.use('/api/users', userRoutes);
 
 // ==========================================
 // ERROR HANDLING MIDDLEWARE
