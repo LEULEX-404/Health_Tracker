@@ -56,6 +56,11 @@ export const COOKIE_MAX_AGE = 7 * 24 * 60 * 60 * 1000; // 7 days in milliseconds
 // ==========================================
 export const CORS_ORIGIN = process.env.CORS_ORIGIN || CLIENT_URL;
 
+// Cloudinary Configuration (for profile image uploads)
+export const CLOUDINARY_CLOUD_NAME = process.env.CLOUDINARY_CLOUD_NAME || '';
+export const CLOUDINARY_API_KEY    = process.env.CLOUDINARY_API_KEY    || '';
+export const CLOUDINARY_API_SECRET = process.env.CLOUDINARY_API_SECRET || '';
+
 // ==========================================
 // VALIDATION
 // ==========================================
@@ -128,4 +133,9 @@ export default {
   
   // CORS
   CORS_ORIGIN,
+
+  // Cloudinary
+  CLOUDINARY_CLOUD_NAME,
+  CLOUDINARY_API_KEY,
+  CLOUDINARY_API_SECRET,
 };

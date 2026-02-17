@@ -54,7 +54,31 @@ const userSchema = new mongoose.Schema(
       type: String,
       enum: ["male", "female", "other"],
     },
-    address: String,
+    address: {
+      type: String,
+      trim: true,
+    },
+
+    // Doctor-Patient Relationship
+    linkedDoctor: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'User',
+      default: null,
+    },
+
+    linkedPatients: [
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'User',
+      },
+    ],
+
+    // Caregiver Relationship
+    linkedCaregiver: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'User',
+      default: null,
+    },
 
     // Security
     isActive: {

@@ -8,6 +8,7 @@ import { fileURLToPath } from "url";
 import { connectDB } from './database.js';
 import { PORT, NODE_ENV, CLIENT_URL, ADMIN_DASHBOARD_URL, COOKIE_SECRET } from './config.js';
 import authRoutes from './routes/Imasha/authRoutes.js';
+import userRoutes from './routes/Imasha/userRoutes.js';
 import {
   errorHandler,
   notFound,
@@ -127,6 +128,8 @@ app.get('/', (req, res) => {
 // Authentication routes
 app.use('/api/auth', authRoutes);
 
+// User management routes
+app.use('/api/users', userRoutes);
 // Health System Routes
 app.use("/api/health-data", healthDataRoutes);
 app.use("/api/health-data", simulatorRoutes);
