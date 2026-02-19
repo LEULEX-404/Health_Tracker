@@ -26,12 +26,17 @@ import {
 import healthDataRoutes from "./routes/Tharuka/healthDataRoutes.js";
 import simulatorRoutes from "./routes/Tharuka/simulatorRoutes.js";
 import reportRoutes from "./routes/Tharuka/reportRoutes.js";
+import nutritionRoutes from "./routes/Tharuka/nutritionRoutes.js";
+import mealPlanRoutes from "./routes/Tharuka/mealPlanRoutes.js";
+import mealReminderRoutes from "./routes/Tharuka/mealReminderRoutes.js";
 
 // ─────────────────────────────────────────────
 // SERVICES
 // ─────────────────────────────────────────────
 import simulatorService from "./services/Tharuka/simulatorService.js";
 const { runSimulator } = simulatorService;
+
+import reminderService from "./services/Tharuka/reminderService.js";
 
 import User from "./models/Imasha/User.js";
 
@@ -142,6 +147,9 @@ app.use('/api/admin', adminRoutes);
 app.use("/api/health-data", healthDataRoutes);
 app.use("/api/health-data", simulatorRoutes);
 app.use("/api/reports", reportRoutes);
+app.use("/api/nutrition", nutritionRoutes);
+app.use("/api/meal-plans", mealPlanRoutes);
+app.use("/api/meal-reminders", mealReminderRoutes);
 
 // ─────────────────────────────────────────────
 // CONTINUOUS SIMULATOR
@@ -184,6 +192,42 @@ startContinuousSimulator();
 
 // Report management routes
 app.use('/api/reports', userReportRoutes);
+// ─────────────────────────────────────────────
+// MEAL REMINDER PROCESSOR
+// ─────────────────────────────────────────────
+const startMealReminderProcessor = () => {
+  console.log("🔔 Meal reminder processor started...");
+
+  // Process reminders every minute
+  setInterval(async () => {
+    try {
+      const users = await User.find({}, "_id");
+      
+      for (const user of users) {
+        // Generate reminders for active meal plans
+        await reminderService.generateRemindersForActivePlans(user._id.toString());
+        
+        // Get pending reminders that are due
+        const pendingReminders = await reminderService.getPendingReminders(user._id.toString(), 10);
+        
+        // Send reminders
+        for (const reminder of pendingReminders) {
+          try {
+            await reminderService.sendReminder(reminder._id.toString());
+            console.log(`[Reminder] Sent reminder ${reminder._id} to user ${user._id}`);
+          } catch (err) {
+            console.error(`[Reminder] Failed to send reminder ${reminder._id}:`, err.message);
+          }
+        }
+      }
+    } catch (err) {
+      console.error("[Reminder Processor] Error:", err.message);
+    }
+  }, 60000); // Run every minute
+};
+
+// Start reminder processor AFTER DB is connected
+startMealReminderProcessor();
 
 // ==========================================
 // ERROR HANDLING MIDDLEWARE
