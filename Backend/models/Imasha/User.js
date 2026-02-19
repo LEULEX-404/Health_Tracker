@@ -59,6 +59,25 @@ const userSchema = new mongoose.Schema(
       trim: true,
     },
 
+    // Health Information
+    healthConditions: {
+      type: [String],
+      default: [],
+      enum: [
+        "diabetes",
+        "hypertension",
+        "obesity",
+        "heart_disease",
+        "kidney_disease",
+        "celiac",
+        "lactose_intolerant",
+        "high_cholesterol",
+        "anemia",
+        "osteoporosis",
+        "other",
+      ],
+    },
+
     // Doctor-Patient Relationship
     linkedDoctor: {
       type: mongoose.Schema.Types.ObjectId,
