@@ -9,6 +9,8 @@ import { connectDB } from './database.js';
 import { PORT, NODE_ENV, CLIENT_URL, ADMIN_DASHBOARD_URL, COOKIE_SECRET } from './config.js';
 import authRoutes from './routes/Imasha/authRoutes.js';
 import userRoutes from './routes/Imasha/userRoutes.js';
+import userReportRoutes from './routes/Imasha/reportRoutes.js';
+import adminRoutes from './routes/Imasha/adminRoutes.js';
 import {
   errorHandler,
   notFound,
@@ -120,13 +122,15 @@ app.get('/', (req, res) => {
     success: true,
     message: 'Healthcare Authentication API',
     version: '1.0.0',
-    endpoints: {
-      health: '/health',
-      auth: '/api/auth',
-      healthData: "/api/health-data",
-      reports: "/api/reports",
-      docs: 'See API_DOCUMENTATION.md',
-    },
+      endpoints: {
+        health: '/health',
+        auth: '/api/auth',
+        users: '/api/users',
+        admin: '/api/admin',
+        healthData: "/api/health-data",
+        reports: "/api/reports",
+        docs: 'See API_DOCUMENTATION.md',
+      },
   });
 });
 
@@ -135,6 +139,10 @@ app.use('/api/auth', authRoutes);
 
 // User management routes
 app.use('/api/users', userRoutes);
+
+// Admin management routes (doctors and caregivers)
+app.use('/api/admin', adminRoutes);
+
 // Health System Routes
 app.use("/api/health-data", healthDataRoutes);
 app.use("/api/health-data", simulatorRoutes);
@@ -162,7 +170,7 @@ const startContinuousSimulator = () => {
         const roll = Math.random();
         const scenario =
           roll < 0.15
-            ? "emergency"
+            ? "emergency"  
             : roll < 0.25
             ? "oxygen_drop"
             : "normal";
@@ -182,6 +190,8 @@ const startContinuousSimulator = () => {
 // Start simulator AFTER DB is connected
 startContinuousSimulator();
 
+// Report management routes
+app.use('/api/reports', userReportRoutes);
 // ─────────────────────────────────────────────
 // MEAL REMINDER PROCESSOR
 // ─────────────────────────────────────────────
