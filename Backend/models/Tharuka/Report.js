@@ -1,4 +1,4 @@
-const mongoose = require("mongoose");
+import mongoose from "mongoose";
 
 const reportSchema = new mongoose.Schema(
   {
@@ -26,7 +26,7 @@ const reportSchema = new mongoose.Schema(
     },
 
     summary: {
-      type: Object, // aggregated JSON
+      type: Object,
     },
 
     generatedAt: {
@@ -43,4 +43,4 @@ const reportSchema = new mongoose.Schema(
 
 reportSchema.index({ userId: 1, reportType: 1, generatedAt: -1 });
 
-module.exports = mongoose.model("Report", reportSchema);
+export default mongoose.model("Report", reportSchema);
