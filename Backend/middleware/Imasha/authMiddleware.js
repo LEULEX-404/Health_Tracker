@@ -1,33 +1,84 @@
 import { verifyAccessToken, extractTokenFromHeader } from '../../utils/Imasha/jwt.js';
 import { UnauthorizedError, ForbiddenError } from '../../utils/Imasha/errors.js';
 import { AUTH_MESSAGES, USER_ROLES } from '../../constants/Imasha/index.js';
+import jwt from 'jsonwebtoken';
+import User from '../../models/Imasha/User.js';
 
 /**
  * Middleware to authenticate user using JWT
  */
 export const authenticate = async (req, res, next) => {
   try {
+    //Get token from header
     const authHeader = req.headers.authorization;
-    const token = extractTokenFromHeader(authHeader);
-    
-    if (!token) {
-      throw new UnauthorizedError(AUTH_MESSAGES.UNAUTHORIZED_ACCESS);
+
+    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+      return res.status(401).json({
+        success: false,
+        message: 'No token provided. Please login first.',
+      });
     }
-    
-    const decoded = verifyAccessToken(token);
-    
-    // Attach user info to request
-    req.user = {
-      userId: decoded.userId,
-      role: decoded.role,
-    };
-    
+
+    const token = authHeader.split(' ')[1];
+
+    if (!token) {
+      return res.status(401).json({
+        success: false,
+        message: 'Token missing.',
+      });
+    }
+
+    // Verify token
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+
+    console.log('Token decoded:', decoded); // Debug log
+
+    //Find user in database
+    const user = await User.findById(decoded.id || decoded._id || decoded.userId)
+      .select('-password');
+
+    console.log('User found:', user ? user.email : 'NOT FOUND'); // Debug log
+
+    if (!user) {
+      return res.status(401).json({
+        success: false,
+        message: 'User not found. Token invalid.',
+      });
+    }
+
+    if (!user.isActive) {
+      return res.status(401).json({
+        success: false,
+        message: 'Account is deactivated.',
+      });
+    }
+
+    //Set req.user BEFORE calling next()
+    req.user = user;
+
+    //Call next AFTER req.user is set
     next();
+
   } catch (error) {
+    console.error('Auth middleware error:', error.message);
+
+    if (error.name === 'JsonWebTokenError') {
+      return res.status(401).json({
+        success: false,
+        message: 'Invalid token.',
+      });
+    }
+
+    if (error.name === 'TokenExpiredError') {
+      return res.status(401).json({
+        success: false,
+        message: 'Token expired. Please login again.',
+      });
+    }
+
     next(error);
   }
 };
-
 /**
  * Middleware to authorize based on user roles
  * @param {...string} allowedRoles - Roles that are allowed to access the route

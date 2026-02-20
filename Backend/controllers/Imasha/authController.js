@@ -187,34 +187,47 @@ class AuthController {
    * GET /api/auth/google/callback
    */
   async googleCallback(req, res, next) {
-    try {
-      const { code } = req.query;
-      const ipAddress = req.ip || req.connection.remoteAddress;
-      const userAgent = req.headers['user-agent'];
-      
-      if (!code) {
-        return res.redirect(`${process.env.CLIENT_URL}/login?error=google_auth_failed`);
-      }
-      
-      const result = await googleAuthService.verifyGoogleToken(code, ipAddress, userAgent);
-      
-      // Set refresh token in HTTP-only cookie
-      res.cookie('refreshToken', result.refreshToken, {
-        httpOnly: true,
-        secure: process.env.NODE_ENV === 'production',
-        sameSite: 'strict',
-        maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
-      });
-      
-      // Redirect to frontend with access token
-      res.redirect(
-        `${result.redirectUrl}?token=${result.accessToken}&user=${encodeURIComponent(JSON.stringify(result.user))}`
-      );
-    } catch (error) {
-      console.error('Google callback error:', error);
-      res.redirect(`${process.env.CLIENT_URL}/login?error=google_auth_failed`);
+  try {
+    console.log('🔄 Google callback received');
+    console.log('Query:', req.query);
+    
+    const { code, error } = req.query;
+    
+    if (error) {
+      console.error('❌ Google error:', error);
+      return res.redirect(`${process.env.CLIENT_URL}/login?error=${error}`);
     }
+    
+    if (!code) {
+      console.error('❌ No code from Google');
+      return res.redirect(`${process.env.CLIENT_URL}/login?error=no_code`);
+    }
+    
+    const ipAddress = req.ip || req.connection.remoteAddress;
+    const userAgent = req.headers['user-agent'];
+    
+    console.log('🔄 Verifying with Google...');
+    const result = await googleAuthService.verifyGoogleToken(code, ipAddress, userAgent);
+    
+    console.log('✅ Success! User:', result.user.email);
+    
+    res.cookie('refreshToken', result.refreshToken, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'strict',
+      maxAge: 7 * 24 * 60 * 60 * 1000,
+    });
+    
+    res.redirect(
+      `${result.redirectUrl}?token=${result.accessToken}&user=${encodeURIComponent(JSON.stringify(result.user))}`
+    );
+  } catch (error) {
+    console.error('❌ CALLBACK ERROR:');
+    console.error('Message:', error.message);
+    console.error('Full error:', error);
+    res.redirect(`${process.env.CLIENT_URL}/login?error=google_auth_failed`);
   }
+}
   
   /**
    * Get current user
