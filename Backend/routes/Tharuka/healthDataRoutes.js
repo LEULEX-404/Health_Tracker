@@ -1,14 +1,20 @@
 import express from "express";
 import multer from "multer";
 import path from "path";
+import fs from "fs";
 const router = express.Router();
+
+const uploadsDir = path.join(path.dirname(path.dirname(__dirname)), "uploads");
+if (!fs.existsSync(uploadsDir)) {
+  fs.mkdirSync(uploadsDir, { recursive: true });
+}
 import controller from "../../controllers/Tharuka/healthDataController.js";
 import auditLogger from "../../middleware/Tharuka/auditLogger.js";
 
 // ─── Multer config for PDF uploads ───────────────────────────
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
-    cb(null, path.join(__dirname, "../uploads"));
+    cb(null, uploadsDir);
   },
   filename: (req, file, cb) => {
     const uniqueSuffix = `${Date.now()}-${Math.round(Math.random() * 1e9)}`;
@@ -43,14 +49,12 @@ router.post(
   controller.pdfUpload
 );
 
-// Get all records for a user
-router.get("/:userId", controller.getUserData);
-
-// Get single record
+// More specific routes first to avoid :userId capturing path segments
 router.get("/record/:id", controller.getRecordById);
-
-// Alert routes
 router.get("/alerts/:userId", controller.getAlerts);
 router.patch("/alerts/:alertId/resolve", controller.resolveAlert);
+
+// Get all records for a user (catch-all for single segment)
+router.get("/:userId", controller.getUserData);
 
 export default router;

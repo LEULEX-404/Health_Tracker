@@ -4,15 +4,20 @@ import PDFDocument from "pdfkit";
 
 // ─── Date Helpers ─────────────────────────────────────────────
 const getDateRange = (type) => {
-  const now   = new Date();
+  const end = new Date();
+  end.setHours(23, 59, 59, 999);
   const start = new Date();
 
   if (type === "weekly") {
-    start.setDate(now.getDate() - 7);
+    start.setDate(end.getDate() - 7);
+    start.setHours(0, 0, 0, 0);
   } else if (type === "monthly") {
-    start.setMonth(now.getMonth() - 1);
+    start.setMonth(end.getMonth() - 1);
+    start.setHours(0, 0, 0, 0);
+  } else {
+    start.setHours(0, 0, 0, 0);
   }
-  return { start, end: now };
+  return { start, end };
 };
 
 // ─── Aggregate Vitals Stats ───────────────────────────────────

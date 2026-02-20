@@ -125,13 +125,20 @@ async function sendReminder(reminderId) {
   }
 
   try {
+    // Combine scheduledDate with meal's scheduledTime for accurate display
+    let scheduledTime = reminder.scheduledDate;
+    if (mealPlan.scheduledTime) {
+      const [hours, minutes] = mealPlan.scheduledTime.split(":").map(Number);
+      scheduledTime = new Date(reminder.scheduledDate);
+      scheduledTime.setHours(hours || 0, minutes || 0, 0, 0);
+    }
     await sendMealReminderEmail(
       user.email,
       user.firstName,
       {
         mealName: mealPlan.mealName || mealPlan.mealType,
         mealType: mealPlan.mealType,
-        scheduledTime: reminder.scheduledDate,
+        scheduledTime,
         items: mealPlan.items,
       }
     );
