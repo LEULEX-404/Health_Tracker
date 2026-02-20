@@ -4,11 +4,11 @@ import auditLogger from "../../middleware/Tharuka/auditLogger.js";
 
 const router = express.Router();
 
-// Read routes (no audit)
+// Read routes (no audit) — more specific routes first
 router.get("/suggest/:userId", controller.suggestMealPlans);
 router.get("/health-condition/:userId/:healthCondition", controller.getMealPlansByHealthCondition);
-router.get("/:userId", controller.getUserMealPlans);
 router.get("/detail/:id", controller.getMealPlanById);
+router.get("/:userId", controller.getUserMealPlans);
 
 // Write routes (audit logged)
 router.post("/", auditLogger, controller.createMealPlan);
