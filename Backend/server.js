@@ -229,6 +229,14 @@ const startMealReminderProcessor = () => {
 // Start reminder processor AFTER DB is connected
 startMealReminderProcessor();
 
+
+// Priya Routes
+import appointmentsRoutes from "./routes/Priya/appointmentsRoutes.js";
+
+app.use('/api/appointments', appointmentsRoutes);
+
+
+
 // ==========================================
 // ERROR HANDLING MIDDLEWARE
 // ==========================================
