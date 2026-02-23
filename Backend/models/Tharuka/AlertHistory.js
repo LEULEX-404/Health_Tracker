@@ -1,4 +1,4 @@
-const mongoose = require("mongoose");
+import mongoose from "mongoose";
 
 const alertHistorySchema = new mongoose.Schema(
   {
@@ -50,4 +50,4 @@ const alertHistorySchema = new mongoose.Schema(
 
 alertHistorySchema.index({ userId: 1, createdAt: -1 });
 
-module.exports = mongoose.model("AlertHistory", alertHistorySchema);
+export default mongoose.model("AlertHistory", alertHistorySchema);
