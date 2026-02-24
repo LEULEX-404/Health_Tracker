@@ -7,10 +7,22 @@ import { HTTP_STATUS } from '../../constants/Imasha/index.js';
  */
 export const errorHandler = (err, req, res, next) => {
   let error = err;
+
+  // Body parser JSON errors (malformed or incomplete JSON payload)
+  if (
+    error &&
+    (error.type === 'entity.parse.failed' ||
+      (error instanceof SyntaxError && /JSON/i.test(error.message)))
+  ) {
+    error = new ApiError(
+      HTTP_STATUS.BAD_REQUEST,
+      'Invalid JSON body. Please send valid JSON.'
+    );
+  }
   
   // If error is not an instance of ApiError, convert it
   if (!(error instanceof ApiError)) {
-    const statusCode = error.statusCode || HTTP_STATUS.INTERNAL_SERVER_ERROR;
+    const statusCode = error.statusCode || error.status || HTTP_STATUS.INTERNAL_SERVER_ERROR;
     const message = error.message || 'Internal server error';
     error = new ApiError(statusCode, message, false, err.stack);
   }
