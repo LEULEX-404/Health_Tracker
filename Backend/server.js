@@ -45,6 +45,8 @@ import { startMonitoringSchedulers } from "./services/Tharindu/monitoringSchedul
 
 
 import User from "./models/Imasha/User.js";
+import swaggerUi from 'swagger-ui-express';
+import imashaOpenApi from './docs/imasha-openapi.js';
 
 // ─────────────────────────────────────────────
 // ES MODULE __dirname FIX
@@ -128,17 +130,24 @@ app.get('/', (req, res) => {
     success: true,
     message: 'Healthcare Authentication API',
     version: '1.0.0',
-    endpoints: {
-      health: '/health',
-      auth: '/api/auth',
-      users: '/api/users',
-      admin: '/api/admin',
-      healthData: "/api/health-data",
-      reports: "/api/reports",
-      docs: 'See API_DOCUMENTATION.md',
-    },
+      endpoints: {
+        health: '/health',
+        auth: '/api/auth',
+        users: '/api/users',
+        admin: '/api/admin',
+        healthData: "/api/health-data",
+        reports: "/api/reports",
+        docs: 'See API_DOCUMENTATION.md',
+        swaggerImasha: 'http://localhost:5000/api-docs/imasha',
+      },
   });
 });
+
+// Swagger UI for Imasha module APIs (Auth, Users, Admin, Reports)
+app.use('/api-docs/imasha', swaggerUi.serve, swaggerUi.setup(imashaOpenApi, {
+  customCss: '.swagger-ui .topbar { display: none }',
+  customSiteTitle: 'Imasha Module API',
+}));
 
 // Authentication routes
 app.use('/api/auth', authRoutes);
@@ -244,17 +253,28 @@ startMonitoringSchedulers();
 
 // Priya Routes
 import appointmentsRoutes from "./routes/Priya/appointmentsRoutes.js";
+import exerciseRoutes from "./routes/Priya/exerciseRoutes.js";
+import emailLogRoutes from "./routes/Priya/emailLogRoute.js";
 
 // Tharindu Routes
 import caregiverRoutes from "./routes/Tharindu/caregiverRoutes.js";
 
 app.use('/api/appointments', appointmentsRoutes);
 app.use('/api/tharindu/bookings', caregiverRoutes);
+app.use('/api/email-logs', emailLogRoutes);
+app.use('/api/appointments', appointmentsRoutes);
+app.use('/api/exercise', exerciseRoutes);
 
 
 
 // ==========================================
 // ERROR HANDLING MIDDLEWARE
+try {
+    const bookingEmailController = require('./controllers/bookingEmailController');
+    app.post('/api/send-booking-email', bookingEmailController.sendBookingSuccessEmail);
+} catch (error) {
+    console.warn('bookingEmailController not found. /api/send-booking-email is disabled.');
+}
 // ==========================================
 
 // 404 handler (must be after all routes)
