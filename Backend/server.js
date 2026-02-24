@@ -39,6 +39,8 @@ const { runSimulator } = simulatorService;
 import reminderService from "./services/Tharuka/reminderService.js";
 
 import User from "./models/Imasha/User.js";
+import swaggerUi from 'swagger-ui-express';
+import imashaOpenApi from './docs/imasha-openapi.js';
 
 // ─────────────────────────────────────────────
 // ES MODULE __dirname FIX
@@ -130,9 +132,16 @@ app.get('/', (req, res) => {
         healthData: "/api/health-data",
         reports: "/api/reports",
         docs: 'See API_DOCUMENTATION.md',
+        swaggerImasha: 'http://localhost:5000/api-docs/imasha',
       },
   });
 });
+
+// Swagger UI for Imasha module APIs (Auth, Users, Admin, Reports)
+app.use('/api-docs/imasha', swaggerUi.serve, swaggerUi.setup(imashaOpenApi, {
+  customCss: '.swagger-ui .topbar { display: none }',
+  customSiteTitle: 'Imasha Module API',
+}));
 
 // Authentication routes
 app.use('/api/auth', authRoutes);
