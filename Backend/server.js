@@ -232,8 +232,11 @@ startMealReminderProcessor();
 
 // Priya Routes
 import appointmentsRoutes from "./routes/Priya/appointmentsRoutes.js";
+import exerciseRoutes from "./routes/Priya/exerciseRoutes.js";
+
 
 app.use('/api/appointments', appointmentsRoutes);
+app.use('/api/exercise', exerciseRoutes);
 
 
 
