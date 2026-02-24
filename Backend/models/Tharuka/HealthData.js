@@ -1,4 +1,5 @@
 import mongoose from "mongoose";
+import { analyzeHealthData } from "../../services/Tharindu/alertService.js";
 
 const healthDataSchema = new mongoose.Schema(
   {
@@ -72,5 +73,14 @@ const healthDataSchema = new mongoose.Schema(
 );
 
 healthDataSchema.index({ userId: 1, recordedAt: -1 });
+
+// Intelligent monitoring hook (Tharindu's module)
+healthDataSchema.post("save", async function (doc) {
+  try {
+    await analyzeHealthData(doc);
+  } catch (err) {
+    console.error("[Tharindu] analyzeHealthData error:", err.message);
+  }
+});
 
 export default mongoose.model("HealthData", healthDataSchema);
