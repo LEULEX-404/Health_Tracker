@@ -29,6 +29,9 @@ import reportRoutes from "./routes/Tharuka/reportRoutes.js";
 import nutritionRoutes from "./routes/Tharuka/nutritionRoutes.js";
 import mealPlanRoutes from "./routes/Tharuka/mealPlanRoutes.js";
 import mealReminderRoutes from "./routes/Tharuka/mealReminderRoutes.js";
+import alertRoutes from "./routes/Tharindu/alertRoutes.js";
+import alertSettingsRoutes from "./routes/Tharindu/alertSettingsRoutes.js";
+import notificationRoutes from "./routes/Tharindu/notificationRoutes.js";
 
 // ─────────────────────────────────────────────
 // SERVICES
@@ -37,6 +40,9 @@ import simulatorService from "./services/Tharuka/simulatorService.js";
 const { runSimulator } = simulatorService;
 
 import reminderService from "./services/Tharuka/reminderService.js";
+import "./services/Tharindu/reminderService.js";
+import { startMonitoringSchedulers } from "./services/Tharindu/monitoringScheduler.js";
+
 
 import User from "./models/Imasha/User.js";
 
@@ -122,15 +128,15 @@ app.get('/', (req, res) => {
     success: true,
     message: 'Healthcare Authentication API',
     version: '1.0.0',
-      endpoints: {
-        health: '/health',
-        auth: '/api/auth',
-        users: '/api/users',
-        admin: '/api/admin',
-        healthData: "/api/health-data",
-        reports: "/api/reports",
-        docs: 'See API_DOCUMENTATION.md',
-      },
+    endpoints: {
+      health: '/health',
+      auth: '/api/auth',
+      users: '/api/users',
+      admin: '/api/admin',
+      healthData: "/api/health-data",
+      reports: "/api/reports",
+      docs: 'See API_DOCUMENTATION.md',
+    },
   });
 });
 
@@ -150,6 +156,9 @@ app.use("/api/reports", reportRoutes);
 app.use("/api/nutrition", nutritionRoutes);
 app.use("/api/meal-plans", mealPlanRoutes);
 app.use("/api/meal-reminders", mealReminderRoutes);
+app.use("/api/alerts", alertRoutes);
+app.use("/api/alert-settings", alertSettingsRoutes);
+app.use("/api/notifications", notificationRoutes);
 
 // ─────────────────────────────────────────────
 // CONTINUOUS SIMULATOR
@@ -170,10 +179,10 @@ const startContinuousSimulator = () => {
         const roll = Math.random();
         const scenario =
           roll < 0.15
-            ? "emergency"  
+            ? "emergency"
             : roll < 0.25
-            ? "oxygen_drop"
-            : "normal";
+              ? "oxygen_drop"
+              : "normal";
 
         const result = await runSimulator(user._id.toString(), scenario);
 
@@ -202,14 +211,14 @@ const startMealReminderProcessor = () => {
   setInterval(async () => {
     try {
       const users = await User.find({}, "_id");
-      
+
       for (const user of users) {
         // Generate reminders for active meal plans
         await reminderService.generateRemindersForActivePlans(user._id.toString());
-        
+
         // Get pending reminders that are due
         const pendingReminders = await reminderService.getPendingReminders(user._id.toString(), 10);
-        
+
         // Send reminders
         for (const reminder of pendingReminders) {
           try {
@@ -229,11 +238,18 @@ const startMealReminderProcessor = () => {
 // Start reminder processor AFTER DB is connected
 startMealReminderProcessor();
 
+// Start intelligent monitoring schedulers (escalations, reminders)
+startMonitoringSchedulers();
+
 
 // Priya Routes
 import appointmentsRoutes from "./routes/Priya/appointmentsRoutes.js";
 
+// Tharindu Routes
+import caregiverRoutes from "./routes/Tharindu/caregiverRoutes.js";
+
 app.use('/api/appointments', appointmentsRoutes);
+app.use('/api/tharindu/bookings', caregiverRoutes);
 
 
 
@@ -276,7 +292,7 @@ const server = app.listen(PORT, () => {
 process.on('unhandledRejection', (err) => {
   console.error('❌ Unhandled Promise Rejection:', err);
   console.error('Shutting down server...');
-  
+
   server.close(() => {
     process.exit(1);
   });
@@ -286,7 +302,7 @@ process.on('unhandledRejection', (err) => {
 process.on('uncaughtException', (err) => {
   console.error('❌ Uncaught Exception:', err);
   console.error('Shutting down server...');
-  
+
   server.close(() => {
     process.exit(1);
   });
@@ -295,7 +311,7 @@ process.on('uncaughtException', (err) => {
 // Handle SIGTERM (for deployment platforms like Heroku)
 process.on('SIGTERM', () => {
   console.log('👋 SIGTERM received. Shutting down gracefully...');
-  
+
   server.close(() => {
     console.log('✅ Server closed');
     process.exit(0);
@@ -305,7 +321,7 @@ process.on('SIGTERM', () => {
 // Handle SIGINT (Ctrl+C)
 process.on('SIGINT', () => {
   console.log('\n👋 SIGINT received. Shutting down gracefully...');
-  
+
   server.close(() => {
     console.log('✅ Server closed');
     process.exit(0);
