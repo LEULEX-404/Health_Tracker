@@ -39,6 +39,8 @@ const { runSimulator } = simulatorService;
 import reminderService from "./services/Tharuka/reminderService.js";
 
 import User from "./models/Imasha/User.js";
+import swaggerUi from "swagger-ui-express";
+import { tharukaSwaggerSpec } from "./swagger/tharuka-swagger.js";
 
 // ─────────────────────────────────────────────
 // ES MODULE __dirname FIX
@@ -102,6 +104,11 @@ if (NODE_ENV === 'development') {
 // ─────────────────────────────────────────────
 app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 
+// ─────────────────────────────────────────────
+// SWAGGER — Tharuka APIs (http://localhost:5000/api-docs)
+// ─────────────────────────────────────────────
+app.use("/api-docs/Tharuka", swaggerUi.serve, swaggerUi.setup(tharukaSwaggerSpec));
+
 // ==========================================
 // API ROUTES
 // ==========================================
@@ -129,7 +136,7 @@ app.get('/', (req, res) => {
         admin: '/api/admin',
         healthData: "/api/health-data",
         reports: "/api/reports",
-        docs: 'See API_DOCUMENTATION.md',
+        apiDocs: 'http://localhost:5000/api-docs/Tharuka',
       },
   });
 });
@@ -159,7 +166,7 @@ const startContinuousSimulator = () => {
 
   setInterval(async () => {
     try {
-      const users = await User.find({}, "_id");
+      const users = await User.find({role: "patient"}, "_id");
 
       if (!users.length) {
         console.log("[Simulator] No users found, skipping...");
