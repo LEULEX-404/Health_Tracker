@@ -234,12 +234,14 @@ startMealReminderProcessor();
 import appointmentsRoutes from "./routes/Priya/appointmentsRoutes.js";
 import exerciseRoutes from "./routes/Priya/exerciseRoutes.js";
 import emailLogRoutes from "./routes/Priya/emailLogRoute.js";
+import adminAppointmentsRoutes from "./routes/Priya/adminAppointmentsRoutes.js";
+import doctorRoutes from "./routes/Priya/doctorRoutes.js";
 
 app.use('/api/email-logs', emailLogRoutes);
 app.use('/api/appointments', appointmentsRoutes);
 app.use('/api/exercise', exerciseRoutes);
-
-
+app.use('/api/admin/appointments', adminAppointmentsRoutes);
+app.use('/api/doctors', doctorRoutes);
 
 // ==========================================
 // ERROR HANDLING MIDDLEWARE

@@ -165,7 +165,57 @@ export const sendBookingSuccessEmail = async (req, res) => {
     }
 };
 
+/**
+ * Send status update email for appointment confirmation/cancellation.
+ */
+export const sendBookingStatusToPatient = async (apt, status) => {
+    const to = apt.patientEmail || apt.email;
+    if (!to || !to.trim()) return { sent: false, error: 'No patient email' };
+    const name = apt.patientName || apt.fullName || 'Patient';
+    const doctorName = apt.doctor || '';
+    const date = apt.date || '';
+    const time = apt.time || '';
+    const transporter = getTransporter();
+    if (!transporter) {
+        console.warn('Status email not sent (EMAIL not configured). Set EMAIL_USER and EMAIL_PASSWORD in .env for real emails.');
+        return { sent: false, error: 'EMAIL not configured' };
+    }
+
+    const subject = `Appointment ${status} - HealthSync`;
+    const text = `Dear ${name},\n\nYour appointment has been ${status.toLowerCase()}.\n\nDoctor: ${doctorName}\nDate: ${date}\nTime: ${time}\n\nThank you,\nHealthSync Team`;
+    const html = `
+        <div style="font-family: Arial, sans-serif; color: #333;">
+            <h2>Appointment ${status}</h2>
+            <p>Dear <strong>${name}</strong>,</p>
+            <p>Your appointment has been <strong>${status.toLowerCase()}</strong>.</p>
+            <div style="background: #f3f4f6; padding: 15px; border-radius: 8px; margin: 20px 0;">
+                <p style="margin: 5px 0;"><strong>Doctor:</strong> ${doctorName}</p>
+                <p style="margin: 5px 0;"><strong>Date:</strong> ${date}</p>
+                <p style="margin: 5px 0;"><strong>Time:</strong> ${time}</p>
+            </div>
+            <p>Thank you,<br>HealthSync Team</p>
+        </div>
+    `;
+
+    try {
+        const info = await transporter.sendMail({
+            from: process.env.EMAIL_FROM || '"HealthSync" <no-reply@healthsync.com>',
+            to: to.trim(),
+            subject,
+            text,
+            html,
+        });
+        console.log('Status email sent to %s: %s', to, info.messageId);
+        return { sent: true, messageId: info.messageId };
+    } catch (err) {
+        console.error('Error sending status email:', err);
+        return { sent: false, error: err.message };
+    }
+};
+
+
 export default {
     sendBookingSuccessEmail,
-    sendBookingReceivedToPatient
+    sendBookingReceivedToPatient,
+    sendBookingStatusToPatient
 };
