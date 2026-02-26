@@ -114,7 +114,25 @@ app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 // ─────────────────────────────────────────────
 // SWAGGER — Tharuka APIs (http://localhost:5000/api-docs)
 // ─────────────────────────────────────────────
-app.use("/api-docs/Tharuka", swaggerUi.serve, swaggerUi.setup(tharukaSwaggerSpec));
+// Tharuka Swagger
+app.use(
+  "/api-docs/Tharuka",
+  swaggerUi.serveFiles(tharukaSwaggerSpec),
+  swaggerUi.setup(tharukaSwaggerSpec, {
+    customCss: '.swagger-ui .topbar { display: none }',
+    customSiteTitle: 'Tharuka Health System API',
+  })
+);
+
+// Imasha Swagger
+app.use(
+  "/api-docs/imasha",
+  swaggerUi.serveFiles(imashaOpenApi),
+  swaggerUi.setup(imashaOpenApi, {
+    customCss: '.swagger-ui .topbar { display: none }',
+    customSiteTitle: 'Imasha Module API',
+  })
+);
 
 // ==========================================
 // API ROUTES
@@ -149,12 +167,6 @@ app.get('/', (req, res) => {
       },
   });
 });
-
-// Swagger UI for Imasha module APIs (Auth, Users, Admin, Reports)
-app.use('/api-docs/imasha', swaggerUi.serve, swaggerUi.setup(imashaOpenApi, {
-  customCss: '.swagger-ui .topbar { display: none }',
-  customSiteTitle: 'Imasha Module API',
-}));
 
 // Authentication routes
 app.use('/api/auth', authRoutes);
