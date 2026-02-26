@@ -51,22 +51,42 @@ async function enrichItemsWithNutrition(items) {
       const needsData = item.name && item.quantity && (!item.calories || !item.protein);
       if (needsData) {
         const apiIndex = itemsNeedingData.findIndex((i) => i.name === item.name && i.quantity === item.quantity);
-        if (apiIndex >= 0 && apiResults[apiIndex] && !apiResults[apiIndex].error) {
-          return {
-            ...item,
-            calories: apiResults[apiIndex].calories || item.calories || 0,
-            protein: apiResults[apiIndex].protein || item.protein || 0,
-            carbohydrates: apiResults[apiIndex].carbohydrates || item.carbohydrates || 0,
-            fat: apiResults[apiIndex].fat || item.fat || 0,
-            fiber: apiResults[apiIndex].fiber || item.fiber || 0,
-          };
+        if (apiIndex >= 0 && apiResults[apiIndex]) {
+          if (!apiResults[apiIndex].error) {
+            return {
+              ...item,
+              calories: apiResults[apiIndex].calories || 0,
+              protein: apiResults[apiIndex].protein || 0,
+              carbohydrates: apiResults[apiIndex].carbohydrates || 0,
+              fat: apiResults[apiIndex].fat || 0,
+              fiber: apiResults[apiIndex].fiber || 0,
+              nutritionStatus: "success",
+            };
+          } else {
+            return {
+              ...item,
+              nutritionStatus: "error",
+              nutritionError: apiResults[apiIndex].error,
+              calories: item.calories || 0,
+              protein: item.protein || 0,
+              carbohydrates: item.carbohydrates || 0,
+              fat: item.fat || 0,
+              fiber: item.fiber || 0,
+            };
+          }
         }
       }
       return item;
     });
   } catch (error) {
     console.warn("Failed to fetch nutrition data for meal plan items:", error.message);
-    return items;
+    return items.map(item => ({
+      ...item,
+      nutritionStatus: "error",
+      nutritionError: error.message,
+      calories: item.calories || 0,
+      protein: item.protein || 0,
+    }));
   }
 }
 

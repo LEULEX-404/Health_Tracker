@@ -1,5 +1,4 @@
 import HealthData from "../../models/Tharuka/HealthData.js";
-import alertService from "../../services/Tharuka/alertService.js";
 import { createRequire } from "module";
 const require = createRequire(import.meta.url);
 const { PDFParse } = require("pdf-parse");
@@ -14,9 +13,7 @@ const saveManualEntry = async (userId, vitals) => {
     recordedAt: new Date(),
   });
 
-  // Auto-trigger alert analysis
-  const alerts = await alertService.analyzeAndCreateAlerts(entry);
-  return { entry, alerts };
+  return { entry, alerts: [] };
 };
 
 // ─── PDF Upload ───────────────────────────────────────────────
@@ -66,8 +63,7 @@ const savePdfEntry = async (userId, file) => {
     recordedAt:  new Date(),
   });
 
-  const alerts = await alertService.analyzeAndCreateAlerts(entry);
-  return { entry, alerts, extractedText: rawText.substring(0, 500) };
+  return { entry, alerts: [], extractedText: rawText.substring(0, 500) };
 };
 
 // ─── Get Recent Records ───────────────────────────────────────

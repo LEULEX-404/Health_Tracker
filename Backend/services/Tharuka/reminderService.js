@@ -82,12 +82,21 @@ async function generateRemindersForActivePlans(userId) {
 
   const existingKeys = new Set(
     existingReminders.map(
-      (r) => `${r.mealPlanId}-${r.scheduledDate.toISOString().split("T")[0]}`
+      (r) => {
+        // Find the corresponding plan to get its scheduledTime for the key
+        const plan = activePlans.find(p => p._id.toString() === r.mealPlanId.toString());
+        const timePart = plan?.scheduledTime || "";
+        return `${r.mealPlanId}-${r.scheduledDate.toISOString().split("T")[0]}-${timePart}`;
+      }
     )
   );
 
   const newReminders = allReminders.filter(
-    (r) => !existingKeys.has(`${r.mealPlanId}-${r.scheduledDate.toISOString().split("T")[0]}`)
+    (r) => {
+      const plan = activePlans.find(p => p._id.toString() === r.mealPlanId.toString());
+      const timePart = plan?.scheduledTime || "";
+      return !existingKeys.has(`${r.mealPlanId}-${r.scheduledDate.toISOString().split("T")[0]}-${timePart}`);
+    }
   );
 
   if (newReminders.length > 0) {
