@@ -45,7 +45,8 @@ import { startMonitoringSchedulers } from "./services/Tharindu/monitoringSchedul
 
 
 import User from "./models/Imasha/User.js";
-import swaggerUi from 'swagger-ui-express';
+import swaggerUi from "swagger-ui-express";
+import { tharukaSwaggerSpec } from "./swagger/tharuka-swagger.js";
 import imashaOpenApi from './docs/imasha-openapi.js';
 
 // ─────────────────────────────────────────────
@@ -110,6 +111,11 @@ if (NODE_ENV === 'development') {
 // ─────────────────────────────────────────────
 app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 
+// ─────────────────────────────────────────────
+// SWAGGER — Tharuka APIs (http://localhost:5000/api-docs)
+// ─────────────────────────────────────────────
+app.use("/api-docs/Tharuka", swaggerUi.serve, swaggerUi.setup(tharukaSwaggerSpec));
+
 // ==========================================
 // API ROUTES
 // ==========================================
@@ -137,6 +143,7 @@ app.get('/', (req, res) => {
         admin: '/api/admin',
         healthData: "/api/health-data",
         reports: "/api/reports",
+        apiDocs: 'http://localhost:5000/api-docs/Tharuka',
         docs: 'See API_DOCUMENTATION.md',
         swaggerImasha: 'http://localhost:5000/api-docs/imasha',
       },
@@ -177,7 +184,7 @@ const startContinuousSimulator = () => {
 
   setInterval(async () => {
     try {
-      const users = await User.find({}, "_id");
+      const users = await User.find({role: "patient"}, "_id");
 
       if (!users.length) {
         console.log("[Simulator] No users found, skipping...");
