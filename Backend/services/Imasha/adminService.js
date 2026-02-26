@@ -29,9 +29,9 @@ function toDoctorResponse(doctorDoc, userDoc) {
   delete user.emailVerificationToken;
   delete user.passwordResetToken;
   return {
+    ...user,
     _id: doctor._id,
     userId: user._id,
-    ...user,
     specialization: doctor.specialization,
     licenseNumber: doctor.licenseNumber,
     hospitalOrClinic: doctor.hospitalOrClinic,
