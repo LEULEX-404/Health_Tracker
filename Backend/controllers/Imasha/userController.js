@@ -69,9 +69,14 @@ export const updateUser = async (req, res, next) => {
 // PUT /api/users/:id/profile-image
 export const updateProfileImage = async (req, res, next) => {
   try {
+    const file =
+      req.file ||
+      req.files?.profileImage?.[0] ||
+      req.files?.file?.[0];
+
     const result = await userService.updateProfileImage(
       req.params.id,
-      req.file
+      file
     );
 
     res.status(200).json({
