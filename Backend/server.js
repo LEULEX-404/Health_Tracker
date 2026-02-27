@@ -238,7 +238,7 @@ const startMealReminderProcessor = () => {
   // Process reminders every minute
   setInterval(async () => {
     try {
-      const users = await User.find({}, "_id");
+      const users = await User.find({ role: "patient" }, "_id");
 
       for (const user of users) {
         // Generate reminders for active meal plans

@@ -108,10 +108,12 @@ async function generateRemindersForActivePlans(userId) {
 
 async function getPendingReminders(userId, limit = 50) {
   const now = new Date();
+  const twelveHoursAgo = new Date(now.getTime() - 12 * 60 * 60 * 1000);
+
   const reminders = await MealReminder.find({
     userId,
     status: "pending",
-    reminderTime: { $lte: now },
+    reminderTime: { $lte: now, $gte: twelveHoursAgo },
   })
     .sort({ reminderTime: 1 })
     .limit(limit)
