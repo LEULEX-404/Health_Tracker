@@ -47,6 +47,7 @@ import { startMonitoringSchedulers } from "./services/Tharindu/monitoringSchedul
 import User from "./models/Imasha/User.js";
 import swaggerUi from 'swagger-ui-express';
 import imashaOpenApi from './docs/imasha-openapi.js';
+import tharinduOpenApi from './docs/tharindu-openapi.js';
 
 // ─────────────────────────────────────────────
 // ES MODULE __dirname FIX
@@ -130,16 +131,17 @@ app.get('/', (req, res) => {
     success: true,
     message: 'Healthcare Authentication API',
     version: '1.0.0',
-      endpoints: {
-        health: '/health',
-        auth: '/api/auth',
-        users: '/api/users',
-        admin: '/api/admin',
-        healthData: "/api/health-data",
-        reports: "/api/reports",
-        docs: 'See API_DOCUMENTATION.md',
-        swaggerImasha: 'http://localhost:5000/api-docs/imasha',
-      },
+    endpoints: {
+      health: '/health',
+      auth: '/api/auth',
+      users: '/api/users',
+      admin: '/api/admin',
+      healthData: "/api/health-data",
+      reports: "/api/reports",
+      docs: 'See API_DOCUMENTATION.md',
+      swaggerImasha: 'http://localhost:5000/api-docs/imasha',
+      swaggerTharindu: 'http://localhost:5000/api-docs/tharindu',
+    },
   });
 });
 
@@ -147,6 +149,12 @@ app.get('/', (req, res) => {
 app.use('/api-docs/imasha', swaggerUi.serve, swaggerUi.setup(imashaOpenApi, {
   customCss: '.swagger-ui .topbar { display: none }',
   customSiteTitle: 'Imasha Module API',
+}));
+
+// Swagger UI for Tharindu module APIs (Alerts, Notifications, Bookings)
+app.use('/api-docs/tharindu', swaggerUi.serve, swaggerUi.setup(tharinduOpenApi, {
+  customCss: '.swagger-ui .topbar { display: none }',
+  customSiteTitle: 'Tharindu Module API',
 }));
 
 // Authentication routes
@@ -270,10 +278,10 @@ app.use('/api/exercise', exerciseRoutes);
 // ==========================================
 // ERROR HANDLING MIDDLEWARE
 try {
-    const bookingEmailController = require('./controllers/bookingEmailController');
-    app.post('/api/send-booking-email', bookingEmailController.sendBookingSuccessEmail);
+  const bookingEmailController = require('./controllers/bookingEmailController');
+  app.post('/api/send-booking-email', bookingEmailController.sendBookingSuccessEmail);
 } catch (error) {
-    console.warn('bookingEmailController not found. /api/send-booking-email is disabled.');
+  console.warn('bookingEmailController not found. /api/send-booking-email is disabled.');
 }
 // ==========================================
 
