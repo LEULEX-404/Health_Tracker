@@ -2,17 +2,65 @@ import mongoose from "mongoose";
 
 const mealItemSchema = new mongoose.Schema(
   {
-    name: { type: String, required: true, trim: true },
-    quantity: { type: Number, required: true, min: 0 },
-    unit: { type: String, default: "g", trim: true },
-    calories: { type: Number, min: 0, default: 0 },
-    protein: { type: Number, min: 0, default: 0 },
-    carbohydrates: { type: Number, min: 0, default: 0 },
-    fat: { type: Number, min: 0, default: 0 },
-    fiber: { type: Number, min: 0, default: 0 },
+    name: {
+      type: String,
+      required: true,
+      trim: true,
+    },
+    quantity: {
+      type: Number,
+      required: true,
+      min: 0,
+    },
+    unit: {
+      type: String,
+      default: "g",
+      trim: true,
+    },
+    calories: {
+      type: Number,
+      min: 0,
+      default: 0,
+    },
+    protein: {
+      type: Number,
+      min: 0,
+      default: 0,
+    },
+    carbohydrates: {
+      type: Number,
+      min: 0,
+      default: 0,
+    },
+    fat: {
+      type: Number,
+      min: 0,
+      default: 0,
+    },
+    fiber: {
+      type: Number,
+      min: 0,
+      default: 0,
+    },
   },
   { _id: false }
 );
+
+const allowedHealthConditions = [
+  "diabetes",
+  "hypertension",
+  "obesity",
+  "heart_disease",
+  "kidney_disease",
+  "celiac",
+  "lactose_intolerant",
+  "high_cholesterol",
+  "anemia",
+  "osteoporosis",
+  "other",
+];
+
+const allowedMealTypes = ["breakfast", "lunch", "dinner", "snack"];
 
 const mealPlanSchema = new mongoose.Schema(
   {
@@ -25,6 +73,7 @@ const mealPlanSchema = new mongoose.Schema(
     doctorId: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "User",
+      default: null,
     },
     planName: {
       type: String,
@@ -34,55 +83,125 @@ const mealPlanSchema = new mongoose.Schema(
     healthConditions: {
       type: [String],
       default: [],
-      enum: [
-        "diabetes",
-        "hypertension",
-        "obesity",
-        "heart_disease",
-        "kidney_disease",
-        "celiac",
-        "lactose_intolerant",
-        "high_cholesterol",
-        "anemia",
-        "osteoporosis",
-        "other",
-      ],
+      validate: {
+        validator: (values) =>
+          Array.isArray(values) &&
+          values.every((value) => allowedHealthConditions.includes(value)),
+        message: "Invalid health condition provided",
+      },
+      set: (values) => [...new Set(values || [])],
     },
     mealType: {
       type: String,
-      enum: ["breakfast", "lunch", "dinner", "snack"],
+      enum: allowedMealTypes,
       required: true,
     },
-    mealName: { type: String, trim: true },
-    items: { type: [mealItemSchema], default: [] },
-    targetCalories: { type: Number, min: 0 },
-    targetProtein: { type: Number, min: 0 },
-    targetCarbohydrates: { type: Number, min: 0 },
-    targetFat: { type: Number, min: 0 },
+    mealName: {
+      type: String,
+      trim: true,
+      default: "",
+    },
+    items: {
+      type: [mealItemSchema],
+      default: [],
+    },
+    targetCalories: {
+      type: Number,
+      min: 0,
+      default: null,
+    },
+    targetProtein: {
+      type: Number,
+      min: 0,
+      default: null,
+    },
+    targetCarbohydrates: {
+      type: Number,
+      min: 0,
+      default: null,
+    },
+    targetFat: {
+      type: Number,
+      min: 0,
+      default: null,
+    },
     scheduledDays: {
       type: [Number],
       default: [],
       validate: {
-        validator: (days) => days.every((d) => d >= 0 && d <= 6),
-        message: "Days must be 0-6 (Sunday-Saturday)",
+        validator: (days) => {
+          if (!Array.isArray(days)) return false;
+
+          const allValid = days.every(
+            (d) => Number.isInteger(d) && d >= 0 && d <= 6
+          );
+
+          const unique = new Set(days).size === days.length;
+
+          return allValid && unique;
+        },
+        message: "scheduledDays must contain unique integers from 0 to 6",
       },
     },
     scheduledTime: {
       type: String,
-      match: /^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$/,
+      trim: true,
+      match: /^([01]\d|2[0-3]):([0-5]\d)$/,
     },
-    startDate: { type: Date, default: Date.now },
-    endDate: Date,
-    isActive: { type: Boolean, default: true },
-    notes: { type: String, trim: true },
-    reminderEnabled: { type: Boolean, default: true },
-    reminderMinutesBefore: { type: Number, default: 15, min: 0, max: 120 },
+    startDate: {
+      type: Date,
+      default: Date.now,
+      required: true,
+    },
+    endDate: {
+      type: Date,
+      default: null,
+    },
+    isActive: {
+      type: Boolean,
+      default: true,
+    },
+    notes: {
+      type: String,
+      trim: true,
+      default: "",
+    },
+    reminderEnabled: {
+      type: Boolean,
+      default: true,
+    },
+    reminderMinutesBefore: {
+      type: Number,
+      default: 15,
+      min: 0,
+      max: 120,
+    },
   },
-  { timestamps: true }
+  {
+    timestamps: true,
+  }
 );
 
+mealPlanSchema.pre("validate", function () {
+  if (this.endDate && this.startDate && this.endDate < this.startDate) {
+    throw new Error("endDate must be greater than or equal to startDate");
+  }
+
+  if (this.reminderEnabled) {
+    if (!Array.isArray(this.scheduledDays) || this.scheduledDays.length === 0) {
+      throw new Error("scheduledDays is required when reminders are enabled");
+    }
+
+    if (!this.scheduledTime) {
+      throw new Error("scheduledTime is required when reminders are enabled");
+    }
+  }
+});
+
+// Useful query indexes
 mealPlanSchema.index({ userId: 1, isActive: 1 });
-mealPlanSchema.index({ userId: 1, scheduledDays: 1 });
+mealPlanSchema.index({ userId: 1, reminderEnabled: 1, isActive: 1 });
+mealPlanSchema.index({ userId: 1, startDate: 1, endDate: 1 });
 mealPlanSchema.index({ userId: 1, scheduledTime: 1 });
 
 export default mongoose.model("MealPlan", mealPlanSchema);

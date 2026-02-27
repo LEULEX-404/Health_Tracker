@@ -1,130 +1,258 @@
 import MealReminder from "../../models/Tharuka/MealReminder.js";
 import MealPlan from "../../models/Tharuka/MealPlan.js";
-import User from "../../models/Imasha/User.js";
 import { sendMealReminderEmail } from "./emailService.js";
 
+/**
+ * NOTE:
+ * This implementation assumes the server timezone is the same timezone
+ * in which meal reminders should be interpreted.
+ *
+ * If you need true multi-timezone support, use a timezone-aware library
+ * like Luxon or date-fns-tz and store a timezone per user/plan.
+ */
+
+function startOfDay(date) {
+  const d = new Date(date);
+  d.setHours(0, 0, 0, 0);
+  return d;
+}
+
+function endOfDay(date) {
+  const d = new Date(date);
+  d.setHours(23, 59, 59, 999);
+  return d;
+}
+
+function addDays(date, days) {
+  const d = new Date(date);
+  d.setDate(d.getDate() + days);
+  return d;
+}
+
 function getDayOfWeek(date) {
-  return date.getDay();
+  return new Date(date).getDay(); // 0 = Sunday, 6 = Saturday
 }
 
 function parseTime(timeString) {
+  if (!timeString || typeof timeString !== "string") {
+    throw new Error("Invalid scheduledTime");
+  }
+
   const [hours, minutes] = timeString.split(":").map(Number);
+
+  if (
+    Number.isNaN(hours) ||
+    Number.isNaN(minutes) ||
+    hours < 0 ||
+    hours > 23 ||
+    minutes < 0 ||
+    minutes > 59
+  ) {
+    throw new Error("scheduledTime must be in HH:mm format");
+  }
+
   return { hours, minutes };
 }
 
-function createRemindersForPlan(mealPlan, startDate, endDate) {
-  const reminders = [];
-  const { scheduledDays, scheduledTime, reminderMinutesBefore, reminderEnabled } = mealPlan;
+function buildScheduledDate(date) {
+  const scheduledDate = new Date(date);
+  scheduledDate.setHours(0, 0, 0, 0);
+  return scheduledDate;
+}
 
-  if (!reminderEnabled || !scheduledDays.length || !scheduledTime) {
+/**
+ * Create reminder candidates for one meal plan within a date range.
+ * The returned reminders are NOT yet inserted into the database.
+ */
+function createRemindersForPlan(mealPlan, rangeStart, rangeEnd, now = new Date()) {
+  const reminders = [];
+
+  const {
+    userId,
+    _id: mealPlanId,
+    scheduledDays,
+    scheduledTime,
+    reminderMinutesBefore,
+    reminderEnabled,
+    mealType,
+    mealName,
+  } = mealPlan;
+
+  if (
+    !reminderEnabled ||
+    !Array.isArray(scheduledDays) ||
+    scheduledDays.length === 0 ||
+    !scheduledTime
+  ) {
     return reminders;
   }
 
   const { hours, minutes } = parseTime(scheduledTime);
-  const currentDate = new Date(startDate);
-  const end = new Date(endDate || new Date(Date.now() + 30 * 24 * 60 * 60 * 1000));
 
-  while (currentDate <= end) {
-    const dayOfWeek = getDayOfWeek(currentDate);
+  const cursor = startOfDay(rangeStart);
+  const end = endOfDay(rangeEnd);
+
+  while (cursor <= end) {
+    const dayOfWeek = getDayOfWeek(cursor);
 
     if (scheduledDays.includes(dayOfWeek)) {
-      const reminderTime = new Date(currentDate);
-      reminderTime.setHours(hours, minutes, 0, 0);
+      const scheduledDate = buildScheduledDate(cursor);
 
-      const actualReminderTime = new Date(reminderTime);
-      actualReminderTime.setMinutes(actualReminderTime.getMinutes() - reminderMinutesBefore);
+      const mealDateTime = new Date(scheduledDate);
+      mealDateTime.setHours(hours, minutes, 0, 0);
 
-      if (actualReminderTime >= new Date()) {
+      const reminderTime = new Date(mealDateTime);
+      reminderTime.setMinutes(
+        reminderTime.getMinutes() - (mealPlan.reminderMinutesBefore ?? 15)
+      );
+
+      // Only create reminders for future-or-now delivery
+      if (reminderTime >= now) {
         reminders.push({
-          userId: mealPlan.userId,
-          mealPlanId: mealPlan._id,
-          scheduledDate: new Date(currentDate),
-          reminderTime: actualReminderTime,
-          mealType: mealPlan.mealType,
-          mealName: mealPlan.mealName,
+          userId,
+          mealPlanId,
+          scheduledDate,
+          reminderTime,
+          mealType,
+          mealName: mealName || "",
           status: "pending",
+          notificationSent: false,
+          retryCount: 0,
+          lastError: null,
         });
       }
     }
 
-    currentDate.setDate(currentDate.getDate() + 1);
+    cursor.setDate(cursor.getDate() + 1);
   }
 
   return reminders;
 }
 
+/**
+ * Generate reminders for a user's active meal plans for the next 7 days.
+ * Duplicate protection is enforced by a UNIQUE index on:
+ *   { mealPlanId: 1, scheduledDate: 1 }
+ */
 async function generateRemindersForActivePlans(userId) {
+  const now = new Date();
+  const generationWindowEnd = endOfDay(addDays(now, 7));
+
   const activePlans = await MealPlan.find({
     userId,
     isActive: true,
     reminderEnabled: true,
-    $or: [{ endDate: null }, { endDate: { $gte: new Date() } }],
-    startDate: { $lte: new Date() },
+    startDate: { $lte: generationWindowEnd },
+    $or: [
+      { endDate: null },
+      { endDate: { $exists: false } },
+      { endDate: { $gte: startOfDay(now) } },
+    ],
   }).lean();
 
-  const allReminders = [];
-  const now = new Date();
-  const futureDate = new Date();
-  futureDate.setDate(futureDate.getDate() + 7);
+  if (!activePlans.length) {
+    return [];
+  }
+
+  const allCandidates = [];
 
   for (const plan of activePlans) {
-    const reminders = createRemindersForPlan(plan, now, futureDate);
-    allReminders.push(...reminders);
-  }
+    const planStart = plan.startDate ? new Date(plan.startDate) : now;
+    const planEnd = plan.endDate ? new Date(plan.endDate) : generationWindowEnd;
 
-  if (allReminders.length === 0) return [];
+    // Effective range:
+    // start at the later of now or plan.startDate
+    // end at the earlier of generationWindowEnd or plan.endDate
+    const effectiveStart = planStart > now ? planStart : now;
+    const effectiveEnd = planEnd < generationWindowEnd ? planEnd : generationWindowEnd;
 
-  const existingReminders = await MealReminder.find({
-    userId,
-    reminderTime: { $gte: now, $lte: futureDate },
-    status: { $in: ["pending", "sent"] },
-  }).lean();
-
-  const existingKeys = new Set(
-    existingReminders.map(
-      (r) => {
-        // Find the corresponding plan to get its scheduledTime for the key
-        const plan = activePlans.find(p => p._id.toString() === r.mealPlanId.toString());
-        const timePart = plan?.scheduledTime || "";
-        return `${r.mealPlanId}-${r.scheduledDate.toISOString().split("T")[0]}-${timePart}`;
-      }
-    )
-  );
-
-  const newReminders = allReminders.filter(
-    (r) => {
-      const plan = activePlans.find(p => p._id.toString() === r.mealPlanId.toString());
-      const timePart = plan?.scheduledTime || "";
-      return !existingKeys.has(`${r.mealPlanId}-${r.scheduledDate.toISOString().split("T")[0]}-${timePart}`);
+    if (effectiveStart > effectiveEnd) {
+      continue;
     }
-  );
 
-  if (newReminders.length > 0) {
-    await MealReminder.insertMany(newReminders);
-    console.log(`Meal reminder created: ${newReminders.length} reminder(s) generated for user ${userId}`);
+    const reminders = createRemindersForPlan(plan, effectiveStart, effectiveEnd, now);
+    allCandidates.push(...reminders);
   }
 
-  return newReminders;
+  if (!allCandidates.length) {
+    return [];
+  }
+
+  // Reduce duplicate attempts inside the same run before hitting DB
+  const seen = new Set();
+  const dedupedCandidates = allCandidates.filter((r) => {
+    const key = `${r.mealPlanId.toString()}-${r.scheduledDate.toISOString()}`;
+    if (seen.has(key)) return false;
+    seen.add(key);
+    return true;
+  });
+
+  try {
+    const insertedDocs = await MealReminder.insertMany(dedupedCandidates, {
+      ordered: false,
+    });
+
+    console.log(
+      `Meal reminder created: ${insertedDocs.length} reminder(s) generated for user ${userId}`
+    );
+
+    return insertedDocs.map((doc) => doc.toObject());
+  } catch (error) {
+    // Unordered insertMany may throw duplicate key errors if another process inserts
+    // the same reminders concurrently. That is acceptable because the unique index
+    // guarantees correctness.
+    const writeErrors = error?.writeErrors || [];
+    const hasNonDuplicateError = writeErrors.some(
+      (e) => (e.code || e.err?.code) !== 11000
+    );
+
+    if (hasNonDuplicateError || (error.code !== 11000 && !writeErrors.length)) {
+      throw error;
+    }
+
+    const insertedDocs = error?.insertedDocs || [];
+
+    if (insertedDocs.length > 0) {
+      console.log(
+        `Meal reminder created: ${insertedDocs.length} reminder(s) generated for user ${userId}`
+      );
+    }
+
+    return insertedDocs.map((doc) =>
+      typeof doc.toObject === "function" ? doc.toObject() : doc
+    );
+  }
 }
 
+/**
+ * Get reminders that are due to be sent.
+ * We do NOT limit to only the last 12 hours, because that can permanently miss
+ * old pending reminders if the worker was down.
+ */
 async function getPendingReminders(userId, limit = 50) {
   const now = new Date();
-  const twelveHoursAgo = new Date(now.getTime() - 12 * 60 * 60 * 1000);
+  const safeLimit = Math.min(Math.max(1, Number(limit) || 50), 200);
 
-  const reminders = await MealReminder.find({
-    userId,
+  const query = {
     status: "pending",
-    reminderTime: { $lte: now, $gte: twelveHoursAgo },
-  })
-    .sort({ reminderTime: 1 })
-    .limit(limit)
-    .lean();
+    reminderTime: { $lte: now },
+  };
 
-  return reminders;
+  if (userId) {
+    query.userId = userId;
+  }
+
+  return MealReminder.find(query)
+    .sort({ reminderTime: 1 })
+    .limit(safeLimit)
+    .lean();
 }
 
 async function sendReminder(reminderId) {
-  const reminder = await MealReminder.findById(reminderId).populate("userId mealPlanId");
+  const reminder = await MealReminder.findById(reminderId).populate(
+    "userId mealPlanId"
+  );
+
   if (!reminder || reminder.status !== "pending") {
     return null;
   }
@@ -133,43 +261,58 @@ async function sendReminder(reminderId) {
   const mealPlan = reminder.mealPlanId;
 
   if (!user || !mealPlan) {
+    reminder.status = "cancelled";
+    reminder.lastError = "Missing user or meal plan";
+    await reminder.save();
     return null;
   }
 
   try {
-    // Combine scheduledDate with meal's scheduledTime for accurate display
-    let scheduledTime = reminder.scheduledDate;
+    // Build the displayed meal time from scheduledDate + mealPlan.scheduledTime
+    let scheduledTime = new Date(reminder.scheduledDate);
+
     if (mealPlan.scheduledTime) {
-      const [hours, minutes] = mealPlan.scheduledTime.split(":").map(Number);
-      scheduledTime = new Date(reminder.scheduledDate);
-      scheduledTime.setHours(hours || 0, minutes || 0, 0, 0);
+      const { hours, minutes } = parseTime(mealPlan.scheduledTime);
+      scheduledTime.setHours(hours, minutes, 0, 0);
     }
-    await sendMealReminderEmail(
-      user.email,
-      user.firstName,
-      {
-        mealName: mealPlan.mealName || mealPlan.mealType,
-        mealType: mealPlan.mealType,
-        scheduledTime,
-        items: mealPlan.items,
-      }
-    );
+
+    await sendMealReminderEmail(user.email, user.firstName, {
+      mealName: mealPlan.mealName || mealPlan.mealType,
+      mealType: mealPlan.mealType,
+      scheduledTime,
+      items: mealPlan.items || [],
+    });
 
     reminder.status = "sent";
     reminder.notificationSent = true;
     reminder.sentAt = new Date();
+    reminder.lastError = null;
+
     await reminder.save();
-    console.log(`Meal reminder sent: Successfully sent Reminder ID ${reminderId} for user ${user._id}`);
+
+    console.log(
+      `Meal reminder sent: Successfully sent Reminder ID ${reminderId} for user ${user._id}`
+    );
 
     return reminder;
   } catch (error) {
+    reminder.retryCount = (reminder.retryCount || 0) + 1;
+    reminder.lastError = error.message || "Unknown send error";
+
+    await reminder.save();
+
     console.error(`Failed to send reminder ${reminderId}:`, error.message);
     throw error;
   }
 }
 
 async function markReminderCompleted(reminderId, userId) {
-  const reminder = await MealReminder.findOne({ _id: reminderId, userId });
+  const reminder = await MealReminder.findOne({
+    _id: reminderId,
+    userId,
+    status: { $in: ["pending", "sent"] },
+  });
+
   if (!reminder) return null;
 
   reminder.status = "completed";
@@ -180,7 +323,12 @@ async function markReminderCompleted(reminderId, userId) {
 }
 
 async function markReminderSkipped(reminderId, userId) {
-  const reminder = await MealReminder.findOne({ _id: reminderId, userId });
+  const reminder = await MealReminder.findOne({
+    _id: reminderId,
+    userId,
+    status: { $in: ["pending", "sent"] },
+  });
+
   if (!reminder) return null;
 
   reminder.status = "skipped";
@@ -191,9 +339,13 @@ async function markReminderSkipped(reminderId, userId) {
 
 async function getUserReminders(userId, options = {}) {
   const { status, startDate, endDate, limit = 50, page = 1 } = options;
+
   const query = { userId };
 
-  if (status) query.status = status;
+  if (status) {
+    query.status = status;
+  }
+
   if (startDate || endDate) {
     query.reminderTime = {};
     if (startDate) query.reminderTime.$gte = new Date(startDate);
@@ -206,7 +358,7 @@ async function getUserReminders(userId, options = {}) {
 
   const [reminders, total] = await Promise.all([
     MealReminder.find(query)
-      .populate("mealPlanId", "planName mealType mealName items")
+      .populate("mealPlanId", "planName mealType mealName items scheduledTime")
       .sort({ reminderTime: -1 })
       .skip(skip)
       .limit(limitNum)
