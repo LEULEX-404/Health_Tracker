@@ -101,6 +101,7 @@ async function generateRemindersForActivePlans(userId) {
 
   if (newReminders.length > 0) {
     await MealReminder.insertMany(newReminders);
+    console.log(`Meal reminder created: ${newReminders.length} reminder(s) generated for user ${userId}`);
   }
 
   return newReminders;
@@ -158,6 +159,7 @@ async function sendReminder(reminderId) {
     reminder.notificationSent = true;
     reminder.sentAt = new Date();
     await reminder.save();
+    console.log(`Meal reminder sent: Successfully sent Reminder ID ${reminderId} for user ${user._id}`);
 
     return reminder;
   } catch (error) {
