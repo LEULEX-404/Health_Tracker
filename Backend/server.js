@@ -48,6 +48,7 @@ import User from "./models/Imasha/User.js";
 import swaggerUi from "swagger-ui-express";
 import { tharukaSwaggerSpec } from "./swagger/tharuka-swagger.js";
 import imashaOpenApi from './docs/imasha-openapi.js';
+import tharinduOpenApi from './docs/tharindu-openapi.js';
 
 // ─────────────────────────────────────────────
 // ES MODULE __dirname FIX
@@ -148,6 +149,12 @@ app.get('/health', (req, res) => {
   });
 });
 
+
+// Swagger UI for Tharindu module APIs (Alerts, Notifications, Bookings)
+app.use('/api-docs/tharindu', swaggerUi.serve, swaggerUi.setup(tharinduOpenApi, {
+  customCss: '.swagger-ui .topbar { display: none }',
+  customSiteTitle: 'Tharindu Module API',
+}));
 // Root endpoint
 app.get('/', (req, res) => {
   res.status(200).json({
@@ -164,6 +171,7 @@ app.get('/', (req, res) => {
         apiDocs: 'http://localhost:5000/api-docs/Tharuka',
         docs: 'See API_DOCUMENTATION.md',
         swaggerImasha: 'http://localhost:5000/api-docs/imasha',
+        swaggerTharindu: 'http://localhost:5000/api-docs/tharindu',
       },
   });
 });
@@ -289,10 +297,10 @@ app.use('/api/exercise', exerciseRoutes);
 // ==========================================
 // ERROR HANDLING MIDDLEWARE
 try {
-    const bookingEmailController = require('./controllers/bookingEmailController');
-    app.post('/api/send-booking-email', bookingEmailController.sendBookingSuccessEmail);
+  const bookingEmailController = require('./controllers/bookingEmailController');
+  app.post('/api/send-booking-email', bookingEmailController.sendBookingSuccessEmail);
 } catch (error) {
-    console.warn('bookingEmailController not found. /api/send-booking-email is disabled.');
+  console.warn('bookingEmailController not found. /api/send-booking-email is disabled.');
 }
 // ==========================================
 
