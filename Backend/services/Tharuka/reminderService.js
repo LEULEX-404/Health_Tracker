@@ -82,12 +82,21 @@ async function generateRemindersForActivePlans(userId) {
 
   const existingKeys = new Set(
     existingReminders.map(
-      (r) => `${r.mealPlanId}-${r.scheduledDate.toISOString().split("T")[0]}`
+      (r) => {
+        // Find the corresponding plan to get its scheduledTime for the key
+        const plan = activePlans.find(p => p._id.toString() === r.mealPlanId.toString());
+        const timePart = plan?.scheduledTime || "";
+        return `${r.mealPlanId}-${r.scheduledDate.toISOString().split("T")[0]}-${timePart}`;
+      }
     )
   );
 
   const newReminders = allReminders.filter(
-    (r) => !existingKeys.has(`${r.mealPlanId}-${r.scheduledDate.toISOString().split("T")[0]}`)
+    (r) => {
+      const plan = activePlans.find(p => p._id.toString() === r.mealPlanId.toString());
+      const timePart = plan?.scheduledTime || "";
+      return !existingKeys.has(`${r.mealPlanId}-${r.scheduledDate.toISOString().split("T")[0]}-${timePart}`);
+    }
   );
 
   if (newReminders.length > 0) {
@@ -99,10 +108,12 @@ async function generateRemindersForActivePlans(userId) {
 
 async function getPendingReminders(userId, limit = 50) {
   const now = new Date();
+  const twelveHoursAgo = new Date(now.getTime() - 12 * 60 * 60 * 1000);
+
   const reminders = await MealReminder.find({
     userId,
     status: "pending",
-    reminderTime: { $lte: now },
+    reminderTime: { $lte: now, $gte: twelveHoursAgo },
   })
     .sort({ reminderTime: 1 })
     .limit(limit)

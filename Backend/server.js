@@ -45,7 +45,8 @@ import { startMonitoringSchedulers } from "./services/Tharindu/monitoringSchedul
 
 
 import User from "./models/Imasha/User.js";
-import swaggerUi from 'swagger-ui-express';
+import swaggerUi from "swagger-ui-express";
+import { tharukaSwaggerSpec } from "./swagger/tharuka-swagger.js";
 import imashaOpenApi from './docs/imasha-openapi.js';
 import tharinduOpenApi from './docs/tharindu-openapi.js';
 
@@ -111,6 +112,29 @@ if (NODE_ENV === 'development') {
 // ─────────────────────────────────────────────
 app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 
+// ─────────────────────────────────────────────
+// SWAGGER — Tharuka APIs (http://localhost:5000/api-docs)
+// ─────────────────────────────────────────────
+// Tharuka Swagger
+app.use(
+  "/api-docs/Tharuka",
+  swaggerUi.serveFiles(tharukaSwaggerSpec),
+  swaggerUi.setup(tharukaSwaggerSpec, {
+    customCss: '.swagger-ui .topbar { display: none }',
+    customSiteTitle: 'Tharuka Health System API',
+  })
+);
+
+// Imasha Swagger
+app.use(
+  "/api-docs/imasha",
+  swaggerUi.serveFiles(imashaOpenApi),
+  swaggerUi.setup(imashaOpenApi, {
+    customCss: '.swagger-ui .topbar { display: none }',
+    customSiteTitle: 'Imasha Module API',
+  })
+);
+
 // ==========================================
 // API ROUTES
 // ==========================================
@@ -125,37 +149,32 @@ app.get('/health', (req, res) => {
   });
 });
 
-// Root endpoint
-app.get('/', (req, res) => {
-  res.status(200).json({
-    success: true,
-    message: 'Healthcare Authentication API',
-    version: '1.0.0',
-    endpoints: {
-      health: '/health',
-      auth: '/api/auth',
-      users: '/api/users',
-      admin: '/api/admin',
-      healthData: "/api/health-data",
-      reports: "/api/reports",
-      docs: 'See API_DOCUMENTATION.md',
-      swaggerImasha: 'http://localhost:5000/api-docs/imasha',
-      swaggerTharindu: 'http://localhost:5000/api-docs/tharindu',
-    },
-  });
-});
-
-// Swagger UI for Imasha module APIs (Auth, Users, Admin, Reports)
-app.use('/api-docs/imasha', swaggerUi.serve, swaggerUi.setup(imashaOpenApi, {
-  customCss: '.swagger-ui .topbar { display: none }',
-  customSiteTitle: 'Imasha Module API',
-}));
 
 // Swagger UI for Tharindu module APIs (Alerts, Notifications, Bookings)
 app.use('/api-docs/tharindu', swaggerUi.serve, swaggerUi.setup(tharinduOpenApi, {
   customCss: '.swagger-ui .topbar { display: none }',
   customSiteTitle: 'Tharindu Module API',
 }));
+// Root endpoint
+app.get('/', (req, res) => {
+  res.status(200).json({
+    success: true,
+    message: 'Healthcare Authentication API',
+    version: '1.0.0',
+      endpoints: {
+        health: '/health',
+        auth: '/api/auth',
+        users: '/api/users',
+        admin: '/api/admin',
+        healthData: "/api/health-data",
+        reports: "/api/reports",
+        apiDocs: 'http://localhost:5000/api-docs/Tharuka',
+        docs: 'See API_DOCUMENTATION.md',
+        swaggerImasha: 'http://localhost:5000/api-docs/imasha',
+        swaggerTharindu: 'http://localhost:5000/api-docs/tharindu',
+      },
+  });
+});
 
 // Authentication routes
 app.use('/api/auth', authRoutes);
@@ -185,7 +204,7 @@ const startContinuousSimulator = () => {
 
   setInterval(async () => {
     try {
-      const users = await User.find({}, "_id");
+      const users = await User.find({role: "patient"}, "_id");
 
       if (!users.length) {
         console.log("[Simulator] No users found, skipping...");
@@ -227,7 +246,7 @@ const startMealReminderProcessor = () => {
   // Process reminders every minute
   setInterval(async () => {
     try {
-      const users = await User.find({}, "_id");
+      const users = await User.find({ role: "patient" }, "_id");
 
       for (const user of users) {
         // Generate reminders for active meal plans

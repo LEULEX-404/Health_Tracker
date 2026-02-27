@@ -45,10 +45,9 @@ export const generateReport = async ({ type, title, dateFrom, dateTo, requesting
     // USER ACTIVITY REPORT
     // ==========================================
     if (type === 'user_activity') {
-      // All users in date range
+      // All non-deleted users (for totals / overview); date range applies to newRegistrations & activeInRange below
       const allUsers = await User.find({
         isDeleted: false,
-        createdAt: { $lte: toDate },
       }).select('firstName lastName email role isActive isEmailVerified createdAt lastLoginAt');
 
       // New registrations in date range
