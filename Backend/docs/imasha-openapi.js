@@ -269,13 +269,6 @@ export default {
         responses: { 302: { description: 'Redirect to Google' } },
       },
     },
-    '/api/auth/google/callback': {
-      get: {
-        tags: ['Auth'],
-        summary: 'Google OAuth callback',
-        responses: { 302: { description: 'Redirect after login' } },
-      },
-    },
     '/api/auth/me': {
       get: {
         tags: ['Auth'],
@@ -301,25 +294,6 @@ export default {
           { name: 'isActive', in: 'query', schema: { type: 'boolean' } },
         ],
         responses: { 200: { description: 'List of users' }, 401: { description: 'Unauthorized' }, 403: { description: 'Admin only' } },
-      },
-    },
-    '/api/users/link/doctor-patient': {
-      post: {
-        tags: ['Users'],
-        summary: 'Link doctor to patient',
-        description: 'Admin only. doctorId and patientId are User _ids.',
-        security: [{ BearerAuth: [] }],
-        requestBody: { content: { 'application/json': { schema: { $ref: '#/components/schemas/LinkDoctorPatientRequest' } } } },
-        responses: { 200: { description: 'Linked' }, 400: { description: 'Bad request' }, 403: { description: 'Admin only' } },
-      },
-    },
-    '/api/users/link/caregiver-patient': {
-      post: {
-        tags: ['Users'],
-        summary: 'Assign caregiver to patient',
-        security: [{ BearerAuth: [] }],
-        requestBody: { content: { 'application/json': { schema: { $ref: '#/components/schemas/LinkCaregiverPatientRequest' } } } },
-        responses: { 200: { description: 'Assigned' }, 403: { description: 'Admin only' } },
       },
     },
     '/api/users/{id}': {
