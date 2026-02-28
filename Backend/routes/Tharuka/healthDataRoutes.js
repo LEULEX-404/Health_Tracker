@@ -13,6 +13,7 @@ if (!fs.existsSync(uploadsDir)) {
 }
 import controller from "../../controllers/Tharuka/healthDataController.js";
 import auditLogger from "../../middleware/Tharuka/auditLogger.js";
+import { authenticate, isPatientOrCaregiver } from "../../middleware/Imasha/authMiddleware.js";
 
 // ─── Multer config for PDF uploads ───────────────────────────
 const storage = multer.diskStorage({
@@ -42,22 +43,24 @@ const upload = multer({
 // ─── Routes ──────────────────────────────────────────────────
 
 // Manual entry
-router.post("/manual", auditLogger, controller.manualEntry);
+router.post("/manual", authenticate, isPatientOrCaregiver, auditLogger, controller.manualEntry);
 
 // PDF upload
 router.post(
   "/pdf-upload",
+  authenticate,
+  isPatientOrCaregiver,
   auditLogger,
   upload.single("pdf"),
   controller.pdfUpload
 );
 
 // More specific routes first to avoid :userId capturing path segments
-router.get("/record/:id", controller.getRecordById);
-router.get("/alerts/:userId", controller.getAlerts);
-router.patch("/alerts/:alertId/resolve", controller.resolveAlert);
+router.get("/record/:id", authenticate, controller.getRecordById);
+router.get("/alerts/:userId", authenticate, controller.getAlerts);
+router.patch("/alerts/:alertId/resolve", authenticate, controller.resolveAlert);
 
 // Get all records for a user (catch-all for single segment)
-router.get("/:userId", controller.getUserData);
+router.get("/:userId", authenticate, controller.getUserData);
 
 export default router;

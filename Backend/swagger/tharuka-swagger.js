@@ -19,13 +19,89 @@ export const tharukaSwaggerSpec = {
     { name: "Nutrition", description: "Meal logging, analysis, recommendations" },
     { name: "Meal Plans", description: "Meal plans CRUD and suggestions" },
     { name: "Meal Reminders", description: "Reminders generation and status" },
+    { name: "Authentication", description: "User login and profile access" },
   ],
+  components: {
+    securitySchemes: {
+      BearerAuth: {
+        type: "http",
+        scheme: "bearer",
+        bearerFormat: "JWT",
+      },
+    },
+  },
+  security: [{ BearerAuth: [] }],
   paths: {
+    // ─── Authentication ──────────────────────────────────────
+    "/api/auth/login": {
+      post: {
+        tags: ["Authentication"],
+        summary: "Login user",
+        requestBody: {
+          required: true,
+          content: {
+            "application/json": {
+              schema: {
+                type: "object",
+                required: ["email", "password"],
+                properties: {
+                  email: { type: "string", example: "user@example.com" },
+                  password: { type: "string", example: "password123" },
+                },
+              },
+            },
+          },
+        },
+        responses: {
+          200: {
+            description: "Login successful",
+            content: {
+              "application/json": {
+                schema: {
+                  type: "object",
+                  properties: {
+                    success: { type: "boolean" },
+                    accessToken: { type: "string" },
+                    user: { type: "object" },
+                  },
+                },
+              },
+            },
+          },
+          401: { description: "Invalid credentials" },
+        },
+      },
+    },
+    "/api/auth/me": {
+      get: {
+        tags: ["Authentication"],
+        summary: "Get current user profile",
+        security: [{ BearerAuth: [] }],
+        responses: {
+          200: {
+            description: "User profile",
+            content: {
+              "application/json": {
+                schema: {
+                  type: "object",
+                  properties: {
+                    success: { type: "boolean" },
+                    user: { type: "object" },
+                  },
+                },
+              },
+            },
+          },
+          401: { description: "Unauthorized" },
+        },
+      },
+    },
     // ─── Health Data ─────────────────────────────────────────
     "/api/health-data/manual": {
       post: {
         tags: ["Health Data"],
-        summary: "Save manual health vitals",
+        summary: "Save manual health vitals [Patient/Caregiver]",
+        description: "Requires Patient or Caregiver role.",
         requestBody: {
           required: true,
           content: {
@@ -54,7 +130,8 @@ export const tharukaSwaggerSpec = {
     "/api/health-data/pdf-upload": {
       post: {
         tags: ["Health Data"],
-        summary: "Upload PDF health report",
+        summary: "Upload PDF health report [Patient/Caregiver]",
+        description: "Requires Patient or Caregiver role.",
         requestBody: {
           content: {
             "multipart/form-data": {
@@ -74,7 +151,7 @@ export const tharukaSwaggerSpec = {
     "/api/health-data/{userId}": {
       get: {
         tags: ["Health Data"],
-        summary: "Get user health records",
+        summary: "Get user health records [Patient/Caregiver/Doctor]",
         parameters: [
           { name: "userId", in: "path", required: true, schema: { type: "string" } },
           { name: "limit", in: "query", schema: { type: "integer", default: 20 } },
@@ -86,7 +163,7 @@ export const tharukaSwaggerSpec = {
     "/api/health-data/record/{id}": {
       get: {
         tags: ["Health Data"],
-        summary: "Get single health record by ID",
+        summary: "Get single health record by ID [Patient/Caregiver/Doctor]",
         parameters: [{ name: "id", in: "path", required: true, schema: { type: "string" } }],
         responses: { 200: { description: "Record" }, 404: { description: "Not found" } },
       },
@@ -94,7 +171,7 @@ export const tharukaSwaggerSpec = {
     "/api/health-data/alerts/{userId}": {
       get: {
         tags: ["Health Data"],
-        summary: "Get alert history",
+        summary: "Get alert history [Patient/Caregiver/Doctor]",
         parameters: [
           { name: "userId", in: "path", required: true, schema: { type: "string" } },
           { name: "severity", in: "query", schema: { type: "string" } },
@@ -107,7 +184,7 @@ export const tharukaSwaggerSpec = {
     "/api/health-data/alerts/{alertId}/resolve": {
       patch: {
         tags: ["Health Data"],
-        summary: "Mark alert as resolved",
+        summary: "Mark alert as resolved [Patient/Caregiver]",
         parameters: [{ name: "alertId", in: "path", required: true, schema: { type: "string" } }],
         responses: { 200: { description: "Alert resolved" }, 404: { description: "Not found" } },
       },
@@ -116,7 +193,8 @@ export const tharukaSwaggerSpec = {
     "/api/health-data/simulator": {
       post: {
         tags: ["Simulator"],
-        summary: "Run single simulation",
+        summary: "Run single simulation [Patient/Caregiver]",
+        description: "Requires Patient or Caregiver role.",
         requestBody: {
           content: {
             "application/json": {
@@ -137,7 +215,8 @@ export const tharukaSwaggerSpec = {
     "/api/health-data/simulator/bulk": {
       post: {
         tags: ["Simulator"],
-        summary: "Bulk simulate readings",
+        summary: "Bulk simulate readings [Patient/Caregiver]",
+        description: "Requires Patient or Caregiver role.",
         requestBody: {
           content: {
             "application/json": {
@@ -160,7 +239,7 @@ export const tharukaSwaggerSpec = {
     "/api/reports/weekly/{userId}": {
       get: {
         tags: ["Reports"],
-        summary: "Get weekly health report",
+        summary: "Get weekly health report [Patient/Caregiver/Doctor]",
         parameters: [{ name: "userId", in: "path", required: true, schema: { type: "string" } }],
         responses: { 200: { description: "Weekly report" } },
       },
@@ -168,7 +247,7 @@ export const tharukaSwaggerSpec = {
     "/api/reports/monthly/{userId}": {
       get: {
         tags: ["Reports"],
-        summary: "Get monthly health report",
+        summary: "Get monthly health report [Patient/Caregiver/Doctor]",
         parameters: [{ name: "userId", in: "path", required: true, schema: { type: "string" } }],
         responses: { 200: { description: "Monthly report" } },
       },
@@ -176,7 +255,7 @@ export const tharukaSwaggerSpec = {
     "/api/reports/export/pdf/{userId}": {
       get: {
         tags: ["Reports"],
-        summary: "Export report as PDF",
+        summary: "Export report as PDF [Patient/Caregiver/Doctor]",
         parameters: [
           { name: "userId", in: "path", required: true, schema: { type: "string" } },
           { name: "type", in: "query", schema: { type: "string", enum: ["weekly", "monthly"], default: "weekly" } },
@@ -219,7 +298,7 @@ export const tharukaSwaggerSpec = {
     "/api/nutrition/{userId}": {
       get: {
         tags: ["Nutrition"],
-        summary: "Get user nutrition records",
+        summary: "Get user nutrition records [Patient/Caregiver/Doctor]",
         parameters: [
           { name: "userId", in: "path", required: true, schema: { type: "string" } },
           { name: "date", in: "query", schema: { type: "string" } },
@@ -233,7 +312,7 @@ export const tharukaSwaggerSpec = {
     "/api/nutrition/analysis/{userId}": {
       get: {
         tags: ["Nutrition"],
-        summary: "Get nutrition analysis",
+        summary: "Get nutrition analysis [Patient/Caregiver/Doctor]",
         parameters: [
           { name: "userId", in: "path", required: true, schema: { type: "string" } },
           { name: "type", in: "query", schema: { type: "string", enum: ["weekly", "monthly"], default: "weekly" } },
@@ -282,7 +361,8 @@ export const tharukaSwaggerSpec = {
     "/api/nutrition/{id}/recommendation": {
       post: {
         tags: ["Nutrition"],
-        summary: "Add doctor recommendation",
+        summary: "Add doctor recommendation [Doctor Only]",
+        description: "Requires Doctor role.",
         parameters: [{ name: "id", in: "path", required: true, schema: { type: "string" } }],
         requestBody: {
           required: true,
@@ -310,7 +390,7 @@ export const tharukaSwaggerSpec = {
     "/api/meal-plans": {
       post: {
         tags: ["Meal Plans"],
-        summary: "Create meal plan",
+        summary: "Create meal plan [Patient/Caregiver/Doctor]",
         requestBody: {
           required: true,
           content: {
@@ -339,7 +419,7 @@ export const tharukaSwaggerSpec = {
     "/api/meal-plans/{userId}": {
       get: {
         tags: ["Meal Plans"],
-        summary: "Get user meal plans",
+        summary: "Get user meal plans [Patient/Caregiver/Doctor]",
         parameters: [
           { name: "userId", in: "path", required: true, schema: { type: "string" } },
           { name: "healthCondition", in: "query", schema: { type: "string" } },
@@ -437,7 +517,8 @@ export const tharukaSwaggerSpec = {
     "/api/meal-reminders/generate/{userId}": {
       post: {
         tags: ["Meal Reminders"],
-        summary: "Generate reminders from active meal plans",
+        summary: "Generate reminders from active meal plans [Patient/Caregiver]",
+        description: "Requires Patient or Caregiver role.",
         parameters: [{ name: "userId", in: "path", required: true, schema: { type: "string" } }],
         responses: { 200: { description: "Generated reminders" } },
       },
@@ -445,7 +526,8 @@ export const tharukaSwaggerSpec = {
     "/api/meal-reminders/{id}/complete": {
       put: {
         tags: ["Meal Reminders"],
-        summary: "Mark reminder completed",
+        summary: "Mark reminder completed [Patient/Caregiver]",
+        description: "Requires Patient or Caregiver role.",
         parameters: [{ name: "id", in: "path", required: true, schema: { type: "string" } }],
         requestBody: {
           content: {
@@ -460,7 +542,8 @@ export const tharukaSwaggerSpec = {
     "/api/meal-reminders/{id}/skip": {
       put: {
         tags: ["Meal Reminders"],
-        summary: "Mark reminder skipped",
+        summary: "Mark reminder skipped [Patient/Caregiver]",
+        description: "Requires Patient or Caregiver role.",
         parameters: [{ name: "id", in: "path", required: true, schema: { type: "string" } }],
         requestBody: {
           content: {

@@ -51,6 +51,7 @@ function getDateRange(type) {
     start.setMonth(start.getMonth() - 1);
     start.setHours(0, 0, 0, 0);
   } else {
+    // Standard 7-day window
     start.setDate(start.getDate() - 7);
     start.setHours(0, 0, 0, 0);
   }
@@ -226,10 +227,13 @@ async function getNutritionAnalysis(userId, type = "weekly") {
   const reportType = type === "monthly" ? "monthly" : "weekly";
   const { start, end } = getDateRange(reportType);
 
-  const records = await Nutrition.find({
+  // Ensure userId is a valid ObjectId (Mongoose does this but good to be safe)
+  const query = {
     userId,
     recordedAt: { $gte: start, $lte: end },
-  })
+  };
+
+  const records = await Nutrition.find(query)
     .sort({ recordedAt: 1 })
     .lean();
 
@@ -259,13 +263,18 @@ async function getNutritionAnalysis(userId, type = "weekly") {
     }));
 
   return {
-    period: { start, end },
+    period: {
+      start: start.toISOString(),
+      end: end.toISOString(),
+      daysFound: [...new Set(records.map(r => new Date(r.recordedAt).toDateString()))].length,
+    },
     reportType,
     totalMeals: records.length,
     mealTypeBreakdown,
     totals,
     averages,
-    topCalorieMeals,
+    topCalorieMeals: topCalorieMeals.length > 0 ? topCalorieMeals : [],
+    status: records.length === 0 ? "No records found for this period" : "Analysis complete",
   };
 }
 
