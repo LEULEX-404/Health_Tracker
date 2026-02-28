@@ -168,27 +168,6 @@ export const tharukaSwaggerSpec = {
         responses: { 200: { description: "Record" }, 404: { description: "Not found" } },
       },
     },
-    "/api/health-data/alerts/{userId}": {
-      get: {
-        tags: ["Health Data"],
-        summary: "Get alert history [Patient/Caregiver/Doctor]",
-        parameters: [
-          { name: "userId", in: "path", required: true, schema: { type: "string" } },
-          { name: "severity", in: "query", schema: { type: "string" } },
-          { name: "resolved", in: "query", schema: { type: "string" } },
-          { name: "limit", in: "query", schema: { type: "integer" } },
-        ],
-        responses: { 200: { description: "List of alerts" } },
-      },
-    },
-    "/api/health-data/alerts/{alertId}/resolve": {
-      patch: {
-        tags: ["Health Data"],
-        summary: "Mark alert as resolved [Patient/Caregiver]",
-        parameters: [{ name: "alertId", in: "path", required: true, schema: { type: "string" } }],
-        responses: { 200: { description: "Alert resolved" }, 404: { description: "Not found" } },
-      },
-    },
     // ─── Simulator ───────────────────────────────────────────
     "/api/health-data/simulator": {
       post: {
