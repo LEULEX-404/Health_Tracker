@@ -229,7 +229,7 @@ const startContinuousSimulator = () => {
     } catch (err) {
       console.error("[Simulator] Error:", err.message);
     }
-  }, process.env.SIMULATOR_INTERVAL_MS || 30000);
+  }, process.env.SIMULATOR_INTERVAL_MS || 120000);
 };
 
 // Start simulator AFTER DB is connected
