@@ -1,6 +1,7 @@
 import express from "express";
 import * as controller from "../../controllers/Tharuka/nutritionController.js";
 import auditLogger from "../../middleware/Tharuka/auditLogger.js";
+import { authenticate, isDoctor } from "../../middleware/Imasha/authMiddleware.js";
 
 const router = express.Router();
 
@@ -13,13 +14,13 @@ router.get("/", (req, res) => {
 });
 
 // Read (no audit for GETs)
-router.get("/analysis/:userId", controller.getNutritionAnalysis);
-router.get("/:userId", controller.getUserNutrition);
+router.get("/analysis/:userId", authenticate, controller.getNutritionAnalysis);
+router.get("/:userId", authenticate, controller.getUserNutrition);
 
 // Write (audit logged)
-router.post("/", auditLogger, controller.addMeal);
-router.put("/:id", auditLogger, controller.updateMeal);
-router.delete("/:id", auditLogger, controller.deleteMeal);
-router.post("/:id/recommendation", auditLogger, controller.addDoctorRecommendation);
+router.post("/", authenticate, auditLogger, controller.addMeal);
+router.put("/:id", authenticate, auditLogger, controller.updateMeal);
+router.delete("/:id", authenticate, auditLogger, controller.deleteMeal);
+router.post("/:id/recommendation", authenticate, isDoctor, auditLogger, controller.addDoctorRecommendation);
 
 export default router;
