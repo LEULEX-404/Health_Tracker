@@ -1,9 +1,15 @@
 import dotenv from "dotenv";
+import path from "path";
+import { fileURLToPath } from "url";
 
-dotenv.config();
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+dotenv.config({ path: path.join(__dirname, ".env") });
 
 export const PORT = process.env.PORT;
 export const MONGO_URI = process.env.MONGO_URI;
+export const MONGO_URI_FALLBACK = process.env.MONGO_URI_FALLBACK;
 export const NODE_ENV = process.env.NODE_ENV || 'development';
 
 // ==========================================
@@ -97,6 +103,7 @@ export default {
   
   // Database
   MONGO_URI,
+  MONGO_URI_FALLBACK,
   
   // JWT
   JWT_SECRET,

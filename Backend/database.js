@@ -1,5 +1,5 @@
 import mongoose from 'mongoose';
-import { MONGO_URI, NODE_ENV } from './config.js';
+import { MONGO_URI, MONGO_URI_FALLBACK, NODE_ENV } from './config.js';
 
 /**
  * MongoDB Connection Configuration
@@ -12,6 +12,16 @@ import { MONGO_URI, NODE_ENV } from './config.js';
  */
 export const connectDB = async () => {
   try {
+    // Disable mongoose query buffering so DB outages fail fast
+    mongoose.set('bufferCommands', false);
+    mongoose.set('bufferTimeoutMS', 0);
+
+    const uriPrimary = MONGO_URI;
+    const uriFallback = MONGO_URI_FALLBACK;
+    if (!uriPrimary && !uriFallback) {
+      throw new Error('No MongoDB URI provided (MONGO_URI or MONGO_URI_FALLBACK)');
+    }
+
     // MongoDB connection options
     const options = {
       // Connection pool size - max number of connections
@@ -25,7 +35,17 @@ export const connectDB = async () => {
     };
 
     // Attempt to connect to MongoDB
-    const conn = await mongoose.connect(MONGO_URI, options);
+    let conn;
+    try {
+      conn = await mongoose.connect(uriPrimary || uriFallback, options);
+    } catch (error) {
+      if (uriPrimary && uriFallback) {
+        console.error('❌ MongoDB primary URI failed. Retrying with fallback URI...');
+        conn = await mongoose.connect(uriFallback, options);
+      } else {
+        throw error;
+      }
+    }
     
     // Log successful connection
     console.log('MongoDB Connected Successfully!');

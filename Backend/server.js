@@ -3,10 +3,12 @@ import cors from 'cors';
 import helmet from 'helmet';
 import morgan from 'morgan';
 import cookieParser from 'cookie-parser';
+import swaggerUi from "swagger-ui-express";
 import path from "path";
 import { fileURLToPath } from "url";
 import { connectDB } from './database.js';
 import { PORT, NODE_ENV, CLIENT_URL, ADMIN_DASHBOARD_URL, COOKIE_SECRET } from './config.js';
+import priyaOpenApi from "./docs/priya-openapi.js";
 import authRoutes from './routes/Imasha/authRoutes.js';
 import userRoutes from './routes/Imasha/userRoutes.js';
 import userReportRoutes from './routes/Imasha/reportRoutes.js';
@@ -116,21 +118,33 @@ app.get('/health', (req, res) => {
   });
 });
 
+app.use(
+  "/api-docs/priya",
+  swaggerUi.serve,
+  swaggerUi.setup(priyaOpenApi, {
+    customCss: ".swagger-ui .topbar { display: none }",
+    customSiteTitle: "Priya Module API",
+  })
+);
+
+
 // Root endpoint
 app.get('/', (req, res) => {
   res.status(200).json({
     success: true,
     message: 'Healthcare Authentication API',
     version: '1.0.0',
-      endpoints: {
-        health: '/health',
-        auth: '/api/auth',
-        users: '/api/users',
-        admin: '/api/admin',
-        healthData: "/api/health-data",
-        reports: "/api/reports",
-        docs: 'See API_DOCUMENTATION.md',
-      },
+    endpoints: {
+      health: '/health',
+      auth: '/api/auth',
+      users: '/api/users',
+      admin: '/api/admin',
+      healthData: "/api/health-data",
+      reports: "/api/reports",
+      docs: 'See API_DOCUMENTATION.md',
+      swaggerPriya: "http://localhost:5000/api-docs/priya",
+
+    },
   });
 });
 
@@ -170,10 +184,10 @@ const startContinuousSimulator = () => {
         const roll = Math.random();
         const scenario =
           roll < 0.15
-            ? "emergency"  
+            ? "emergency"
             : roll < 0.25
-            ? "oxygen_drop"
-            : "normal";
+              ? "oxygen_drop"
+              : "normal";
 
         const result = await runSimulator(user._id.toString(), scenario);
 
@@ -184,7 +198,7 @@ const startContinuousSimulator = () => {
     } catch (err) {
       console.error("[Simulator] Error:", err.message);
     }
-  }, process.env.SIMULATOR_INTERVAL_MS || 30000);
+  }, process.env.SIMULATOR_INTERVAL_MS || 300000);
 };
 
 // Start simulator AFTER DB is connected
@@ -202,14 +216,14 @@ const startMealReminderProcessor = () => {
   setInterval(async () => {
     try {
       const users = await User.find({}, "_id");
-      
+
       for (const user of users) {
         // Generate reminders for active meal plans
         await reminderService.generateRemindersForActivePlans(user._id.toString());
-        
+
         // Get pending reminders that are due
         const pendingReminders = await reminderService.getPendingReminders(user._id.toString(), 10);
-        
+
         // Send reminders
         for (const reminder of pendingReminders) {
           try {
@@ -246,10 +260,10 @@ app.use('/api/doctors', doctorRoutes);
 // ==========================================
 // ERROR HANDLING MIDDLEWARE
 try {
-    const bookingEmailController = require('./controllers/bookingEmailController');
-    app.post('/api/send-booking-email', bookingEmailController.sendBookingSuccessEmail);
+  const bookingEmailController = require('./controllers/bookingEmailController');
+  app.post('/api/send-booking-email', bookingEmailController.sendBookingSuccessEmail);
 } catch (error) {
-    console.warn('bookingEmailController not found. /api/send-booking-email is disabled.');
+  console.warn('bookingEmailController not found. /api/send-booking-email is disabled.');
 }
 // ==========================================
 
@@ -288,7 +302,7 @@ const server = app.listen(PORT, () => {
 process.on('unhandledRejection', (err) => {
   console.error('❌ Unhandled Promise Rejection:', err);
   console.error('Shutting down server...');
-  
+
   server.close(() => {
     process.exit(1);
   });
@@ -298,7 +312,7 @@ process.on('unhandledRejection', (err) => {
 process.on('uncaughtException', (err) => {
   console.error('❌ Uncaught Exception:', err);
   console.error('Shutting down server...');
-  
+
   server.close(() => {
     process.exit(1);
   });
@@ -307,7 +321,7 @@ process.on('uncaughtException', (err) => {
 // Handle SIGTERM (for deployment platforms like Heroku)
 process.on('SIGTERM', () => {
   console.log('👋 SIGTERM received. Shutting down gracefully...');
-  
+
   server.close(() => {
     console.log('✅ Server closed');
     process.exit(0);
@@ -317,7 +331,7 @@ process.on('SIGTERM', () => {
 // Handle SIGINT (Ctrl+C)
 process.on('SIGINT', () => {
   console.log('\n👋 SIGINT received. Shutting down gracefully...');
-  
+
   server.close(() => {
     console.log('✅ Server closed');
     process.exit(0);

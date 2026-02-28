@@ -215,7 +215,7 @@ export const sendBookingStatusToPatient = async (apt, status) => {
 
 
 export default {
-    sendBookingSuccessEmail,
     sendBookingReceivedToPatient,
+    sendBookingSuccessEmail,
     sendBookingStatusToPatient
 };
