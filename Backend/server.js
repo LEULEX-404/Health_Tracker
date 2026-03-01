@@ -229,7 +229,7 @@ const startContinuousSimulator = () => {
     } catch (err) {
       console.error("[Simulator] Error:", err.message);
     }
-  }, process.env.SIMULATOR_INTERVAL_MS || 120000);
+  }, process.env.SIMULATOR_INTERVAL_MS || 60000);
 };
 
 // Start simulator AFTER DB is connected
@@ -376,3 +376,8 @@ process.on('SIGINT', () => {
 });
 
 export default app;
+
+
+// ==========================================
+// 80% Completed
+// ==========================================
