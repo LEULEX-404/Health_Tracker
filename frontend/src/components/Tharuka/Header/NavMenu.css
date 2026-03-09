@@ -2,19 +2,38 @@
 .pn-nav--desktop {
   display: flex;
   align-items: center;
-  gap: 2px;      /* px gap between links */
+  gap: clamp(4px, 1.2vw, 12px); /* Adaptive gap based on viewport */
+  flex: 1;                     /* Allow nav to grow/shrink */
+  justify-content: flex-start;
+  margin-left: 10px;
 }
 .pn-nav__link {
   position: relative;
-  font-size: 13px;     /* fixed px — immune to A-/A/A+ */
+  font-size: 15px;     /* Increased base size */
   font-weight: 500;
   color: var(--text-secondary);
-  padding: 7px 10px;   /* fixed px — element never resizes */
+  padding: 8px 12px;
   border-radius: 10px;
   transition: all var(--transition-fast);
   white-space: nowrap;
   text-decoration: none;
   line-height: 1.4;
+  letter-spacing: 0.01em;
+}
+
+/* Language-specific defensive scaling & wrapping */
+[data-lang="si"] .pn-nav__link,
+[data-lang="ta"] .pn-nav__link {
+  font-size: 13.8px;      /* Scale down slightly for wider scripts */
+  letter-spacing: -0.01em; /* Tighten tracking */
+  white-space: normal;     /* Allow wrapping for 'Find Specialist' etc. */
+  text-align: center;
+  max-width: 90px;        /* Force wrap for long phrases */
+  line-height: 1.1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
 }
 .pn-nav__link--btn {
   background: none;
@@ -78,7 +97,7 @@
 }
 
 /* Show/hide */
-@media (max-width: 1024px) {
+@media (max-width: 1200px) { /* Increased breakpoint to prevent overflow */
   .pn-nav--desktop { display: none; }
   .pn-nav--mobile { display: flex; }
 }
