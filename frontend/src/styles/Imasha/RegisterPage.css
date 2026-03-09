@@ -1,0 +1,198 @@
+/* ================================================================
+   PulseNova — Register Page Extra Styles (Imasha)
+   ================================================================ */
+
+/* ── Progress Bar ──────────────────────────────────────────────── */
+.Imasha-register-progress {
+    margin-bottom: 1.5rem;
+}
+
+.Imasha-register-progress-bar {
+    width: 100%;
+    height: 4px;
+    background: rgba(0, 200, 151, 0.1);
+    border-radius: 99px;
+    overflow: hidden;
+    margin-bottom: 0.75rem;
+}
+
+.Imasha-register-progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #00c897, #39ff14);
+    border-radius: 99px;
+    transition: width 0.45s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: 0 0 12px rgba(0, 200, 151, 0.5);
+}
+
+.Imasha-register-steps {
+    display: flex;
+    align-items: center;
+    gap: 0;
+}
+
+.Imasha-step-dot {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    border: 2px solid rgba(0, 200, 151, 0.2);
+    background: #0d1a13;
+    color: #5a8870;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.78rem;
+    font-weight: 700;
+    transition: all 0.35s;
+}
+
+.Imasha-step-dot.active {
+    border-color: #00c897;
+    background: linear-gradient(135deg, #00c897, #00a876);
+    color: #fff;
+    box-shadow: 0 0 14px rgba(0, 200, 151, 0.4);
+}
+
+.Imasha-step-line {
+    flex: 1;
+    height: 2px;
+    background: rgba(0, 200, 151, 0.12);
+    margin: 0 0.4rem;
+}
+
+/* ── Register Nav (Back + Submit) ──────────────────────────────── */
+.Imasha-register-nav {
+    display: flex;
+    gap: 0.75rem;
+    align-items: stretch;
+    margin-bottom: 1rem;
+}
+
+.Imasha-btn-back {
+    display: flex;
+    align-items: center;
+    gap: 0.35rem;
+    padding: 0.9rem 1.1rem;
+    background: rgba(0, 200, 151, 0.08);
+    border: 1.5px solid rgba(0, 200, 151, 0.2);
+    color: #00c897;
+    border-radius: 10px;
+    font-size: 0.88rem;
+    font-weight: 600;
+    font-family: 'Inter', sans-serif;
+    cursor: pointer;
+    transition: background 0.2s, border-color 0.2s;
+    white-space: nowrap;
+    flex-shrink: 0;
+}
+
+.Imasha-btn-back:hover {
+    background: rgba(0, 200, 151, 0.14);
+    border-color: #00c897;
+}
+
+.Imasha-btn-flex {
+    flex: 1;
+}
+
+/* ── Selection Pills & Chips ────────────────────────────────────── */
+.Imasha-selection-group {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.6rem;
+    margin-top: 0.5rem;
+}
+
+/* Gender Pills */
+.Imasha-gender-pill {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    padding: 0.75rem 1rem;
+    background: rgba(255, 255, 255, 0.03);
+    border: 1.5px solid rgba(0, 200, 151, 0.15);
+    border-radius: 12px;
+    color: #a0aec0;
+    cursor: pointer;
+    transition: all 0.25s ease;
+    font-size: 0.88rem;
+    font-weight: 500;
+}
+
+.Imasha-gender-pill:hover {
+    background: rgba(0, 200, 151, 0.05);
+    border-color: rgba(0, 200, 151, 0.3);
+}
+
+.Imasha-gender-pill.active {
+    background: rgba(0, 200, 151, 0.12);
+    border-color: #00c897;
+    color: #00c897;
+    box-shadow: 0 0 12px rgba(0, 200, 151, 0.2);
+}
+
+/* Health Chips */
+.Imasha-health-chips {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+    gap: 0.5rem;
+    margin-top: 0.6rem;
+}
+
+.Imasha-health-chip {
+    padding: 0.6rem 0.8rem;
+    background: rgba(255, 255, 255, 0.02);
+    border: 1.5px solid rgba(255, 255, 255, 0.08);
+    border-radius: 10px;
+    color: #8899a6;
+    cursor: pointer;
+    transition: all 0.2s;
+    font-size: 0.8rem;
+    text-align: center;
+    text-transform: capitalize;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    user-select: none;
+}
+
+.Imasha-health-chip:hover {
+    background: rgba(255, 255, 255, 0.05);
+    border-color: rgba(255, 255, 255, 0.15);
+}
+
+.Imasha-health-chip.active {
+    background: rgba(0, 200, 151, 0.1);
+    border-color: #00c897;
+    color: #00c897;
+}
+
+/* Transitions */
+.Imasha-field-group {
+    animation: fadeInSlide 0.4s ease forwards;
+}
+
+/* Date Input Polish */
+input[type="date"]::-webkit-calendar-picker-indicator {
+    filter: invert(1) sepia(100%) saturate(500%) hue-rotate(90deg);
+    cursor: pointer;
+    opacity: 0.6;
+    transition: opacity 0.2s;
+}
+
+input[type="date"]::-webkit-calendar-picker-indicator:hover {
+    opacity: 1;
+}
+
+@keyframes fadeInSlide {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
