@@ -4,7 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import { Sun, Moon, Globe, User, LogIn, ChevronDown, Bell } from 'lucide-react';
 import { useTheme } from '../../../context/Tharuka/ThemeContext';
 import { useFontSize } from '../../../context/Tharuka/FontSizeContext';
-import { useAuth } from '../../../context/Tharuka/AuthContext';
+import { useAuth } from '../../../context/Imasha/AuthContext';
 import './HeaderControls.css';
 
 const LANGS = [
@@ -18,7 +18,8 @@ export default function HeaderControls() {
   const navigate = useNavigate();
   const { isDark, toggleTheme } = useTheme();
   const { fontSize, changeSize } = useFontSize();
-  const { isLoggedIn, logout } = useAuth();
+  const { user, logout } = useAuth();
+  const isLoggedIn = !!user;
   
   const [fontOpen, setFontOpen] = useState(false);
   const [langOpen, setLangOpen] = useState(false);
