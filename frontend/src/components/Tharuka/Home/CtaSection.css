@@ -1,0 +1,61 @@
+.pn-cta {
+  position: relative;
+  padding: var(--section-pad) 0;
+  overflow: hidden;
+  background: linear-gradient(135deg, #003d2d, #005c44, #00A876);
+}
+[data-theme="dark"] .pn-cta { background: linear-gradient(135deg, #001f17, #003328, #005c44); }
+.pn-cta__bg { position: absolute; inset: 0; pointer-events: none; }
+.pn-cta__blob {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(60px);
+  opacity: 0.3;
+  animation: pnBlobFloat 8s ease-in-out infinite;
+}
+.pn-cta__blob--1 { width: 400px; height: 400px; background: #39FF14; top: -100px; left: -100px; }
+.pn-cta__blob--2 { width: 350px; height: 350px; background: #00C897; bottom: -80px; right: -80px; animation-delay: -3s; }
+.pn-cta__blob--3 { width: 250px; height: 250px; background: #00B4D8; top: 50%; left: 60%; animation-delay: -6s; opacity: 0.15; }
+@keyframes pnBlobFloat {
+  0%,100% { transform: translate(0,0); }
+  50% { transform: translate(20px,-15px); }
+}
+.pn-cta__inner { position: relative; z-index: 1; }
+.pn-cta__content {
+  text-align: center;
+  max-width: 640px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1.5rem;
+}
+.pn-cta__title {
+  font-size: var(--fs-4xl);
+  font-weight: 800;
+  color: #fff;
+  line-height: 1.1;
+}
+.pn-cta__desc { font-size: var(--fs-md); color: rgba(255,255,255,0.85); line-height: 1.7; }
+.pn-cta__actions { display: flex; flex-direction: column; align-items: center; gap: 0.75rem; }
+.pn-cta__btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.6rem;
+  background: #fff;
+  color: var(--color-primary-darker);
+  font-weight: 700;
+  font-size: var(--fs-md);
+  padding: 1rem 2.5rem;
+  border-radius: var(--radius-full);
+  text-decoration: none;
+  transition: all var(--transition-normal);
+  box-shadow: 0 4px 20px rgba(0,0,0,0.2);
+}
+.pn-cta__btn:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 8px 32px rgba(0,0,0,0.3);
+  color: var(--color-primary-dark);
+}
+.pn-cta__sub { font-size: var(--fs-xs); color: rgba(255,255,255,0.65); }
+@media (max-width: 480px) { .pn-cta__title { font-size: var(--fs-3xl); } }
