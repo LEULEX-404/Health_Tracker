@@ -1,5 +1,4 @@
 import HealthData from "../../models/Tharuka/HealthData.js";
-import alertService from "../Tharuka/alertService.js";
 
 // ─── Random helpers ───────────────────────────────────────────
 const rand     = (min, max) => +(Math.random() * (max - min) + min).toFixed(1);
@@ -62,8 +61,7 @@ const runSimulator = async (userId, scenario = "normal") => {
     },
   });
 
-  const alerts = await alertService.analyzeAndCreateAlerts(entry);
-  return { entry, alerts, scenario };
+  return { entry, alerts: [], scenario };
 };
 
 /**

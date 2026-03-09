@@ -7,6 +7,7 @@ import path from "path";
 import { fileURLToPath } from "url";
 import { connectDB } from './database.js';
 import { PORT, NODE_ENV, CLIENT_URL, ADMIN_DASHBOARD_URL, COOKIE_SECRET } from './config.js';
+import priyaOpenApi from "./docs/priya-openapi.js";
 import authRoutes from './routes/Imasha/authRoutes.js';
 import userRoutes from './routes/Imasha/userRoutes.js';
 import userReportRoutes from './routes/Imasha/reportRoutes.js';
@@ -29,6 +30,9 @@ import reportRoutes from "./routes/Tharuka/reportRoutes.js";
 import nutritionRoutes from "./routes/Tharuka/nutritionRoutes.js";
 import mealPlanRoutes from "./routes/Tharuka/mealPlanRoutes.js";
 import mealReminderRoutes from "./routes/Tharuka/mealReminderRoutes.js";
+import alertRoutes from "./routes/Tharindu/alertRoutes.js";
+import alertSettingsRoutes from "./routes/Tharindu/alertSettingsRoutes.js";
+import notificationRoutes from "./routes/Tharindu/notificationRoutes.js";
 
 // ─────────────────────────────────────────────
 // SERVICES
@@ -37,10 +41,15 @@ import simulatorService from "./services/Tharuka/simulatorService.js";
 const { runSimulator } = simulatorService;
 
 import reminderService from "./services/Tharuka/reminderService.js";
+import "./services/Tharindu/reminderService.js";
+import { startMonitoringSchedulers } from "./services/Tharindu/monitoringScheduler.js";
+
 
 import User from "./models/Imasha/User.js";
-import swaggerUi from 'swagger-ui-express';
+import swaggerUi from "swagger-ui-express";
+import { tharukaSwaggerSpec } from "./swagger/tharuka-swagger.js";
 import imashaOpenApi from './docs/imasha-openapi.js';
+import tharinduOpenApi from './docs/tharindu-openapi.js';
 
 // ─────────────────────────────────────────────
 // ES MODULE __dirname FIX
@@ -104,6 +113,29 @@ if (NODE_ENV === 'development') {
 // ─────────────────────────────────────────────
 app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 
+// ─────────────────────────────────────────────
+// SWAGGER — Tharuka APIs (http://localhost:5000/api-docs)
+// ─────────────────────────────────────────────
+// Tharuka Swagger
+app.use(
+  "/api-docs/Tharuka",
+  swaggerUi.serveFiles(tharukaSwaggerSpec),
+  swaggerUi.setup(tharukaSwaggerSpec, {
+    customCss: '.swagger-ui .topbar { display: none }',
+    customSiteTitle: 'Tharuka Health System API',
+  })
+);
+
+// Imasha Swagger
+app.use(
+  "/api-docs/imasha",
+  swaggerUi.serveFiles(imashaOpenApi),
+  swaggerUi.setup(imashaOpenApi, {
+    customCss: '.swagger-ui .topbar { display: none }',
+    customSiteTitle: 'Imasha Module API',
+  })
+);
+
 // ==========================================
 // API ROUTES
 // ==========================================
@@ -118,6 +150,22 @@ app.get('/health', (req, res) => {
   });
 });
 
+app.use(
+  "/api-docs/priya",
+  swaggerUi.serve,
+  swaggerUi.setup(priyaOpenApi, {
+    customCss: ".swagger-ui .topbar { display: none }",
+    customSiteTitle: "Priya Module API",
+  })
+);
+
+
+
+// Swagger UI for Tharindu module APIs (Alerts, Notifications, Bookings)
+app.use('/api-docs/tharindu', swaggerUi.serve, swaggerUi.setup(tharinduOpenApi, {
+  customCss: '.swagger-ui .topbar { display: none }',
+  customSiteTitle: 'Tharindu Module API',
+}));
 // Root endpoint
 app.get('/', (req, res) => {
   res.status(200).json({
@@ -131,17 +179,14 @@ app.get('/', (req, res) => {
         admin: '/api/admin',
         healthData: "/api/health-data",
         reports: "/api/reports",
+        apiDocs: 'http://localhost:5000/api-docs/Tharuka',
         docs: 'See API_DOCUMENTATION.md',
         swaggerImasha: 'http://localhost:5000/api-docs/imasha',
+        swaggerTharindu: 'http://localhost:5000/api-docs/tharindu',
+        swaggerPriya: "http://localhost:5000/api-docs/priya",
       },
   });
 });
-
-// Swagger UI for Imasha module APIs (Auth, Users, Admin, Reports)
-app.use('/api-docs/imasha', swaggerUi.serve, swaggerUi.setup(imashaOpenApi, {
-  customCss: '.swagger-ui .topbar { display: none }',
-  customSiteTitle: 'Imasha Module API',
-}));
 
 // Authentication routes
 app.use('/api/auth', authRoutes);
@@ -159,6 +204,9 @@ app.use("/api/reports", reportRoutes);
 app.use("/api/nutrition", nutritionRoutes);
 app.use("/api/meal-plans", mealPlanRoutes);
 app.use("/api/meal-reminders", mealReminderRoutes);
+app.use("/api/alerts", alertRoutes);
+app.use("/api/alert-settings", alertSettingsRoutes);
+app.use("/api/notifications", notificationRoutes);
 
 // ─────────────────────────────────────────────
 // CONTINUOUS SIMULATOR
@@ -168,7 +216,7 @@ const startContinuousSimulator = () => {
 
   setInterval(async () => {
     try {
-      const users = await User.find({}, "_id");
+      const users = await User.find({role: "patient"}, "_id");
 
       if (!users.length) {
         console.log("[Simulator] No users found, skipping...");
@@ -179,10 +227,10 @@ const startContinuousSimulator = () => {
         const roll = Math.random();
         const scenario =
           roll < 0.15
-            ? "emergency"  
+            ? "emergency"
             : roll < 0.25
-            ? "oxygen_drop"
-            : "normal";
+              ? "oxygen_drop"
+              : "normal";
 
         const result = await runSimulator(user._id.toString(), scenario);
 
@@ -193,7 +241,7 @@ const startContinuousSimulator = () => {
     } catch (err) {
       console.error("[Simulator] Error:", err.message);
     }
-  }, process.env.SIMULATOR_INTERVAL_MS || 30000);
+  }, process.env.SIMULATOR_INTERVAL_MS || 60000);
 };
 
 // Start simulator AFTER DB is connected
@@ -210,15 +258,15 @@ const startMealReminderProcessor = () => {
   // Process reminders every minute
   setInterval(async () => {
     try {
-      const users = await User.find({}, "_id");
-      
+      const users = await User.find({ role: "patient" }, "_id");
+
       for (const user of users) {
         // Generate reminders for active meal plans
         await reminderService.generateRemindersForActivePlans(user._id.toString());
-        
+
         // Get pending reminders that are due
         const pendingReminders = await reminderService.getPendingReminders(user._id.toString(), 10);
-        
+
         // Send reminders
         for (const reminder of pendingReminders) {
           try {
@@ -238,8 +286,36 @@ const startMealReminderProcessor = () => {
 // Start reminder processor AFTER DB is connected
 startMealReminderProcessor();
 
+// Start intelligent monitoring schedulers (escalations, reminders)
+startMonitoringSchedulers();
+
+
+// Priya Routes
+import appointmentsRoutes from "./routes/Priya/appointmentsRoutes.js";
+import exerciseRoutes from "./routes/Priya/exerciseRoutes.js";
+import emailLogRoutes from "./routes/Priya/emailLogRoute.js";
+import adminAppointmentsRoutes from "./routes/Priya/adminAppointmentsRoutes.js";
+import doctorRoutes from "./routes/Priya/doctorRoutes.js";
+
+// Tharindu Routes
+import caregiverRoutes from "./routes/Tharindu/caregiverRoutes.js";
+
+app.use('/api/appointments', appointmentsRoutes);
+app.use('/api/tharindu/bookings', caregiverRoutes);
+app.use('/api/email-logs', emailLogRoutes);
+app.use('/api/appointments', appointmentsRoutes);
+app.use('/api/exercise', exerciseRoutes);
+app.use('/api/admin/appointments', adminAppointmentsRoutes);
+app.use('/api/doctors', doctorRoutes);
+
 // ==========================================
 // ERROR HANDLING MIDDLEWARE
+try {
+  const bookingEmailController = require('./controllers/bookingEmailController');
+  app.post('/api/send-booking-email', bookingEmailController.sendBookingSuccessEmail);
+} catch (error) {
+  console.warn('bookingEmailController not found. /api/send-booking-email is disabled.');
+}
 // ==========================================
 
 // 404 handler (must be after all routes)
@@ -277,7 +353,7 @@ const server = app.listen(PORT, () => {
 process.on('unhandledRejection', (err) => {
   console.error('❌ Unhandled Promise Rejection:', err);
   console.error('Shutting down server...');
-  
+
   server.close(() => {
     process.exit(1);
   });
@@ -287,7 +363,7 @@ process.on('unhandledRejection', (err) => {
 process.on('uncaughtException', (err) => {
   console.error('❌ Uncaught Exception:', err);
   console.error('Shutting down server...');
-  
+
   server.close(() => {
     process.exit(1);
   });
@@ -296,7 +372,7 @@ process.on('uncaughtException', (err) => {
 // Handle SIGTERM (for deployment platforms like Heroku)
 process.on('SIGTERM', () => {
   console.log('👋 SIGTERM received. Shutting down gracefully...');
-  
+
   server.close(() => {
     console.log('✅ Server closed');
     process.exit(0);
@@ -306,7 +382,7 @@ process.on('SIGTERM', () => {
 // Handle SIGINT (Ctrl+C)
 process.on('SIGINT', () => {
   console.log('\n👋 SIGINT received. Shutting down gracefully...');
-  
+
   server.close(() => {
     console.log('✅ Server closed');
     process.exit(0);
@@ -314,3 +390,8 @@ process.on('SIGINT', () => {
 });
 
 export default app;
+
+
+// ==========================================
+// 80% Completed
+// ==========================================

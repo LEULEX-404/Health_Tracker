@@ -1,0 +1,48 @@
+.pn-bg-effect {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  overflow: hidden;
+}
+.pn-bg-canvas {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+.pn-bg-gradient {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(80px);
+  opacity: 0.12;
+  animation: pnFloat 12s ease-in-out infinite;
+}
+.pn-bg-gradient--1 {
+  width: 600px; height: 600px;
+  background: radial-gradient(circle, #00C897, transparent);
+  top: -150px; left: -150px;
+  animation-duration: 14s;
+}
+.pn-bg-gradient--2 {
+  width: 500px; height: 500px;
+  background: radial-gradient(circle, #00B4D8, transparent);
+  bottom: -100px; right: -100px;
+  animation-duration: 10s;
+  animation-delay: -4s;
+}
+.pn-bg-gradient--3 {
+  width: 350px; height: 350px;
+  background: radial-gradient(circle, #39FF14, transparent);
+  top: 50%; left: 50%;
+  transform: translate(-50%, -50%);
+  animation-duration: 16s;
+  animation-delay: -8s;
+  opacity: 0.06;
+}
+@keyframes pnFloat {
+  0%, 100% { transform: translate(0, 0) scale(1); }
+  33% { transform: translate(30px, -20px) scale(1.05); }
+  66% { transform: translate(-20px, 30px) scale(0.96); }
+}
+[data-theme="dark"] .pn-bg-gradient { opacity: 0.2; }

@@ -1,8 +1,7 @@
 import HealthData from "../../models/Tharuka/HealthData.js";
-import alertService from "../../services/Tharuka/alertService.js";
 import { createRequire } from "module";
 const require = createRequire(import.meta.url);
-const pdfParse = require("pdf-parse");
+const { PDFParse } = require("pdf-parse");
 import fs from "fs";
 
 // ─── Manual Entry ─────────────────────────────────────────────
@@ -14,17 +13,16 @@ const saveManualEntry = async (userId, vitals) => {
     recordedAt: new Date(),
   });
 
-  // Auto-trigger alert analysis
-  const alerts = await alertService.analyzeAndCreateAlerts(entry);
-  return { entry, alerts };
+  return { entry, alerts: [] };
 };
 
 // ─── PDF Upload ───────────────────────────────────────────────
 const savePdfEntry = async (userId, file) => {
-  // Read uploaded file buffer for parsing
-  const dataBuffer  = fs.readFileSync(file.path);
-  const pdfData     = await pdfParse(dataBuffer);
-  const rawText     = pdfData.text;
+  // Read uploaded file buffer for parsing (pdf-parse v2 API)
+  const dataBuffer = fs.readFileSync(file.path);
+  const parser = new PDFParse({ data: dataBuffer });
+  const textResult = await parser.getText();
+  const rawText = textResult.text || "";
 
   // Naive regex extractors — adjust patterns to match your real PDFs
   const extract = (pattern) => {
@@ -65,8 +63,7 @@ const savePdfEntry = async (userId, file) => {
     recordedAt:  new Date(),
   });
 
-  const alerts = await alertService.analyzeAndCreateAlerts(entry);
-  return { entry, alerts, extractedText: rawText.substring(0, 500) };
+  return { entry, alerts: [], extractedText: rawText.substring(0, 500) };
 };
 
 // ─── Get Recent Records ───────────────────────────────────────

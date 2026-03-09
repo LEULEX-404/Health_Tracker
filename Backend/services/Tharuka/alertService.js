@@ -2,11 +2,11 @@ import AlertHistory from "../../models/Tharuka/AlertHistory.js";
 
 // ─── Thresholds ───────────────────────────────────────────────
 const THRESHOLDS = {
-  heartRate:   { high: 120, low: 40 },
-  oxygenLevel: { low: 90 },
-  glucoseLevel:{ high: 200, critical: 400 },
-  bloodPressure:{ systolicHigh: 140, diastolicHigh: 90 },
-  temperature: { high: 38.5, critical: 40 },
+  heartRate:    { high: 120, critical: 150, low: 40 },
+  oxygenLevel:  { low: 90, critical: 85 },
+  glucoseLevel: { high: 200, critical: 400 },
+  bloodPressure: { systolicHigh: 140, diastolicHigh: 90, systolicCritical: 180, diastolicCritical: 120 },
+  temperature:  { high: 38.5, critical: 40 },
 };
 
 /**
@@ -20,14 +20,14 @@ const analyzeAndCreateAlerts = async (healthData) => {
 
   // 1. Heart Rate
   if (healthData.heartRate !== undefined) {
-    if (healthData.heartRate > 150) {
+    if (healthData.heartRate > THRESHOLDS.heartRate.critical) {
       alerts.push({
         userId, healthDataId,
         alertType: "high_heart_rate",
         severity:  "critical",
         message:   `Critical heart rate: ${healthData.heartRate} bpm`,
       });
-    } else if (healthData.heartRate > 120) {
+    } else if (healthData.heartRate > THRESHOLDS.heartRate.high) {
       alerts.push({
         userId, healthDataId,
         alertType: "high_heart_rate",
@@ -39,11 +39,11 @@ const analyzeAndCreateAlerts = async (healthData) => {
 
   // 2. Oxygen Level
   if (healthData.oxygenLevel !== undefined) {
-    if (healthData.oxygenLevel < 90) {
+    if (healthData.oxygenLevel < THRESHOLDS.oxygenLevel.low) {
       alerts.push({
         userId, healthDataId,
         alertType: "low_oxygen",
-        severity:  healthData.oxygenLevel < 85 ? "critical" : "high",
+        severity:  healthData.oxygenLevel < THRESHOLDS.oxygenLevel.critical ? "critical" : "high",
         message:   `Low oxygen level: ${healthData.oxygenLevel}%`,
       });
     }
@@ -51,14 +51,14 @@ const analyzeAndCreateAlerts = async (healthData) => {
 
   // 3. Glucose
   if (healthData.glucoseLevel !== undefined) {
-    if (healthData.glucoseLevel > 400) {
+    if (healthData.glucoseLevel > THRESHOLDS.glucoseLevel.critical) {
       alerts.push({
         userId, healthDataId,
         alertType: "high_glucose",
         severity:  "critical",
         message:   `Critical glucose level: ${healthData.glucoseLevel} mg/dL`,
       });
-    } else if (healthData.glucoseLevel > 200) {
+    } else if (healthData.glucoseLevel > THRESHOLDS.glucoseLevel.high) {
       alerts.push({
         userId, healthDataId,
         alertType: "high_glucose",
@@ -71,33 +71,35 @@ const analyzeAndCreateAlerts = async (healthData) => {
   // 4. Blood Pressure
   if (healthData.bloodPressure) {
     const { systolic, diastolic } = healthData.bloodPressure;
-    if (systolic > 180 || diastolic > 120) {
-      alerts.push({
+    if (systolic != null && diastolic != null) {
+      if (systolic > THRESHOLDS.bloodPressure.systolicCritical || diastolic > THRESHOLDS.bloodPressure.diastolicCritical) {
+        alerts.push({
         userId, healthDataId,
         alertType: "high_bp",
         severity:  "critical",
         message:   `Hypertensive crisis: ${systolic}/${diastolic} mmHg`,
-      });
-    } else if (systolic > 140 || diastolic > 90) {
-      alerts.push({
-        userId, healthDataId,
-        alertType: "high_bp",
-        severity:  "high",
-        message:   `High blood pressure: ${systolic}/${diastolic} mmHg`,
-      });
+        });
+      } else if (systolic > THRESHOLDS.bloodPressure.systolicHigh || diastolic > THRESHOLDS.bloodPressure.diastolicHigh) {
+        alerts.push({
+          userId, healthDataId,
+          alertType: "high_bp",
+          severity:  "high",
+          message:   `High blood pressure: ${systolic}/${diastolic} mmHg`,
+        });
+      }
     }
   }
 
   // 5. Temperature
   if (healthData.temperature !== undefined) {
-    if (healthData.temperature >= 40) {
+    if (healthData.temperature >= THRESHOLDS.temperature.critical) {
       alerts.push({
         userId, healthDataId,
         alertType: "temperature_spike",
         severity:  "critical",
         message:   `Critical temperature: ${healthData.temperature}°C`,
       });
-    } else if (healthData.temperature >= 38.5) {
+    } else if (healthData.temperature >= THRESHOLDS.temperature.high) {
       alerts.push({
         userId, healthDataId,
         alertType: "temperature_spike",

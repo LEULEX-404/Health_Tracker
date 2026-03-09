@@ -1,14 +1,24 @@
 import express from "express";
 import multer from "multer";
 import path from "path";
+import fs from "fs";
+import { fileURLToPath } from "url";
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 const router = express.Router();
+
+const uploadsDir = path.join(path.dirname(path.dirname(__dirname)), "uploads");
+if (!fs.existsSync(uploadsDir)) {
+  fs.mkdirSync(uploadsDir, { recursive: true });
+}
 import controller from "../../controllers/Tharuka/healthDataController.js";
 import auditLogger from "../../middleware/Tharuka/auditLogger.js";
+import { authenticate, isPatientOrCaregiver } from "../../middleware/Imasha/authMiddleware.js";
 
 // ─── Multer config for PDF uploads ───────────────────────────
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
-    cb(null, path.join(__dirname, "../uploads"));
+    cb(null, uploadsDir);
   },
   filename: (req, file, cb) => {
     const uniqueSuffix = `${Date.now()}-${Math.round(Math.random() * 1e9)}`;
@@ -33,24 +43,24 @@ const upload = multer({
 // ─── Routes ──────────────────────────────────────────────────
 
 // Manual entry
-router.post("/manual", auditLogger, controller.manualEntry);
+router.post("/manual", authenticate, isPatientOrCaregiver, auditLogger, controller.manualEntry);
 
 // PDF upload
 router.post(
   "/pdf-upload",
+  authenticate,
+  isPatientOrCaregiver,
   auditLogger,
   upload.single("pdf"),
   controller.pdfUpload
 );
 
-// Get all records for a user
-router.get("/:userId", controller.getUserData);
+// More specific routes first to avoid :userId capturing path segments
+router.get("/record/:id", authenticate, controller.getRecordById);
+router.get("/alerts/:userId", authenticate, controller.getAlerts);
+router.patch("/alerts/:alertId/resolve", authenticate, controller.resolveAlert);
 
-// Get single record
-router.get("/record/:id", controller.getRecordById);
-
-// Alert routes
-router.get("/alerts/:userId", controller.getAlerts);
-router.patch("/alerts/:alertId/resolve", controller.resolveAlert);
+// Get all records for a user (catch-all for single segment)
+router.get("/:userId", authenticate, controller.getUserData);
 
 export default router;
