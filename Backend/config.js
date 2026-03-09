@@ -31,10 +31,17 @@ export const GOOGLE_CALLBACK_URL = process.env.GOOGLE_CALLBACK_URL || 'http://lo
 // EMAIL CONFIGURATION (NODEMAILER)
 // ==========================================
 export const EMAIL_HOST = process.env.EMAIL_HOST || 'smtp.gmail.com';
-export const EMAIL_PORT = process.env.EMAIL_PORT || 587;
+export const EMAIL_PORT = parseInt(process.env.EMAIL_PORT) || 587;
 export const EMAIL_USER = process.env.EMAIL_USER || '';
 export const EMAIL_PASSWORD = process.env.EMAIL_PASSWORD || '';
 export const EMAIL_FROM = process.env.EMAIL_FROM || 'noreply@healthcare.com';
+
+// ==========================================
+// SMS CONFIGURATION (VONAGE)
+// ==========================================
+export const VONAGE_API_KEY = process.env.VONAGE_API_KEY || '';
+export const VONAGE_API_SECRET = process.env.VONAGE_API_SECRET || '';
+export const VONAGE_BRAND_NAME = process.env.VONAGE_BRAND_NAME || 'HealthSys';
 
 // ==========================================
 // FRONTEND URLS
@@ -64,7 +71,7 @@ export const CORS_ORIGIN = process.env.CORS_ORIGIN || CLIENT_URL;
 
 // Cloudinary Configuration (for profile image uploads)
 export const CLOUDINARY_CLOUD_NAME = process.env.CLOUDINARY_CLOUD_NAME || '';
-export const CLOUDINARY_API_KEY    = process.env.CLOUDINARY_API_KEY    || '';
+export const CLOUDINARY_API_KEY = process.env.CLOUDINARY_API_KEY || '';
 export const CLOUDINARY_API_SECRET = process.env.CLOUDINARY_API_SECRET || '';
 
 // ==========================================
@@ -100,44 +107,50 @@ export default {
   // Server
   PORT,
   NODE_ENV,
-  
+
   // Database
   MONGO_URI,
   MONGO_URI_FALLBACK,
   
+
   // JWT
   JWT_SECRET,
   JWT_EXPIRES_IN,
   REFRESH_TOKEN_SECRET,
   REFRESH_TOKEN_EXPIRES_IN,
-  
+
   // Google OAuth
   GOOGLE_CLIENT_ID,
   GOOGLE_CLIENT_SECRET,
   GOOGLE_CALLBACK_URL,
-  
+
   // Email
   EMAIL_HOST,
   EMAIL_PORT,
   EMAIL_USER,
   EMAIL_PASSWORD,
   EMAIL_FROM,
-  
+
+  // SMS
+  VONAGE_API_KEY,
+  VONAGE_API_SECRET,
+  VONAGE_BRAND_NAME,
+
   // Frontend URLs
   CLIENT_URL,
   ADMIN_DASHBOARD_URL,
   PATIENT_HOME_URL,
-  
+
   // Security
   MAX_LOGIN_ATTEMPTS,
   LOGIN_ATTEMPT_WINDOW,
   ACCOUNT_LOCK_DURATION,
   BCRYPT_SALT_ROUNDS,
-  
+
   // Cookie
   COOKIE_SECRET,
   COOKIE_MAX_AGE,
-  
+
   // CORS
   CORS_ORIGIN,
 

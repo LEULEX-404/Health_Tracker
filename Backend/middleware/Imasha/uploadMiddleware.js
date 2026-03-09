@@ -52,7 +52,11 @@ const upload = multer({
 // ==========================================
 // EXPORT UPLOAD MIDDLEWARE
 // ==========================================
-export const uploadProfileImage = upload.single('profileImage');
+// Accept both `profileImage` (expected) and `file` (common Swagger/Postman default)
+export const uploadProfileImage = upload.fields([
+  { name: 'profileImage', maxCount: 1 },
+  { name: 'file', maxCount: 1 },
+]);
 
 // ==========================================
 // ERROR HANDLER FOR MULTER

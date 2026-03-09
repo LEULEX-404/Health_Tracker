@@ -31,6 +31,9 @@ import reportRoutes from "./routes/Tharuka/reportRoutes.js";
 import nutritionRoutes from "./routes/Tharuka/nutritionRoutes.js";
 import mealPlanRoutes from "./routes/Tharuka/mealPlanRoutes.js";
 import mealReminderRoutes from "./routes/Tharuka/mealReminderRoutes.js";
+import alertRoutes from "./routes/Tharindu/alertRoutes.js";
+import alertSettingsRoutes from "./routes/Tharindu/alertSettingsRoutes.js";
+import notificationRoutes from "./routes/Tharindu/notificationRoutes.js";
 
 // ─────────────────────────────────────────────
 // SERVICES
@@ -39,8 +42,15 @@ import simulatorService from "./services/Tharuka/simulatorService.js";
 const { runSimulator } = simulatorService;
 
 import reminderService from "./services/Tharuka/reminderService.js";
+import "./services/Tharindu/reminderService.js";
+import { startMonitoringSchedulers } from "./services/Tharindu/monitoringScheduler.js";
+
 
 import User from "./models/Imasha/User.js";
+import swaggerUi from "swagger-ui-express";
+import { tharukaSwaggerSpec } from "./swagger/tharuka-swagger.js";
+import imashaOpenApi from './docs/imasha-openapi.js';
+import tharinduOpenApi from './docs/tharindu-openapi.js';
 
 // ─────────────────────────────────────────────
 // ES MODULE __dirname FIX
@@ -104,6 +114,29 @@ if (NODE_ENV === 'development') {
 // ─────────────────────────────────────────────
 app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 
+// ─────────────────────────────────────────────
+// SWAGGER — Tharuka APIs (http://localhost:5000/api-docs)
+// ─────────────────────────────────────────────
+// Tharuka Swagger
+app.use(
+  "/api-docs/Tharuka",
+  swaggerUi.serveFiles(tharukaSwaggerSpec),
+  swaggerUi.setup(tharukaSwaggerSpec, {
+    customCss: '.swagger-ui .topbar { display: none }',
+    customSiteTitle: 'Tharuka Health System API',
+  })
+);
+
+// Imasha Swagger
+app.use(
+  "/api-docs/imasha",
+  swaggerUi.serveFiles(imashaOpenApi),
+  swaggerUi.setup(imashaOpenApi, {
+    customCss: '.swagger-ui .topbar { display: none }',
+    customSiteTitle: 'Imasha Module API',
+  })
+);
+
 // ==========================================
 // API ROUTES
 // ==========================================
@@ -128,23 +161,31 @@ app.use(
 );
 
 
+
+// Swagger UI for Tharindu module APIs (Alerts, Notifications, Bookings)
+app.use('/api-docs/tharindu', swaggerUi.serve, swaggerUi.setup(tharinduOpenApi, {
+  customCss: '.swagger-ui .topbar { display: none }',
+  customSiteTitle: 'Tharindu Module API',
+}));
 // Root endpoint
 app.get('/', (req, res) => {
   res.status(200).json({
     success: true,
     message: 'Healthcare Authentication API',
     version: '1.0.0',
-    endpoints: {
-      health: '/health',
-      auth: '/api/auth',
-      users: '/api/users',
-      admin: '/api/admin',
-      healthData: "/api/health-data",
-      reports: "/api/reports",
-      docs: 'See API_DOCUMENTATION.md',
-      swaggerPriya: "http://localhost:5000/api-docs/priya",
-
-    },
+      endpoints: {
+        health: '/health',
+        auth: '/api/auth',
+        users: '/api/users',
+        admin: '/api/admin',
+        healthData: "/api/health-data",
+        reports: "/api/reports",
+        apiDocs: 'http://localhost:5000/api-docs/Tharuka',
+        docs: 'See API_DOCUMENTATION.md',
+        swaggerImasha: 'http://localhost:5000/api-docs/imasha',
+        swaggerTharindu: 'http://localhost:5000/api-docs/tharindu',
+        swaggerPriya: "http://localhost:5000/api-docs/priya",
+      },
   });
 });
 
@@ -164,6 +205,9 @@ app.use("/api/reports", reportRoutes);
 app.use("/api/nutrition", nutritionRoutes);
 app.use("/api/meal-plans", mealPlanRoutes);
 app.use("/api/meal-reminders", mealReminderRoutes);
+app.use("/api/alerts", alertRoutes);
+app.use("/api/alert-settings", alertSettingsRoutes);
+app.use("/api/notifications", notificationRoutes);
 
 // ─────────────────────────────────────────────
 // CONTINUOUS SIMULATOR
@@ -173,7 +217,7 @@ const startContinuousSimulator = () => {
 
   setInterval(async () => {
     try {
-      const users = await User.find({}, "_id");
+      const users = await User.find({role: "patient"}, "_id");
 
       if (!users.length) {
         console.log("[Simulator] No users found, skipping...");
@@ -198,7 +242,7 @@ const startContinuousSimulator = () => {
     } catch (err) {
       console.error("[Simulator] Error:", err.message);
     }
-  }, process.env.SIMULATOR_INTERVAL_MS || 300000);
+  }, process.env.SIMULATOR_INTERVAL_MS || 60000);
 };
 
 // Start simulator AFTER DB is connected
@@ -215,7 +259,7 @@ const startMealReminderProcessor = () => {
   // Process reminders every minute
   setInterval(async () => {
     try {
-      const users = await User.find({}, "_id");
+      const users = await User.find({ role: "patient" }, "_id");
 
       for (const user of users) {
         // Generate reminders for active meal plans
@@ -243,6 +287,9 @@ const startMealReminderProcessor = () => {
 // Start reminder processor AFTER DB is connected
 startMealReminderProcessor();
 
+// Start intelligent monitoring schedulers (escalations, reminders)
+startMonitoringSchedulers();
+
 
 // Priya Routes
 import appointmentsRoutes from "./routes/Priya/appointmentsRoutes.js";
@@ -251,6 +298,11 @@ import emailLogRoutes from "./routes/Priya/emailLogRoute.js";
 import adminAppointmentsRoutes from "./routes/Priya/adminAppointmentsRoutes.js";
 import doctorRoutes from "./routes/Priya/doctorRoutes.js";
 
+// Tharindu Routes
+import caregiverRoutes from "./routes/Tharindu/caregiverRoutes.js";
+
+app.use('/api/appointments', appointmentsRoutes);
+app.use('/api/tharindu/bookings', caregiverRoutes);
 app.use('/api/email-logs', emailLogRoutes);
 app.use('/api/appointments', appointmentsRoutes);
 app.use('/api/exercise', exerciseRoutes);
@@ -339,3 +391,8 @@ process.on('SIGINT', () => {
 });
 
 export default app;
+
+
+// ==========================================
+// 80% Completed
+// ==========================================
