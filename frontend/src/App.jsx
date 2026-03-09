@@ -15,7 +15,13 @@ import ContactPage from './pages/Tharuka/ContactPage';
 import FaqPage from './pages/Tharuka/FaqPage';
 import ServicesPage from './pages/Tharuka/ServicesPage';
 
-import { AuthProvider } from './context/Tharuka/AuthContext';
+// Pages — Imasha (Auth)
+import LoginPage from './pages/Imasha/LoginPage';
+import RegisterPage from './pages/Imasha/RegisterPage';
+import ForgotPasswordPage from './pages/Imasha/ForgotPasswordPage';
+import ResetPasswordPage from './pages/Imasha/ResetPasswordPage';
+import VerifyEmailPage from './pages/Imasha/VerifyEmailPage';
+import { AuthProvider } from './context/Imasha/AuthContext';
 
 function App() {
   return (
@@ -34,6 +40,13 @@ function App() {
               <Route path="/privacy" element={<PrivacyPolicyPage />} />
               <Route path="/contact" element={<ContactPage />} />
               <Route path="/faq" element={<FaqPage />} />
+
+              {/* Imasha — Auth Routes */}
+              <Route path="/login" element={<LoginPage />} />
+              <Route path="/register" element={<RegisterPage />} />
+              <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+              <Route path="/reset-password" element={<ResetPasswordPage />} />
+              <Route path="/verify-email" element={<VerifyEmailPage />} />
             </Routes>
           </AuthProvider>
         </BrowserRouter>

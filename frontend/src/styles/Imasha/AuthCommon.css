@@ -1,0 +1,520 @@
+/* ================================================================
+   PulseNova — Auth Common Styles (Imasha)
+   ================================================================ */
+
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+
+.Imasha-auth-page {
+  min-height: 100vh;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: 'Inter', sans-serif;
+  background: #080e0b;
+  position: relative;
+  overflow-x: hidden;
+  padding: 2rem;
+  box-sizing: border-box;
+}
+
+.Imasha-auth-bg {
+  position: fixed;
+  inset: 0;
+  background-image: url('/images/Imasha/auth-bg.png');
+  background-size: cover;
+  background-position: center;
+  filter: brightness(0.2);
+  z-index: 0;
+}
+
+.Imasha-auth-bg-overlay {
+  position: fixed;
+  inset: 0;
+  background: radial-gradient(circle at 50% 50%, rgba(0, 200, 151, 0.03) 0%, rgba(8, 14, 11, 0.85) 100%);
+  z-index: 1;
+}
+
+.Imasha-particles {
+  position: fixed;
+  inset: 0;
+  z-index: 2;
+  pointer-events: none;
+}
+
+.Imasha-particle {
+  position: absolute;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(0, 200, 151, 0.3), transparent 70%);
+  animation: Imasha-float linear infinite;
+  opacity: 0;
+}
+
+@keyframes Imasha-float {
+  0% {
+    transform: translateY(100vh) scale(0);
+    opacity: 0;
+  }
+
+  10% {
+    opacity: 1;
+  }
+
+  90% {
+    opacity: 0.2;
+  }
+
+  100% {
+    transform: translateY(-10vh) scale(1);
+    opacity: 0;
+  }
+}
+
+/* ── Centered Container ─────────────────────────────────────────── */
+.Imasha-auth-center-container {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  max-width: 1050px;
+  z-index: 10;
+  position: relative;
+  gap: 2.5rem;
+}
+
+/* Top Logo */
+.Imasha-auth-top-logo {
+  display: flex;
+  justify-content: center;
+  width: 100%;
+  margin-bottom: 0.5rem;
+}
+
+/* Specific Brand Visibility Overrides */
+.Imasha-auth-top-logo .pn-logo__name {
+  color: #ffffff !important;
+  /* Ensure 'Pulse' part is clearly visible */
+  font-size: 2.2rem !important;
+}
+
+.Imasha-auth-top-logo .pn-logo__icon {
+  transform: scale(1.2);
+}
+
+/* Main Content Area */
+.Imasha-auth-main-content {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4rem;
+  width: 100%;
+}
+
+/* Side Panel (Features) */
+.Imasha-auth-side-panel {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  max-width: 480px;
+  gap: 2rem;
+}
+
+.Imasha-auth-stats-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.25rem;
+  margin-bottom: 0.5rem;
+}
+
+.Imasha-stat-card {
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(0, 200, 151, 0.15);
+  border-radius: 24px;
+  padding: 1.25rem;
+  backdrop-filter: blur(10px);
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  position: relative;
+  overflow: hidden;
+}
+
+.Imasha-stat-info {
+  display: flex;
+  flex-direction: column;
+}
+
+.Imasha-stat-label {
+  font-size: 0.75rem;
+  color: #7db89a;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  font-weight: 600;
+}
+
+.Imasha-stat-value {
+  font-size: 1.4rem;
+  font-weight: 800;
+  color: #fff;
+}
+
+.Imasha-stat-value small {
+  font-size: 0.8rem;
+  font-weight: 500;
+  color: #00c897;
+}
+
+/* Pulse Animation */
+.Imasha-pulse-icon {
+  color: #ff4d4d;
+  filter: drop-shadow(0 0 8px rgba(255, 77, 77, 0.4));
+  animation: Imasha-heartbeat 1.2s infinite ease-in-out;
+}
+
+@keyframes Imasha-heartbeat {
+  0% {
+    transform: scale(1);
+  }
+
+  15% {
+    transform: scale(1.25);
+  }
+
+  30% {
+    transform: scale(1);
+  }
+
+  45% {
+    transform: scale(1.15);
+  }
+
+  60% {
+    transform: scale(1);
+  }
+}
+
+.Imasha-pulse-wave {
+  display: flex;
+  align-items: flex-end;
+  gap: 3px;
+  height: 20px;
+  margin-top: 5px;
+}
+
+.Imasha-pulse-wave span {
+  width: 4px;
+  background: #ff4d4d;
+  border-radius: 2px;
+  animation: Imasha-wave 1s infinite ease-in-out;
+}
+
+.Imasha-pulse-wave span:nth-child(2) {
+  animation-delay: 0.2s;
+  height: 60%;
+}
+
+.Imasha-pulse-wave span:nth-child(3) {
+  animation-delay: 0.4s;
+  height: 100%;
+}
+
+.Imasha-pulse-wave span:nth-child(4) {
+  animation-delay: 0.6s;
+  height: 40%;
+}
+
+@keyframes Imasha-wave {
+
+  0%,
+  100% {
+    height: 30%;
+  }
+
+  50% {
+    height: 90%;
+  }
+}
+
+/* Progress Bar */
+.Imasha-progress-bar {
+  width: 100%;
+  height: 6px;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 3px;
+  margin-top: 8px;
+}
+
+.Imasha-progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #00c897, #00ff8c);
+  border-radius: 3px;
+  box-shadow: 0 0 10px rgba(0, 200, 151, 0.4);
+}
+
+.Imasha-auth-trust-badge {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.6rem;
+  margin-top: 1rem;
+  padding: 0.75rem;
+  background: rgba(0, 200, 151, 0.05);
+  border-radius: 12px;
+  color: #7db89a;
+  font-size: 0.8rem;
+  font-weight: 500;
+}
+
+.Imasha-auth-features-list {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+.Imasha-auth-feature-card {
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+  /* Increased gap */
+  padding: 1.5rem 2rem;
+  /* Increased padding */
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(0, 200, 151, 0.12);
+  border-radius: 24px;
+  /* Slightly rounder */
+  backdrop-filter: blur(10px);
+  transition: all 0.3s ease;
+}
+
+.Imasha-auth-feature-card:hover {
+  background: rgba(0, 200, 151, 0.05);
+  border-color: rgba(0, 200, 151, 0.35);
+  transform: translateX(8px);
+}
+
+.Imasha-feature-card-icon {
+  width: 56px;
+  /* Larger icon container */
+  height: 56px;
+  background: rgba(0, 200, 151, 0.1);
+  color: #00c897;
+  border-radius: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.Imasha-feature-card-text strong {
+  display: block;
+  color: #fff;
+  font-size: 1.15rem;
+  /* Larger title */
+  margin-bottom: 0.3rem;
+  font-weight: 700;
+}
+
+.Imasha-feature-card-text span {
+  color: #7db89a;
+  font-size: 0.95rem;
+  /* Larger description */
+  line-height: 1.4;
+}
+
+/* Auth Card (Form) */
+.Imasha-auth-card {
+  flex: 1;
+  max-width: 480px;
+  background: rgba(10, 20, 15, 0.82);
+  border: 1px solid rgba(0, 200, 151, 0.18);
+  border-radius: 30px;
+  padding: 2.5rem 3rem;
+  backdrop-filter: blur(25px);
+  box-shadow: 0 40px 80px rgba(0, 0, 0, 0.6);
+  box-sizing: border-box;
+}
+
+.Imasha-mascot-wrap {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 1.5rem;
+}
+
+.Imasha-form-title {
+  font-size: 1.75rem;
+  font-weight: 800;
+  color: #fff;
+  margin: 0 0 0.4rem;
+  letter-spacing: -0.5px;
+  text-align: center;
+}
+
+.Imasha-form-subtitle {
+  font-size: 0.95rem;
+  color: #6b9b80;
+  margin-bottom: 2rem;
+  text-align: center;
+}
+
+/* Inputs */
+.Imasha-field-group {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+  margin-bottom: 2rem;
+}
+
+.Imasha-label {
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: #7db89a;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  margin-bottom: 0.5rem;
+}
+
+.Imasha-input-wrap {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.Imasha-input-icon {
+  position: absolute;
+  left: 1rem;
+  color: #4a7a62;
+  transition: color 0.3s;
+}
+
+.Imasha-input {
+  width: 100%;
+  background: rgba(13, 26, 19, 0.5);
+  border: 1.5px solid rgba(0, 200, 151, 0.12);
+  border-radius: 14px;
+  color: #fff;
+  padding: 1rem 1rem 1rem 3rem;
+  font-size: 1rem;
+  outline: none;
+  transition: all 0.3s;
+}
+
+.Imasha-input:focus {
+  border-color: #00c897;
+  background: rgba(0, 200, 151, 0.05);
+  box-shadow: 0 0 0 4px rgba(0, 200, 151, 0.08);
+}
+
+.Imasha-input-wrap:focus-within .Imasha-input-icon {
+  color: #00c897;
+}
+
+.Imasha-pw-toggle {
+  position: absolute;
+  right: 1.25rem;
+  background: none;
+  border: none;
+  color: #4a7a62;
+  cursor: pointer;
+}
+
+.Imasha-btn-primary {
+  width: 100%;
+  padding: 1.05rem;
+  background: linear-gradient(135deg, #00c897, #00a876);
+  color: #fff;
+  border: none;
+  border-radius: 14px;
+  font-size: 1.05rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.3s;
+  box-shadow: 0 10px 20px rgba(0, 200, 151, 0.25);
+}
+
+.Imasha-btn-primary:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 15px 30px rgba(0, 200, 151, 0.45);
+}
+
+.Imasha-btn-secondary {
+  width: 100%;
+  padding: 0.9rem;
+  background: rgba(255, 255, 255, 0.05);
+  color: #fff;
+  border: 1px solid rgba(0, 200, 151, 0.2);
+  border-radius: 12px;
+  font-size: 0.95rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s;
+}
+
+.Imasha-btn-secondary:hover {
+  background: rgba(0, 200, 151, 0.1);
+  border-color: #00c897;
+}
+
+.Imasha-icon-circle-success {
+  width: 70px;
+  height: 70px;
+  background: rgba(0, 200, 151, 0.1);
+  color: #00c897;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 1.5rem;
+  box-shadow: 0 0 20px rgba(0, 200, 151, 0.2);
+}
+
+.Imasha-info-box {
+  background: rgba(0, 200, 151, 0.05);
+  border-left: 4px solid #00c897;
+  padding: 1rem;
+  border-radius: 8px;
+  font-size: 0.85rem;
+  color: #7db89a;
+  margin: 1.5rem 0;
+  line-height: 1.5;
+}
+
+.Imasha-auth-link-text {
+  text-align: center;
+  margin-top: 1.5rem;
+  color: #6b9b80;
+}
+
+.Imasha-auth-link {
+  color: #00c897;
+  font-weight: 700;
+  text-decoration: none;
+}
+
+/* ── Responsive ─────────────────────────────────────────────────── */
+@media (max-width: 900px) {
+  .Imasha-auth-page {
+    padding: 1.5rem;
+  }
+
+  .Imasha-auth-center-container {
+    gap: 1.5rem;
+  }
+
+  .Imasha-auth-side-panel {
+    display: none;
+    /* Hide stats/feature cards on mobile as requested */
+  }
+
+  .Imasha-auth-main-content {
+    width: 100%;
+  }
+
+  .Imasha-auth-card {
+    width: 100%;
+    padding: 2.2rem 1.8rem;
+    border-radius: 25px;
+  }
+
+  .Imasha-auth-top-logo .pn-logo__name {
+    font-size: 1.8rem !important;
+  }
+}

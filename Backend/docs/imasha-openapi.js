@@ -26,20 +26,20 @@ export default {
         type: 'object',
         required: ['email', 'password'],
         properties: {
-          email: { type: 'string', format: 'email', example: 'admin@example.com' },
-          password: { type: 'string', format: 'password', example: 'SecurePass123!' },
+          email: { type: 'string', format: 'email', example: 'admin@healthcare.com' },
+          password: { type: 'string', format: 'password', example: 'Admin123!' },
         },
       },
       RegisterRequest: {
         type: 'object',
         required: ['firstName', 'lastName', 'email', 'password'],
         properties: {
-          firstName: { type: 'string', example: 'John' },
-          lastName: { type: 'string', example: 'Doe' },
-          email: { type: 'string', format: 'email', example: 'patient@example.com' },
-          password: { type: 'string', format: 'password', example: 'SecurePass123!' },
-          phone: { type: 'string', example: '+1234567890' },
-          dateOfBirth: { type: 'string', format: 'date', example: '1990-01-15' },
+          firstName: { type: 'string', example: 'Dulshini' },
+          lastName: { type: 'string', example: 'Rukmali' },
+          email: { type: 'string', format: 'email', example: 'imogirlcoc@gmail.com' },
+          password: { type: 'string', format: 'password', example: 'Imo123!' },
+          phone: { type: 'string', example: '+94774275154' },
+          dateOfBirth: { type: 'string', format: 'date', example: '2002-10-20' },
           gender: { type: 'string', enum: ['male', 'female', 'other'] },
         },
       },
@@ -111,6 +111,29 @@ export default {
           licenseNumber: { type: 'string' },
           hospitalOrClinic: { type: 'string' },
           qualifications: { type: 'string' },
+        },
+      },
+      DoctorResponse: {
+        type: 'object',
+        description: 'Doctor response: _id is the Doctor document ID (use for GET/PUT/DELETE /api/admin/doctors/:id). userId is the User ID (use for linking e.g. doctor-patient).',
+        properties: {
+          _id: { type: 'string', description: 'Doctor document ID — use this in path for GET/PUT/DELETE /api/admin/doctors/:id', example: '507f1f77bcf86cd799439011' },
+          userId: { type: 'string', description: 'User document ID — use for POST /api/users/link/doctor-patient as doctorId', example: '507f1f77bcf86cd799439012' },
+          firstName: { type: 'string' },
+          lastName: { type: 'string' },
+          email: { type: 'string', format: 'email' },
+          phone: { type: 'string' },
+          dateOfBirth: { type: 'string', format: 'date' },
+          gender: { type: 'string', enum: ['male', 'female', 'other'] },
+          address: { type: 'string' },
+          isActive: { type: 'boolean' },
+          isEmailVerified: { type: 'boolean' },
+          profileImage: { type: 'string' },
+          specialization: { type: 'string' },
+          licenseNumber: { type: 'string' },
+          hospitalOrClinic: { type: 'string' },
+          qualifications: { type: 'string' },
+          linkedPatients: { type: 'array', items: { type: 'object' } },
         },
       },
       CreateCaregiverRequest: {
@@ -246,13 +269,6 @@ export default {
         responses: { 302: { description: 'Redirect to Google' } },
       },
     },
-    '/api/auth/google/callback': {
-      get: {
-        tags: ['Auth'],
-        summary: 'Google OAuth callback',
-        responses: { 302: { description: 'Redirect after login' } },
-      },
-    },
     '/api/auth/me': {
       get: {
         tags: ['Auth'],
@@ -278,25 +294,6 @@ export default {
           { name: 'isActive', in: 'query', schema: { type: 'boolean' } },
         ],
         responses: { 200: { description: 'List of users' }, 401: { description: 'Unauthorized' }, 403: { description: 'Admin only' } },
-      },
-    },
-    '/api/users/link/doctor-patient': {
-      post: {
-        tags: ['Users'],
-        summary: 'Link doctor to patient',
-        description: 'Admin only. doctorId and patientId are User _ids.',
-        security: [{ BearerAuth: [] }],
-        requestBody: { content: { 'application/json': { schema: { $ref: '#/components/schemas/LinkDoctorPatientRequest' } } } },
-        responses: { 200: { description: 'Linked' }, 400: { description: 'Bad request' }, 403: { description: 'Admin only' } },
-      },
-    },
-    '/api/users/link/caregiver-patient': {
-      post: {
-        tags: ['Users'],
-        summary: 'Assign caregiver to patient',
-        security: [{ BearerAuth: [] }],
-        requestBody: { content: { 'application/json': { schema: { $ref: '#/components/schemas/LinkCaregiverPatientRequest' } } } },
-        responses: { 200: { description: 'Assigned' }, 403: { description: 'Admin only' } },
       },
     },
     '/api/users/{id}': {
@@ -333,7 +330,11 @@ export default {
         requestBody: {
           content: {
             'multipart/form-data': {
-              schema: { type: 'object', properties: { file: { type: 'string', format: 'binary' } } },
+              schema: {
+                type: 'object',
+                required: ['profileImage'],
+                properties: { profileImage: { type: 'string', format: 'binary' } },
+              },
             },
           },
         },
@@ -355,41 +356,110 @@ export default {
           { name: 'search', in: 'query', schema: { type: 'string' } },
           { name: 'isActive', in: 'query', schema: { type: 'boolean' } },
         ],
-        responses: { 200: { description: 'List of doctors' }, 401: { description: 'Unauthorized' }, 403: { description: 'Admin only' } },
+        responses: {
+          200: {
+            description: 'List of doctors. Each item has _id (Doctor document ID) and userId (User ID) — they are different.',
+            content: {
+              'application/json': {
+                schema: {
+                  type: 'object',
+                  properties: {
+                    success: { type: 'boolean' },
+                    data: { type: 'array', items: { $ref: '#/components/schemas/DoctorResponse' } },
+                    pagination: { type: 'object' },
+                  },
+                },
+              },
+            },
+          },
+          401: { description: 'Unauthorized' },
+          403: { description: 'Admin only' },
+        },
       },
       post: {
         tags: ['Admin - Doctors'],
         summary: 'Create doctor',
-        description: 'Admin only. Creates User (role doctor) + Doctor document. Password is hashed.',
+        description: 'Admin only. Creates User (role doctor) + Doctor document. Password is hashed. Response _id = Doctor doc ID, userId = User ID (use for linking).',
         security: [{ BearerAuth: [] }],
         requestBody: { content: { 'application/json': { schema: { $ref: '#/components/schemas/CreateDoctorRequest' } } } },
-        responses: { 201: { description: 'Doctor created' }, 400: { description: 'Validation error' }, 403: { description: 'Admin only' } },
+        responses: {
+          201: {
+            description: 'Doctor created. Use response._id for GET/PUT/DELETE doctor; use response.userId as doctorId when linking to patient.',
+            content: {
+              'application/json': {
+                schema: {
+                  type: 'object',
+                  properties: {
+                    success: { type: 'boolean' },
+                    data: { $ref: '#/components/schemas/DoctorResponse' },
+                  },
+                },
+              },
+            },
+          },
+          400: { description: 'Validation error' },
+          403: { description: 'Admin only' },
+        },
       },
     },
     '/api/admin/doctors/{id}': {
       get: {
         tags: ['Admin - Doctors'],
         summary: 'Get doctor by ID',
-        description: 'id = Doctor document _id',
+        description: 'Path :id must be the Doctor document _id (response._id), not userId.',
         security: [{ BearerAuth: [] }],
-        parameters: [{ name: 'id', in: 'path', required: true, schema: { type: 'string' } }],
-        responses: { 200: { description: 'Doctor' }, 401: { description: 'Unauthorized' }, 404: { description: 'Not found' } },
+        parameters: [{ name: 'id', in: 'path', required: true, schema: { type: 'string' }, description: 'Doctor document _id' }],
+        responses: {
+          200: {
+            description: 'Doctor. _id = Doctor doc ID, userId = User ID.',
+            content: {
+              'application/json': {
+                schema: {
+                  type: 'object',
+                  properties: {
+                    success: { type: 'boolean' },
+                    data: { $ref: '#/components/schemas/DoctorResponse' },
+                  },
+                },
+              },
+            },
+          },
+          401: { description: 'Unauthorized' },
+          404: { description: 'Not found' },
+        },
       },
       put: {
         tags: ['Admin - Doctors'],
         summary: 'Update doctor',
-        description: 'Updates both User and Doctor. id = Doctor document _id. Password is hashed if sent.',
+        description: 'Path :id must be the Doctor document _id. Updates both User and Doctor. Password is hashed if sent.',
         security: [{ BearerAuth: [] }],
-        parameters: [{ name: 'id', in: 'path', required: true, schema: { type: 'string' } }],
+        parameters: [{ name: 'id', in: 'path', required: true, schema: { type: 'string' }, description: 'Doctor document _id' }],
         requestBody: { content: { 'application/json': { schema: { $ref: '#/components/schemas/UpdateDoctorRequest' } } } },
-        responses: { 200: { description: 'Updated' }, 401: { description: 'Unauthorized' }, 404: { description: 'Not found' } },
+        responses: {
+          200: {
+            description: 'Updated. _id and userId remain distinct.',
+            content: {
+              'application/json': {
+                schema: {
+                  type: 'object',
+                  properties: {
+                    success: { type: 'boolean' },
+                    data: { $ref: '#/components/schemas/DoctorResponse' },
+                  },
+                },
+              },
+            },
+          },
+          401: { description: 'Unauthorized' },
+          404: { description: 'Not found' },
+        },
       },
       delete: {
         tags: ['Admin - Doctors'],
         summary: 'Delete doctor (soft)',
-        description: 'id = Doctor document _id',
+        description: 'Path :id must be the Doctor document _id.',
         security: [{ BearerAuth: [] }],
-        parameters: [{ name: 'id', in: 'path', required: true, schema: { type: 'string' } }],
+        parameters: [{ name: 'id', in: 'path', required: true, schema: { type: 'string' }, description: 'Doctor document _id' }],
         responses: { 200: { description: 'Deleted' }, 401: { description: 'Unauthorized' }, 403: { description: 'Admin only' } },
       },
     },

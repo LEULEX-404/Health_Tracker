@@ -7,6 +7,7 @@ import path from "path";
 import { fileURLToPath } from "url";
 import { connectDB } from './database.js';
 import { PORT, NODE_ENV, CLIENT_URL, ADMIN_DASHBOARD_URL, COOKIE_SECRET } from './config.js';
+import priyaOpenApi from "./docs/priya-openapi.js";
 import authRoutes from './routes/Imasha/authRoutes.js';
 import userRoutes from './routes/Imasha/userRoutes.js';
 import userReportRoutes from './routes/Imasha/reportRoutes.js';
@@ -48,6 +49,7 @@ import User from "./models/Imasha/User.js";
 import swaggerUi from "swagger-ui-express";
 import { tharukaSwaggerSpec } from "./swagger/tharuka-swagger.js";
 import imashaOpenApi from './docs/imasha-openapi.js';
+import tharinduOpenApi from './docs/tharindu-openapi.js';
 
 // ─────────────────────────────────────────────
 // ES MODULE __dirname FIX
@@ -148,6 +150,22 @@ app.get('/health', (req, res) => {
   });
 });
 
+app.use(
+  "/api-docs/priya",
+  swaggerUi.serve,
+  swaggerUi.setup(priyaOpenApi, {
+    customCss: ".swagger-ui .topbar { display: none }",
+    customSiteTitle: "Priya Module API",
+  })
+);
+
+
+
+// Swagger UI for Tharindu module APIs (Alerts, Notifications, Bookings)
+app.use('/api-docs/tharindu', swaggerUi.serve, swaggerUi.setup(tharinduOpenApi, {
+  customCss: '.swagger-ui .topbar { display: none }',
+  customSiteTitle: 'Tharindu Module API',
+}));
 // Root endpoint
 app.get('/', (req, res) => {
   res.status(200).json({
@@ -164,6 +182,8 @@ app.get('/', (req, res) => {
         apiDocs: 'http://localhost:5000/api-docs/Tharuka',
         docs: 'See API_DOCUMENTATION.md',
         swaggerImasha: 'http://localhost:5000/api-docs/imasha',
+        swaggerTharindu: 'http://localhost:5000/api-docs/tharindu',
+        swaggerPriya: "http://localhost:5000/api-docs/priya",
       },
   });
 });
@@ -274,6 +294,8 @@ startMonitoringSchedulers();
 import appointmentsRoutes from "./routes/Priya/appointmentsRoutes.js";
 import exerciseRoutes from "./routes/Priya/exerciseRoutes.js";
 import emailLogRoutes from "./routes/Priya/emailLogRoute.js";
+import adminAppointmentsRoutes from "./routes/Priya/adminAppointmentsRoutes.js";
+import doctorRoutes from "./routes/Priya/doctorRoutes.js";
 
 // Tharindu Routes
 import caregiverRoutes from "./routes/Tharindu/caregiverRoutes.js";
@@ -283,16 +305,16 @@ app.use('/api/tharindu/bookings', caregiverRoutes);
 app.use('/api/email-logs', emailLogRoutes);
 app.use('/api/appointments', appointmentsRoutes);
 app.use('/api/exercise', exerciseRoutes);
-
-
+app.use('/api/admin/appointments', adminAppointmentsRoutes);
+app.use('/api/doctors', doctorRoutes);
 
 // ==========================================
 // ERROR HANDLING MIDDLEWARE
 try {
-    const bookingEmailController = require('./controllers/bookingEmailController');
-    app.post('/api/send-booking-email', bookingEmailController.sendBookingSuccessEmail);
+  const bookingEmailController = require('./controllers/bookingEmailController');
+  app.post('/api/send-booking-email', bookingEmailController.sendBookingSuccessEmail);
 } catch (error) {
-    console.warn('bookingEmailController not found. /api/send-booking-email is disabled.');
+  console.warn('bookingEmailController not found. /api/send-booking-email is disabled.');
 }
 // ==========================================
 

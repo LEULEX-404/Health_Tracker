@@ -17,9 +17,18 @@ export default {
                 type: 'http',
                 scheme: 'bearer',
                 bearerFormat: 'JWT',
+                description: 'Access token from POST /api/auth/login',
             },
         },
         schemas: {
+            LoginRequest: {
+                type: 'object',
+                required: ['email', 'password'],
+                properties: {
+                    email: { type: 'string', format: 'email', example: 'admin@healthcare.com' },
+                    password: { type: 'string', format: 'password', example: 'Admin123!' },
+                },
+            },
             RequestBooking: {
                 type: 'object',
                 required: ['caregiverId', 'date', 'startTime', 'endTime'],
@@ -56,11 +65,40 @@ export default {
         },
     },
     tags: [
+        { name: 'Tharindu - Auth', description: 'Login and current user (get token for other endpoints)' },
         { name: 'Tharindu - Alerts', description: 'Real-time health alert management' },
         { name: 'Tharindu - Notifications', description: 'In-app and toast notifications' },
         { name: 'Tharindu - Caregiver Bookings', description: 'Patient-caregiver appointments' },
     ],
     paths: {
+        // ─────────────────────────────────────────────────────────────────
+        // AUTH (login + me — use token in Authorize for other endpoints)
+        // ─────────────────────────────────────────────────────────────────
+        '/api/auth/login': {
+            post: {
+                tags: ['Tharindu - Auth'],
+                summary: 'Login',
+                description: 'Returns accessToken. Use it in **Authorize** above to call Alerts, Notifications, Bookings.',
+                security: [],
+                requestBody: { content: { 'application/json': { schema: { $ref: '#/components/schemas/LoginRequest' } } } },
+                responses: {
+                    200: { description: 'Login success, returns accessToken and user' },
+                    401: { description: 'Invalid credentials' },
+                },
+            },
+        },
+        '/api/auth/me': {
+            get: {
+                tags: ['Tharindu - Auth'],
+                summary: 'Get current user',
+                description: 'Returns the logged-in user profile. Requires Bearer token from login.',
+                security: [{ BearerAuth: [] }],
+                responses: {
+                    200: { description: 'Current user profile' },
+                    401: { description: 'Unauthorized' },
+                },
+            },
+        },
         // ─────────────────────────────────────────────────────────────────
         // ALERTS
         // ─────────────────────────────────────────────────────────────────
