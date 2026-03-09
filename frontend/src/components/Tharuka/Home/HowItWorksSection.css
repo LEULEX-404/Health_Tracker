@@ -1,0 +1,58 @@
+.pn-how { background: var(--bg-secondary); }
+.pn-how__steps {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 2rem;
+  position: relative;
+}
+.pn-how__step {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  padding: 2.5rem 1.5rem;
+  background: var(--bg-card);
+  border-radius: var(--radius-xl);
+  border: 1px solid var(--border-color);
+  transition: all var(--transition-normal);
+}
+.pn-how__step:hover { transform: translateY(-6px); box-shadow: var(--shadow-lg); border-color: var(--color-primary); }
+.pn-how__step-num {
+  position: absolute;
+  top: -18px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: var(--fs-sm);
+  font-weight: 800;
+  font-family: 'Space Grotesk', sans-serif;
+  color: var(--color-primary);
+  background: var(--bg-card);
+  border: 2px solid var(--color-primary);
+  border-radius: var(--radius-full);
+  width: 36px; height: 36px;
+  display: flex; align-items: center; justify-content: center;
+}
+.pn-how__step-icon {
+  width: 70px; height: 70px;
+  border-radius: 50%;
+  border: 2px solid;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--bg-secondary);
+  margin: 0.5rem 0 1.5rem;
+  transition: all var(--transition-normal);
+}
+.pn-how__step:hover .pn-how__step-icon {
+  background: var(--bg-primary);
+  box-shadow: 0 0 20px rgba(0,200,151,0.25);
+}
+.pn-how__connector {
+  display: none;
+}
+.pn-how__step-title { font-size: var(--fs-md); font-weight: 700; margin-bottom: 0.6rem; }
+.pn-how__step-desc { font-size: var(--fs-sm); color: var(--text-muted); line-height: 1.65; }
+@media (max-width: 768px) {
+  .pn-how__steps { grid-template-columns: 1fr; gap: 2.5rem; }
+}
