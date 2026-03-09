@@ -23,10 +23,8 @@ export default function Header() {
         {/* Logo — always visible */}
         <Logo />
 
-        {/* Nav — hidden while search is open */}
-        {!searchOpen && (
-          <NavMenu isOpen={menuOpen} onClose={() => setMenuOpen(false)} />
-        )}
+        {/* Nav — always visible */}
+        <NavMenu isOpen={menuOpen} onClose={() => setMenuOpen(false)} />
 
         {/* Right side: search expands here, then controls */}
         <div className="pn-header__right">
