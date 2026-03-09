@@ -34,10 +34,12 @@ router.post('/refresh', authController.refreshToken);
 
 /**
  * @route   GET /api/auth/verify-email/:token
+ * @route   POST /api/auth/verify-email
  * @desc    Verify email address
  * @access  Public
  */
 router.get('/verify-email/:token', authController.verifyEmail);
+router.post('/verify-email', authController.verifyEmail);
 
 /**
  * @route   POST /api/auth/forgot-password
