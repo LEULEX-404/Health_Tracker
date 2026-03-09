@@ -1,0 +1,117 @@
+/* ============================================
+   PulseNova - CSS Variables (Tharuka)
+   ============================================ */
+
+:root {
+  /* Green Palette */
+  --color-primary: #00c897;
+  --color-primary-dark: #00a876;
+  --color-primary-darker: #007a58;
+  --color-primary-light: #33d4a8;
+  --color-primary-glow: rgba(0, 200, 151, 0.35);
+  --color-accent: #39ff14;
+  --color-accent-glow: rgba(57, 255, 20, 0.2);
+  --color-secondary: #00b4d8;
+
+  /* Status Colors */
+  --color-success: #10b981;
+  --color-warning: #f59e0b;
+  --color-error: #ef4444;
+
+  /* Light Theme (Default) */
+  --bg-primary: #f0fff9;
+  --bg-secondary: #dcfcf1;
+  --bg-card: #ffffff;
+  --bg-card-hover: #f5fffb;
+  --bg-overlay: rgba(240, 255, 249, 0.96);
+  --text-primary: #0d2019;
+  --text-secondary: #1d4d36;
+  --text-muted: #5a8870;
+  --border-color: rgba(0, 200, 151, 0.2);
+  --border-color-strong: rgba(0, 200, 151, 0.45);
+  --shadow-sm: 0 1px 4px rgba(0, 200, 151, 0.1);
+  --shadow-md:
+    0 4px 20px rgba(0, 200, 151, 0.15), 0 2px 8px rgba(0, 0, 0, 0.06);
+  --shadow-lg:
+    0 10px 40px rgba(0, 200, 151, 0.18), 0 4px 16px rgba(0, 0, 0, 0.09);
+  --shadow-glow: 0 0 32px rgba(0, 200, 151, 0.32);
+  --glass-bg: rgba(255, 255, 255, 0.78);
+  --glass-border: rgba(0, 200, 151, 0.25);
+
+  /* Font Sizes - Medium (Default) */
+  --fs-xs: 0.75rem;
+  --fs-sm: 0.875rem;
+  --fs-base: 1rem;
+  --fs-md: 1.125rem;
+  --fs-lg: 1.25rem;
+  --fs-xl: 1.5rem;
+  --fs-2xl: 2rem;
+  --fs-3xl: 2.5rem;
+  --fs-4xl: 3.25rem;
+  --fs-5xl: 4.5rem;
+
+  /* Layout */
+  --header-height: 72px;
+  --max-width: 1280px;
+  --section-pad: 5rem;
+
+  /* Transitions */
+  --transition-fast: 0.18s ease;
+  --transition-normal: 0.3s ease;
+  --transition-slow: 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+
+  /* Border Radius */
+  --radius-sm: 6px;
+  --radius-md: 12px;
+  --radius-lg: 20px;
+  --radius-xl: 32px;
+  --radius-full: 9999px;
+}
+
+/* ---- Dark Theme ---- */
+[data-theme="dark"] {
+  --bg-primary: #080e0b;
+  --bg-secondary: #0d1a13;
+  --bg-card: #101d16;
+  --bg-card-hover: #162319;
+  --bg-overlay: rgba(8, 14, 11, 0.96);
+  --text-primary: #e8fff5;
+  --text-secondary: #a8d5bc;
+  --text-muted: #6b9b80;
+  --border-color: rgba(0, 200, 151, 0.14);
+  --border-color-strong: rgba(0, 200, 151, 0.3);
+  --shadow-sm: 0 1px 4px rgba(0, 0, 0, 0.4);
+  --shadow-md: 0 4px 20px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(0, 200, 151, 0.08);
+  --shadow-lg: 0 10px 40px rgba(0, 0, 0, 0.6), 0 0 0 1px rgba(0, 200, 151, 0.1);
+  --shadow-glow: 0 0 40px rgba(0, 200, 151, 0.25);
+  --glass-bg: rgba(16, 29, 22, 0.82);
+  --glass-border: rgba(0, 200, 151, 0.18);
+}
+
+/* ---- Font Size: Small ---- */
+[data-font="small"] {
+  --fs-xs: 0.65rem;
+  --fs-sm: 0.75rem;
+  --fs-base: 0.875rem;
+  --fs-md: 1rem;
+  --fs-lg: 1.1rem;
+  --fs-xl: 1.25rem;
+  --fs-2xl: 1.6rem;
+  --fs-3xl: 2rem;
+  --fs-4xl: 2.6rem;
+  --fs-5xl: 3.5rem;
+}
+
+/* ---- Font Size: Large ---- */
+[data-font="large"] {
+  --fs-xs: 0.875rem;
+  --fs-sm: 1rem;
+  --fs-base: 1.125rem;
+  --fs-md: 1.3rem;
+  --fs-lg: 1.5rem;
+  --fs-xl: 1.8rem;
+  --fs-2xl: 2.4rem;
+  --fs-3xl: 3rem;
+  --fs-4xl: 3.8rem;
+  --fs-5xl: 5rem;
+}

@@ -1,0 +1,84 @@
+/* Desktop Nav — left-aligned after logo */
+.pn-nav--desktop {
+  display: flex;
+  align-items: center;
+  gap: 2px;      /* px gap between links */
+}
+.pn-nav__link {
+  position: relative;
+  font-size: 13px;     /* fixed px — immune to A-/A/A+ */
+  font-weight: 500;
+  color: var(--text-secondary);
+  padding: 7px 10px;   /* fixed px — element never resizes */
+  border-radius: 10px;
+  transition: all var(--transition-fast);
+  white-space: nowrap;
+  text-decoration: none;
+  line-height: 1.4;
+}
+.pn-nav__link--btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-family: inherit;
+}
+.pn-nav__link::after {
+  content: '';
+  position: absolute;
+  bottom: 4px; left: 50%; right: 50%;
+  height: 2px;
+  background: var(--color-primary);
+  border-radius: var(--radius-full);
+  transition: all var(--transition-normal);
+}
+.pn-nav__link:hover { color: var(--color-primary); background: rgba(0,200,151,0.07); }
+.pn-nav__link:hover::after, .pn-nav__link.active::after { left: 10%; right: 10%; }
+.pn-nav__link.active { color: var(--color-primary); font-weight: 600; }
+
+/* Mobile Nav */
+.pn-nav--mobile {
+  display: none;
+  position: fixed;
+  top: 0; left: 0;
+  width: 280px; height: 100vh;
+  background: var(--bg-card);
+  border-right: 1px solid var(--border-color);
+  z-index: 1000;
+  padding: 5rem 1.5rem 2rem;
+  flex-direction: column;
+  gap: 0;
+  transform: translateX(-100%);
+  transition: transform var(--transition-slow);
+  box-shadow: var(--shadow-lg);
+}
+.pn-nav--mobile.open { transform: translateX(0); }
+.pn-nav__backdrop {
+  position: fixed; inset: 0; z-index: 999;
+  background: rgba(0,0,0,0.4);
+  backdrop-filter: blur(4px);
+}
+.pn-nav__close {
+  position: absolute; top: 1.2rem; right: 1.2rem;
+  background: none; border: none;
+  color: var(--text-secondary); cursor: pointer;
+  display: flex; padding: 6px;
+  border-radius: var(--radius-sm);
+}
+.pn-nav__mobile-links {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+.pn-nav--mobile .pn-nav__link {
+  display: block;
+  width: 100%;
+  text-align: left;
+  padding: 0.8rem 1rem;
+  border-radius: var(--radius-md);
+}
+
+/* Show/hide */
+@media (max-width: 1024px) {
+  .pn-nav--desktop { display: none; }
+  .pn-nav--mobile { display: flex; }
+}
