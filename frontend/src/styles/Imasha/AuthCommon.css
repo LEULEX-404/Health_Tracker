@@ -355,6 +355,73 @@
   text-align: center;
 }
 
+/* ── Entry Animations ─────────────────────────────────────────── */
+.Imasha-auth-card {
+  animation: Imasha-scale-in 0.6s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+.Imasha-mascot-wrap,
+.Imasha-form-header,
+.Imasha-field-group>*,
+.Imasha-btn-primary,
+.Imasha-auth-link-text,
+.Imasha-divider {
+  opacity: 0;
+  animation: Imasha-fade-in-slide-up 0.5s ease forwards;
+}
+
+.Imasha-mascot-wrap {
+  animation-delay: 0.1s;
+}
+
+.Imasha-form-header {
+  animation-delay: 0.2s;
+}
+
+.Imasha-field-group>*:nth-child(1) {
+  animation-delay: 0.3s;
+}
+
+.Imasha-field-group>*:nth-child(2) {
+  animation-delay: 0.4s;
+}
+
+.Imasha-btn-primary {
+  animation-delay: 0.5s;
+}
+
+.Imasha-auth-link-text {
+  animation-delay: 0.6s;
+}
+
+.Imasha-divider {
+  animation-delay: 0.7s;
+}
+
+@keyframes Imasha-scale-in {
+  from {
+    opacity: 0;
+    transform: scale(0.98) translateY(10px);
+  }
+
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+@keyframes Imasha-fade-in-slide-up {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
 /* Inputs */
 .Imasha-field-group {
   display: flex;
