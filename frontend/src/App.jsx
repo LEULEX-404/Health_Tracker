@@ -25,7 +25,9 @@ const RegisterPage = lazy(() => import('./pages/Imasha/RegisterPage'));
 const ForgotPasswordPage = lazy(() => import('./pages/Imasha/ForgotPasswordPage'));
 const ResetPasswordPage = lazy(() => import('./pages/Imasha/ResetPasswordPage'));
 const VerifyEmailPage = lazy(() => import('./pages/Imasha/VerifyEmailPage'));
-import { AuthProvider } from './context/Imasha/AuthContext';
+const OnboardingPage = lazy(() => import('./pages/Imasha/OnboardingPage'));
+import { AuthProvider, useAuth } from './context/Imasha/AuthContext';
+import { Navigate } from 'react-router-dom';
 
 // Pages — Priya
 import ExercisePage from './pages/Priya/Exercise';
@@ -33,58 +35,73 @@ import FindSpecialistPage from './pages/Priya/FindSpecialist';
 
 import ProtectedRoute from './components/Imasha/ProtectedRoute';
 
+const AppWrapper = () => (
+  <ThemeProvider>
+    <FontSizeProvider>
+      <Toaster position="top-right" toastOptions={{ duration: 4000, style: { background: '#0a140f', color: '#fff', border: '1px solid rgba(0, 200, 151, 0.2)' } }} />
+      <BrowserRouter>
+        <ScrollAura />
+        <AuthProvider>
+          <App />
+        </AuthProvider>
+      </BrowserRouter>
+    </FontSizeProvider>
+  </ThemeProvider>
+);
+
 function App() {
+  const { user, token, loading } = useAuth();
   const [initialLoading, setInitialLoading] = useState(true);
 
   useEffect(() => {
-    // Ensure the premium heartbeat animation has time to confidently draw and exit
     const timer = setTimeout(() => {
       setInitialLoading(false);
     }, 2800);
     return () => clearTimeout(timer);
   }, []);
 
+  if (loading) return null;
+
   return (
-    <ThemeProvider>
-      <FontSizeProvider>
-        <Toaster position="top-right" toastOptions={{ duration: 4000, style: { background: '#0a140f', color: '#fff', border: '1px solid rgba(0, 200, 151, 0.2)' } }} />
-        <BrowserRouter>
-          <ScrollAura />
-          {/* AuthProvider must be inside BrowserRouter (uses useNavigate) */}
-          <AuthProvider>
-            <AnimatePresence mode="wait">
-              {initialLoading && <Preloader key="preloader" />}
-            </AnimatePresence>
+    <>
+      <AnimatePresence mode="wait">
+        {initialLoading && <Preloader key="preloader" />}
+      </AnimatePresence>
 
-            {/* Suspense handles background loading of lazy routes after the initial preloader finishes */}
-            <Suspense fallback={null}>
-              <Routes>
-                {/* Tharuka — Public Routes */}
-                <Route path="/" element={<HomePage />} />
-                <Route path="/about" element={<AboutPage />} />
-                <Route path="/services" element={<ServicesPage />} />
-                <Route path="/terms" element={<TermsPage />} />
-                <Route path="/privacy" element={<PrivacyPolicyPage />} />
-                <Route path="/contact" element={<ContactPage />} />
-                <Route path="/faq" element={<FaqPage />} />
+      <Suspense fallback={null}>
+        <Routes>
+          {token && user && user.role === 'patient' && !user.hasCompletedOnboarding ? (
+            <>
+              <Route path="/onboarding" element={<OnboardingPage />} />
+              <Route path="*" element={<Navigate to="/onboarding" replace />} />
+            </>
+          ) : (
+            <>
+              {/* Public Routes */}
+              <Route path="/" element={<HomePage />} />
+              <Route path="/about" element={<AboutPage />} />
+              <Route path="/services" element={<ServicesPage />} />
+              <Route path="/terms" element={<TermsPage />} />
+              <Route path="/privacy" element={<PrivacyPolicyPage />} />
+              <Route path="/contact" element={<ContactPage />} />
+              <Route path="/faq" element={<FaqPage />} />
 
-                {/* Imasha — Auth Routes */}
-                <Route path="/login" element={<LoginPage />} />
-                <Route path="/register" element={<RegisterPage />} />
-                <Route path="/forgot-password" element={<ForgotPasswordPage />} />
-                <Route path="/reset-password" element={<ResetPasswordPage />} />
-                <Route path="/verify-email" element={<VerifyEmailPage />} />
+              {/* Auth Routes */}
+              <Route path="/login" element={<LoginPage />} />
+              <Route path="/register" element={<RegisterPage />} />
+              <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+              <Route path="/reset-password" element={<ResetPasswordPage />} />
+              <Route path="/verify-email" element={<VerifyEmailPage />} />
 
-                {/* Priya — Exercise and Appointment Routes */}
-                <Route path="/exercise" element={<ProtectedRoute><ExercisePage /></ProtectedRoute>} />
-                <Route path="/find-specialist" element={<ProtectedRoute><FindSpecialistPage /></ProtectedRoute>} />
-              </Routes>
-            </Suspense>
-          </AuthProvider>
-        </BrowserRouter>
-      </FontSizeProvider>
-    </ThemeProvider>
+              {/* Protected Priya Routes */}
+              <Route path="/exercise" element={<ProtectedRoute><ExercisePage /></ProtectedRoute>} />
+              <Route path="/find-specialist" element={<ProtectedRoute><FindSpecialistPage /></ProtectedRoute>} />
+            </>
+          )}
+        </Routes>
+      </Suspense>
+    </>
   );
 }
 
-export default App;
+export default AppWrapper;
