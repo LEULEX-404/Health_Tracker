@@ -27,6 +27,10 @@ const ResetPasswordPage = lazy(() => import('./pages/Imasha/ResetPasswordPage'))
 const VerifyEmailPage = lazy(() => import('./pages/Imasha/VerifyEmailPage'));
 import { AuthProvider } from './context/Imasha/AuthContext';
 
+// Pages — Priya
+import ExercisePage from './pages/Priya/Exercise';
+import FindSpecialistPage from './pages/Priya/FindSpecialist';
+
 function App() {
   const [initialLoading, setInitialLoading] = useState(true);
 
@@ -68,6 +72,10 @@ function App() {
                 <Route path="/forgot-password" element={<ForgotPasswordPage />} />
                 <Route path="/reset-password" element={<ResetPasswordPage />} />
                 <Route path="/verify-email" element={<VerifyEmailPage />} />
+                  
+                {/* Priya — Exercise and Appointment Routes */}
+                <Route path="/exercise" element={<ExercisePage />} />
+                <Route path="/find-specialist" element={<FindSpecialistPage />} />
               </Routes>
             </Suspense>
           </AuthProvider>
