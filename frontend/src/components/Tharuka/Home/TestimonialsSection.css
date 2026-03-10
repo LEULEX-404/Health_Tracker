@@ -1,42 +1,73 @@
-.pn-test { background: var(--bg-primary); }
-.pn-test__grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.5rem; margin-bottom: 2.5rem; }
+.pn-test { 
+  background: var(--bg-primary); 
+  overflow: hidden; /* Hide overflow for marquee */
+  padding-bottom: 5rem;
+}
+
+.pn-test__carousel {
+  position: relative;
+  width: 100vw;
+  margin-left: calc(-50vw + 50%); /* Full bleed override */
+  display: flex;
+  overflow: hidden;
+  /* Add subtle blur gradients to the sides to feel like they fade in/out of the window */
+  -webkit-mask-image: linear-gradient(to right, transparent, black 10%, black 90%, transparent);
+  mask-image: linear-gradient(to right, transparent, black 10%, black 90%, transparent);
+}
+
+.pn-test__track {
+  display: flex;
+  gap: 2rem;
+  padding: 1rem 0;
+  width: max-content;
+  animation: pnMarquee 40s linear infinite;
+}
+
+/* Pause the animation nicely when user wants to read a testimonial */
+.pn-test__carousel:hover .pn-test__track {
+  animation-play-state: paused;
+}
+
+@keyframes pnMarquee {
+  0% { transform: translateX(0); }
+  100% { transform: translateX(calc(-50% - 1rem)); } /* Move half the combined width minus half gap */
+}
+
 .pn-test__card {
   background: var(--bg-card);
   border: 1px solid var(--border-color);
   border-radius: var(--radius-xl);
-  padding: 1.75rem;
+  padding: 2rem;
   display: flex;
   flex-direction: column;
-  gap: 1rem;
+  gap: 1.25rem;
   transition: all var(--transition-normal);
+  width: 400px; /* Fixed width for consistent marquee */
+  flex-shrink: 0;
 }
-.pn-test__card:hover { border-color: var(--color-primary); transform: translateY(-4px); box-shadow: var(--shadow-md); }
-.pn-test__stars { display: flex; gap: 3px; color: #F59E0B; }
-.pn-test__text { font-size: var(--fs-sm); color: var(--text-secondary); line-height: 1.75; flex: 1; font-style: italic; }
-.pn-test__author { display: flex; align-items: center; gap: 0.75rem; }
+
+.pn-test__card:hover { 
+  border-color: var(--color-primary); 
+  transform: translateY(-8px) scale(1.02); 
+  box-shadow: 0 20px 40px rgba(0,0,0,0.4), 0 0 20px rgba(0,200,151,0.08); 
+  z-index: 2;
+}
+
+.pn-test__stars { display: flex; gap: 4px; color: #F59E0B; }
+.pn-test__text { font-size: var(--fs-base); color: var(--text-secondary); line-height: 1.75; flex: 1; font-style: italic; }
+.pn-test__author { display: flex; align-items: center; gap: 1rem; margin-top: auto; }
 .pn-test__avatar {
-  width: 42px; height: 42px; border-radius: 50%;
+  width: 48px; height: 48px; border-radius: 50%;
   background: linear-gradient(135deg, var(--color-primary-dark), var(--color-primary));
   display: flex; align-items: center; justify-content: center;
   color: #fff; font-weight: 700; font-size: var(--fs-md);
   flex-shrink: 0;
+  box-shadow: 0 4px 12px rgba(0,200,151,0.3);
 }
-.pn-test__name { display: block; font-size: var(--fs-sm); font-weight: 700; color: var(--text-primary); }
-.pn-test__meta { display: block; font-size: var(--fs-xs); color: var(--text-muted); margin-top: 2px; }
-.pn-test__controls { display: flex; align-items: center; justify-content: center; gap: 1rem; }
-.pn-test__nav {
-  width: 40px; height: 40px; border-radius: 50%;
-  background: var(--bg-secondary); border: 1px solid var(--border-color);
-  color: var(--text-secondary); display: flex; align-items: center; justify-content: center;
-  cursor: pointer; transition: all var(--transition-fast);
+.pn-test__name { display: block; font-size: var(--fs-base); font-weight: 700; color: var(--text-primary); }
+.pn-test__meta { display: block; font-size: var(--fs-sm); color: var(--text-muted); margin-top: 4px; }
+
+@media (max-width: 768px) { 
+  .pn-test__card { width: 320px; padding: 1.5rem; }
+  .pn-test__text { font-size: var(--fs-sm); }
 }
-.pn-test__nav:hover { background: var(--color-primary); color: #fff; border-color: var(--color-primary); }
-.pn-test__dots { display: flex; gap: 0.4rem; }
-.pn-test__dot {
-  width: 8px; height: 8px; border-radius: 50%;
-  background: var(--border-color-strong); border: none; cursor: pointer;
-  transition: all var(--transition-fast);
-}
-.pn-test__dot.active { background: var(--color-primary); width: 24px; border-radius: var(--radius-full); }
-@media (max-width: 900px) { .pn-test__grid { grid-template-columns: 1fr 1fr; } }
-@media (max-width: 560px) { .pn-test__grid { grid-template-columns: 1fr; } }

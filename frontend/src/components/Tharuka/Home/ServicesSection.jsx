@@ -1,4 +1,4 @@
-import { useRef } from 'react';
+import { useRef, memo } from 'react';
 import { motion, useInView } from 'framer-motion';
 import { useTranslation } from 'react-i18next';
 import { CheckCircle2 } from 'lucide-react';
@@ -11,26 +11,7 @@ const services = [
   { key: 'caregiver',img: '/images/Tharuka/about_team.png',         align: 'left'  },
 ];
 
-export default function ServicesSection() {
-  const { t } = useTranslation();
-
-  return (
-    <section className="pn-services section-pad" id="services">
-      <div className="container">
-        <div className="section-header">
-          <span className="section-label">Services</span>
-          <h2 className="section-title">{t('serv_title')}</h2>
-          <p className="section-subtitle">{t('serv_subtitle')}</p>
-        </div>
-        <div className="pn-services__list">
-          {services.map((svc, i) => <ServiceRow key={svc.key} svc={svc} index={i} />)}
-        </div>
-      </div>
-    </section>
-  );
-}
-
-function ServiceRow({ svc, index }) {
+const ServiceRow = memo(({ svc, index }) => {
   const { t } = useTranslation();
   const ref = useRef(null);
   const inView = useInView(ref, { once: true, margin: '-80px' });
@@ -44,7 +25,13 @@ function ServiceRow({ svc, index }) {
         animate={inView ? { opacity: 1, x: 0 } : {}}
         transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
       >
-        <img src={svc.img} alt={t(`serv_${svc.key}_title`)} className="pn-svc-row__img" />
+        <img 
+          src={svc.img} 
+          alt={t(`serv_${svc.key}_title`)} 
+          className="pn-svc-row__img" 
+          loading="lazy"
+          decoding="async"
+        />
         <div className="pn-svc-row__img-glow" />
       </motion.div>
       <motion.div
@@ -63,5 +50,24 @@ function ServiceRow({ svc, index }) {
         </ul>
       </motion.div>
     </div>
+  );
+});
+
+export default function ServicesSection() {
+  const { t } = useTranslation();
+
+  return (
+    <section className="pn-services section-pad" id="services">
+      <div className="container">
+        <div className="section-header">
+          <span className="section-label">Services</span>
+          <h2 className="section-title">{t('serv_title')}</h2>
+          <p className="section-subtitle">{t('serv_subtitle')}</p>
+        </div>
+        <div className="pn-services__list">
+          {services.map((svc, i) => <ServiceRow key={svc.key} svc={svc} index={i} />)}
+        </div>
+      </div>
+    </section>
   );
 }
