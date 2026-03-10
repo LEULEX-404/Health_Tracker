@@ -1,0 +1,122 @@
+.pn-preloader {
+  position: fixed;
+  top: 0; left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: var(--bg-primary); /* Use theme background */
+  z-index: 99999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+
+/* Premium Background Orb for attraction */
+.pn-preloader::before {
+  content: "";
+  position: absolute;
+  width: 400px;
+  height: 400px;
+  background: radial-gradient(circle, rgba(0, 200, 151, 0.12), transparent 70%);
+  border-radius: 50%;
+  animation: pnPreloaderGlow 4s ease-in-out infinite;
+}
+
+@keyframes pnPreloaderGlow {
+  0%, 100% { transform: scale(1); opacity: 0.5; }
+  50% { transform: scale(1.3); opacity: 0.8; }
+}
+
+.pn-preloader__content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1.5rem;
+  z-index: 10;
+}
+
+.pn-preloader__heartbeat-wrapper {
+  position: relative;
+  width: 250px;
+  height: 80px;
+}
+
+.pn-preloader__svg {
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+}
+
+.pn-preloader__line {
+  fill: none;
+  stroke: var(--color-primary);
+  stroke-width: 4;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-dasharray: 1000;
+  stroke-dashoffset: 1000;
+  /* Faster, more energetic draw */
+  animation: drawHeartbeat 1.8s cubic-bezier(0.65, 0, 0.35, 1) forwards;
+  filter: drop-shadow(0 0 15px var(--color-primary-glow));
+}
+
+.pn-preloader__brand {
+  margin-top: -5px;
+  display: flex;
+}
+
+.pn-preloader__logo-text {
+  font-size: 3.5rem;
+  font-family: 'Space Grotesk', sans-serif;
+  font-weight: 800;
+  color: var(--text-primary);
+  letter-spacing: -0.04em;
+  display: flex;
+  gap: 2px;
+}
+
+.pn-preloader__logo-text span {
+  display: inline-block;
+}
+
+.pn-preloader__highlight {
+  color: var(--color-primary);
+  margin-left: 2px;
+  display: flex;
+  gap: 2px;
+}
+
+.pn-preloader__particle {
+  position: absolute;
+  width: 6px;
+  height: 6px;
+  background: var(--color-primary);
+  border-radius: 50%;
+  pointer-events: none;
+  filter: blur(1px) drop-shadow(0 0 8px var(--color-primary));
+  left: 50%;
+  top: 50%;
+}
+
+@keyframes drawHeartbeat {
+  0% { stroke-dashoffset: 1000; }
+  25% { stroke-dashoffset: 850; }
+  55% { stroke-dashoffset: 400; }
+  100% { stroke-dashoffset: 0; }
+}
+
+/* Flash effect on exit */
+.pn-preloader::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: white;
+  opacity: 0;
+  pointer-events: none;
+  z-index: 1000;
+  transition: opacity 0.5s ease-in;
+}
+
+.pn-preloader[data-exiting="true"]::after {
+  opacity: 0.05;
+}

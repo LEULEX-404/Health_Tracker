@@ -1,5 +1,5 @@
 import { useRef, useEffect, useState } from 'react';
-import { motion, useInView } from 'framer-motion';
+import { motion, useInView, animate } from 'framer-motion';
 import { useTranslation } from 'react-i18next';
 import { Users, Utensils, Dumbbell, Stethoscope } from 'lucide-react';
 import './StatsSection.css';
@@ -12,23 +12,32 @@ const STATS = [
 ];
 
 function Counter({ target, suffix }) {
-  const [count, setCount] = useState(0);
+  const [display, setDisplay] = useState(0);
   const ref = useRef(null);
-  const inView = useInView(ref, { once: true });
+  const inView = useInView(ref, { once: true, margin: '-50px' });
+
   useEffect(() => {
-    if (!inView) return;
-    let start = 0;
-    const displayTarget = target > 1000 ? target / 1000 : target;
-    const step = displayTarget / 60;
-    const timer = setInterval(() => {
-      start += step;
-      if (start >= displayTarget) { setCount(displayTarget); clearInterval(timer); return; }
-      setCount(Math.floor(start));
-    }, 24);
-    return () => clearInterval(timer);
+    if (inView) {
+      // High-performance animation loop
+      const controls = animate(0, target, {
+        duration: 1.5, // Faster animation for snappier feel
+        ease: [0.33, 1, 0.68, 1], // Custom cubic-bezier for premium motion
+        onUpdate: (value) => {
+          const v = Math.floor(value);
+          setDisplay(v); // No need to check v !== display here, animate is fine
+        }
+      });
+      return controls.stop;
+    }
   }, [inView, target]);
-  const display = target > 1000000 ? `${count}M` : target > 1000 ? `${count}K` : count;
-  return <span ref={ref}>{display}{suffix}</span>;
+
+  function formatValue(val) {
+    if (val >= 1000000) return (val / 1000000).toFixed(0) + 'M';
+    if (val >= 1000) return (val / 1000).toFixed(0) + 'K';
+    return val;
+  }
+
+  return <span ref={ref}>{formatValue(display)}{suffix}</span>;
 }
 
 export default function StatsSection() {

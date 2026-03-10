@@ -3,6 +3,7 @@ import { motion, useInView } from 'framer-motion';
 import { useTranslation } from 'react-i18next';
 import { CalendarCheck, Activity, MessageSquare, Pill, LayoutDashboard } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import MagneticWrapper from '../Common/MagneticWrapper';
 import './CaregiverSection.css';
 
 export default function CaregiverSection() {
@@ -29,6 +30,7 @@ export default function CaregiverSection() {
           <span className="section-label">Caregiver</span>
           <h2 className="pn-care__title">{t('care_title')}</h2>
           <p className="pn-care__subtitle">{t('care_subtitle')}</p>
+          
           <p className="pn-care__desc">{t('care_desc')}</p>
           <ul className="pn-care__features">
             {features.map(f => {
@@ -41,10 +43,12 @@ export default function CaregiverSection() {
               );
             })}
           </ul>
-          <Link to="/dashboard" className="btn-primary pn-care__cta">
-            <LayoutDashboard size={16} />
-            {t('care_cta')}
-          </Link>
+          <MagneticWrapper strength={0.35} range={90} display="inline-block">
+            <Link to="/dashboard" className="btn-primary pn-care__cta">
+              <LayoutDashboard size={16} />
+              {t('care_cta')}
+            </Link>
+          </MagneticWrapper>
         </motion.div>
 
         <motion.div
@@ -52,6 +56,7 @@ export default function CaregiverSection() {
           initial={{ opacity: 0, x: 50 }}
           animate={inView ? { opacity: 1, x: 0 } : {}}
           transition={{ duration: 0.7, delay: 0.2, ease: [0.22, 1, 0.36, 1] }}
+          style={{ willChange: 'transform, opacity' }}
         >
           <div className="pn-care__card glass">
             <div className="pn-care__card-header">
