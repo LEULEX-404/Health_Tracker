@@ -80,11 +80,17 @@ export function AuthProvider({ children }) {
         return result;
     }, [user, token]);
 
+    const oauthLogin = useCallback(({ token: newToken, user: newUser }) => {
+        localStorage.setItem('pn_token', newToken);
+        setToken(newToken);
+        setUser(newUser);
+    }, []);
+
     return (
         <AuthContext.Provider value={{
             user, token, loading, login, register, logout,
             requestPasswordReset, completePasswordReset, confirmEmail,
-            markOnboardingComplete
+            markOnboardingComplete, oauthLogin
         }}>
             {children}
         </AuthContext.Provider>

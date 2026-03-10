@@ -1,6 +1,6 @@
-import { useMemo } from 'react';
+import { useMemo, useState, useEffect } from 'react';
 import Logo from '../Tharuka/Common/Logo';
-import { Activity, Shield, Heart, TrendingUp } from 'lucide-react';
+import { Activity, Shield, Heart, TrendingUp, Sun, Moon } from 'lucide-react';
 
 const FEATURES = [
     { icon: <Activity size={24} />, title: 'Real-time Monitoring', desc: 'Track vitals 24/7' },
@@ -42,15 +42,39 @@ function Particles() {
 
 /**
  * Centered glass card layout with branding and feature cards.
+ * Now supports Day/Night mode via a local state theme toggle.
  */
 export default function AuthLayout({ children }) {
+    const [isDarkMode, setIsDarkMode] = useState(() => {
+        const saved = localStorage.getItem('auth_theme');
+        return saved ? saved === 'dark' : true; // Default to dark
+    });
+
+    useEffect(() => {
+        localStorage.setItem('auth_theme', isDarkMode ? 'dark' : 'light');
+    }, [isDarkMode]);
+
+    const toggleTheme = () => setIsDarkMode(!isDarkMode);
+
     return (
-        <div className="Imasha-auth-page">
+        <div className={`Imasha-auth-page ${!isDarkMode ? 'light-theme' : ''}`}>
             <div className="Imasha-auth-bg" />
             <div className="Imasha-auth-bg-overlay" />
             <Particles />
 
             <div className="Imasha-auth-center-container">
+                {/* Theme Toggle Button */}
+                <div className="Imasha-theme-toggle-wrap">
+                    <button 
+                        className="Imasha-theme-btn" 
+                        onClick={toggleTheme}
+                        title={`Switch to ${isDarkMode ? 'Day' : 'Night'} Mode`}
+                        aria-label={`Toggle ${isDarkMode ? 'Light' : 'Dark'} Mode`}
+                    >
+                        {isDarkMode ? <Sun size={20} /> : <Moon size={20} />}
+                    </button>
+                </div>
+
                 {/* Logo and App Name at the top for both Desktop and Mobile */}
                 <div className="Imasha-auth-top-logo">
                     <Logo />
