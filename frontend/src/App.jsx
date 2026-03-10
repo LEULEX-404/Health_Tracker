@@ -1,8 +1,10 @@
 import React, { useState, useEffect, Suspense, lazy } from 'react';
-import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { Toaster } from 'react-hot-toast';
 import { AnimatePresence } from 'framer-motion';
+import { AuthProvider, useAuth } from './context/Imasha/AuthContext';
 import Preloader from './components/Tharuka/Common/Preloader';
+import PageTransitionWave from './components/Tharuka/Common/PageTransitionWave';
 import { ThemeProvider } from './context/Tharuka/ThemeContext';
 import { FontSizeProvider } from './context/Tharuka/FontSizeContext';
 import './utils/Tharuka/i18n';
@@ -26,8 +28,6 @@ const ForgotPasswordPage = lazy(() => import('./pages/Imasha/ForgotPasswordPage'
 const ResetPasswordPage = lazy(() => import('./pages/Imasha/ResetPasswordPage'));
 const VerifyEmailPage = lazy(() => import('./pages/Imasha/VerifyEmailPage'));
 const OnboardingPage = lazy(() => import('./pages/Imasha/OnboardingPage'));
-import { AuthProvider, useAuth } from './context/Imasha/AuthContext';
-import { Navigate } from 'react-router-dom';
 
 // Pages — Priya
 import ExercisePage from './pages/Priya/Exercise';
@@ -64,6 +64,8 @@ function App() {
 
   return (
     <>
+      <PageTransitionWave />
+      
       <AnimatePresence mode="wait">
         {initialLoading && <Preloader key="preloader" />}
       </AnimatePresence>
@@ -92,10 +94,17 @@ function App() {
               <Route path="/forgot-password" element={<ForgotPasswordPage />} />
               <Route path="/reset-password" element={<ResetPasswordPage />} />
               <Route path="/verify-email" element={<VerifyEmailPage />} />
+              
+              {/* Optional Onboarding Route */}
+              <Route path="/onboarding" element={<ProtectedRoute><OnboardingPage /></ProtectedRoute>} />
 
               {/* Protected Priya Routes */}
               <Route path="/exercise" element={<ProtectedRoute><ExercisePage /></ProtectedRoute>} />
               <Route path="/find-specialist" element={<ProtectedRoute><FindSpecialistPage /></ProtectedRoute>} />
+
+              {/* Protected Nutrition Routes */}
+              <Route path="/health-data" element={<ProtectedRoute><ServicesPage /></ProtectedRoute>} />
+              <Route path="/meal-plan" element={<ProtectedRoute><ServicesPage /></ProtectedRoute>} />
             </>
           )}
         </Routes>

@@ -5,6 +5,7 @@ import { Sun, Moon, Globe, User, LogIn, ChevronDown, Bell } from 'lucide-react';
 import { useTheme } from '../../../context/Tharuka/ThemeContext';
 import { useFontSize } from '../../../context/Tharuka/FontSizeContext';
 import { useAuth } from '../../../context/Imasha/AuthContext';
+import { triggerPageWave } from '../Common/PageTransitionWave';
 import './HeaderControls.css';
 
 const LANGS = [
@@ -43,13 +44,17 @@ export default function HeaderControls() {
   }, []);
 
   const changeLang = (code) => {
-    i18n.changeLanguage(code);
-    localStorage.setItem('pulsanova-lang', code);
+    triggerPageWave(() => {
+      i18n.changeLanguage(code);
+      localStorage.setItem('pulsanova-lang', code);
+    });
     setLangOpen(false);
   };
 
   const handleFontChange = (size) => {
-    changeSize(size);
+    triggerPageWave(() => {
+      changeSize(size);
+    });
     setFontOpen(false);
   };
 

@@ -42,7 +42,9 @@ export function AuthProvider({ children }) {
         localStorage.setItem('pn_token', accessToken);
         setToken(accessToken);
         setUser(userData);
-        const redirectTo = ROLE_REDIRECTS[userData?.role] || '/login';
+        const redirectTo = (userData?.role === 'patient' && !userData?.hasCompletedOnboarding)
+            ? '/onboarding'
+            : ROLE_REDIRECTS[userData?.role] || '/login';
         navigate(redirectTo);
         return data;
     }, [navigate]);
@@ -74,8 +76,9 @@ export function AuthProvider({ children }) {
     }, []);
 
     const markOnboardingComplete = useCallback(async () => {
-        if (!user || !token) return;
-        const result = await completeUserOnboarding(user._id, token);
+        const userId = user?.id || user?._id;
+        if (!userId || !token) return;
+        const result = await completeUserOnboarding(userId, token);
         setUser(prev => ({ ...prev, hasCompletedOnboarding: true }));
         return result;
     }, [user, token]);
