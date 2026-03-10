@@ -7,6 +7,7 @@ import {
   deleteUser,
   linkDoctorPatient,
   assignCaregiver,
+  completeOnboarding,
 } from '../../controllers/Imasha/userController.js';
 import { authenticate, isAdmin } from '../../middleware/Imasha/authMiddleware.js';
 import {
@@ -64,6 +65,13 @@ router.put(
  * @access  Private/Admin
  */
 router.delete('/:id', authenticate, isAdmin, deleteUser);
+
+/**
+ * @route   PATCH /api/users/:id/onboarding
+ * @desc    Mark onboarding as complete
+ * @access  Private
+ */
+router.patch('/:id/onboarding', authenticate, completeOnboarding);
 
 // ==========================================
 // ADMIN ONLY ROUTES

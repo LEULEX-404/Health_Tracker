@@ -10,7 +10,7 @@ const MEAL_TYPES = ["breakfast", "lunch", "dinner", "snack"];
 
 export const addMeal = async (req, res) => {
   try {
-    const { userId, mealType, mealName, items, notes, recordedAt } = req.body;
+    const { userId, mealType, mealName, items, notes, recordedAt, useApiForNutrition } = req.body;
     if (!userId) return badRequest(res, "userId is required");
     if (!mealType || !MEAL_TYPES.includes(mealType)) {
       return badRequest(res, "mealType is required and must be one of: breakfast, lunch, dinner, snack");
@@ -21,6 +21,7 @@ export const addMeal = async (req, res) => {
       items,
       notes,
       recordedAt,
+      useApiForNutrition,
     });
     return created(res, entry);
   } catch (err) {

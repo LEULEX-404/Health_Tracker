@@ -7,6 +7,7 @@ import path from "path";
 import { fileURLToPath } from "url";
 import { connectDB } from './database.js';
 import { PORT, NODE_ENV, CLIENT_URL, ADMIN_DASHBOARD_URL, COOKIE_SECRET } from './config.js';
+import priyaOpenApi from "./docs/priya-openapi.js";
 import authRoutes from './routes/Imasha/authRoutes.js';
 import userRoutes from './routes/Imasha/userRoutes.js';
 import userReportRoutes from './routes/Imasha/reportRoutes.js';
@@ -149,6 +150,16 @@ app.get('/health', (req, res) => {
   });
 });
 
+app.use(
+  "/api-docs/priya",
+  swaggerUi.serve,
+  swaggerUi.setup(priyaOpenApi, {
+    customCss: ".swagger-ui .topbar { display: none }",
+    customSiteTitle: "Priya Module API",
+  })
+);
+
+
 
 // Swagger UI for Tharindu module APIs (Alerts, Notifications, Bookings)
 app.use('/api-docs/tharindu', swaggerUi.serve, swaggerUi.setup(tharinduOpenApi, {
@@ -172,6 +183,7 @@ app.get('/', (req, res) => {
         docs: 'See API_DOCUMENTATION.md',
         swaggerImasha: 'http://localhost:5000/api-docs/imasha',
         swaggerTharindu: 'http://localhost:5000/api-docs/tharindu',
+        swaggerPriya: "http://localhost:5000/api-docs/priya",
       },
   });
 });
@@ -229,7 +241,7 @@ const startContinuousSimulator = () => {
     } catch (err) {
       console.error("[Simulator] Error:", err.message);
     }
-  }, process.env.SIMULATOR_INTERVAL_MS || 30000);
+  }, process.env.SIMULATOR_INTERVAL_MS || 60000);
 };
 
 // Start simulator AFTER DB is connected
@@ -282,6 +294,8 @@ startMonitoringSchedulers();
 import appointmentsRoutes from "./routes/Priya/appointmentsRoutes.js";
 import exerciseRoutes from "./routes/Priya/exerciseRoutes.js";
 import emailLogRoutes from "./routes/Priya/emailLogRoute.js";
+import adminAppointmentsRoutes from "./routes/Priya/adminAppointmentsRoutes.js";
+import doctorRoutes from "./routes/Priya/doctorRoutes.js";
 
 // Tharindu Routes
 import caregiverRoutes from "./routes/Tharindu/caregiverRoutes.js";
@@ -291,8 +305,8 @@ app.use('/api/tharindu/bookings', caregiverRoutes);
 app.use('/api/email-logs', emailLogRoutes);
 app.use('/api/appointments', appointmentsRoutes);
 app.use('/api/exercise', exerciseRoutes);
-
-
+app.use('/api/admin/appointments', adminAppointmentsRoutes);
+app.use('/api/doctors', doctorRoutes);
 
 // ==========================================
 // ERROR HANDLING MIDDLEWARE
@@ -376,3 +390,8 @@ process.on('SIGINT', () => {
 });
 
 export default app;
+
+
+// ==========================================
+// 80% Completed
+// ==========================================
