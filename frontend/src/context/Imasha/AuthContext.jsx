@@ -9,6 +9,7 @@ import {
     resetPassword,
     verifyEmail
 } from '../../utils/Imasha/authApi';
+import { completeUserOnboarding } from '../../utils/Imasha/userApi';
 
 const AuthContext = createContext(null);
 
@@ -72,10 +73,18 @@ export function AuthProvider({ children }) {
         return await verifyEmail(token);
     }, []);
 
+    const markOnboardingComplete = useCallback(async () => {
+        if (!user || !token) return;
+        const result = await completeUserOnboarding(user._id, token);
+        setUser(prev => ({ ...prev, hasCompletedOnboarding: true }));
+        return result;
+    }, [user, token]);
+
     return (
         <AuthContext.Provider value={{
             user, token, loading, login, register, logout,
-            requestPasswordReset, completePasswordReset, confirmEmail
+            requestPasswordReset, completePasswordReset, confirmEmail,
+            markOnboardingComplete
         }}>
             {children}
         </AuthContext.Provider>
