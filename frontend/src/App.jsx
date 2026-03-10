@@ -31,6 +31,8 @@ import { AuthProvider } from './context/Imasha/AuthContext';
 import ExercisePage from './pages/Priya/Exercise';
 import FindSpecialistPage from './pages/Priya/FindSpecialist';
 
+import ProtectedRoute from './components/Imasha/ProtectedRoute';
+
 function App() {
   const [initialLoading, setInitialLoading] = useState(true);
 
@@ -72,10 +74,10 @@ function App() {
                 <Route path="/forgot-password" element={<ForgotPasswordPage />} />
                 <Route path="/reset-password" element={<ResetPasswordPage />} />
                 <Route path="/verify-email" element={<VerifyEmailPage />} />
-                  
+
                 {/* Priya — Exercise and Appointment Routes */}
-                <Route path="/exercise" element={<ExercisePage />} />
-                <Route path="/find-specialist" element={<FindSpecialistPage />} />
+                <Route path="/exercise" element={<ProtectedRoute><ExercisePage /></ProtectedRoute>} />
+                <Route path="/find-specialist" element={<ProtectedRoute><FindSpecialistPage /></ProtectedRoute>} />
               </Routes>
             </Suspense>
           </AuthProvider>
