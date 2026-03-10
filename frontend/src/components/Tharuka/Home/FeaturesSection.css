@@ -1,0 +1,80 @@
+.pn-features { background: var(--bg-secondary); }
+.pn-features__grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1.5rem;
+}
+.pn-feat-card {
+  perspective: 1200px;
+  background: transparent;
+  padding: 0;
+  border: none;
+  cursor: default;
+}
+
+.pn-feat-card__inner {
+  position: relative;
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-lg);
+  padding: 2rem;
+  overflow: hidden;
+  height: 100%;
+  transform-style: preserve-3d;
+  transition: border-color var(--transition-normal), box-shadow var(--transition-normal);
+}
+
+.pn-feat-card__inner:hover {
+  border-color: var(--color-primary);
+  box-shadow: 0 20px 40px rgba(0,0,0,0.4), 0 0 20px rgba(0,200,151,0.1);
+}
+
+.pn-feat-card__icon {
+  width: 52px; height: 52px;
+  border-radius: var(--radius-md);
+  background: linear-gradient(135deg, rgba(0,200,151,0.12), rgba(0,200,151,0.05));
+  border: 1px solid rgba(0,200,151,0.2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--color-primary);
+  margin-bottom: 1.25rem;
+  transition: all var(--transition-normal);
+  transform: translateZ(30px); /* 3D pop out */
+}
+.pn-feat-card__inner:hover .pn-feat-card__icon {
+  background: var(--color-primary);
+  color: #fff;
+  box-shadow: 0 4px 16px var(--color-primary-glow);
+}
+.pn-feat-card__title {
+  font-size: var(--fs-md);
+  font-weight: 700;
+  color: var(--text-primary);
+  margin-bottom: 0.6rem;
+  transform: translateZ(20px); /* 3D pop out */
+}
+.pn-feat-card__desc { 
+  font-size: var(--fs-sm); 
+  color: var(--text-muted); 
+  line-height: 1.65; 
+  transform: translateZ(10px); /* 3D pop out */
+}
+.pn-feat-card__glow {
+  position: absolute;
+  top: 0; left: 0;
+  width: 250px; height: 250px;
+  background: radial-gradient(circle, rgba(0,200,151,0.15), transparent 70%);
+  border-radius: 50%;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity var(--transition-normal);
+  /* The x and y are driven by Framer Motion inline styles, meaning we subtract half the size to center it on mouse */
+  margin-left: -125px;
+  margin-top: -125px;
+  z-index: 0;
+}
+.pn-feat-card__inner:hover .pn-feat-card__glow { opacity: 1; }
+
+@media (max-width: 900px) { .pn-features__grid { grid-template-columns: repeat(2, 1fr); } }
+@media (max-width: 560px) { .pn-features__grid { grid-template-columns: 1fr; } }

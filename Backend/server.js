@@ -3,7 +3,6 @@ import cors from 'cors';
 import helmet from 'helmet';
 import morgan from 'morgan';
 import cookieParser from 'cookie-parser';
-import swaggerUi from "swagger-ui-express";
 import path from "path";
 import { fileURLToPath } from "url";
 import { connectDB } from './database.js';

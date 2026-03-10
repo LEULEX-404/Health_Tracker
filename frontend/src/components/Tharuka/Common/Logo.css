@@ -1,0 +1,39 @@
+.pn-logo {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  text-decoration: none;
+  flex-shrink: 0;
+}
+.pn-logo__icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  filter: drop-shadow(0 0 8px var(--color-primary-glow));
+  transition: filter var(--transition-normal), transform var(--transition-normal);
+}
+.pn-logo:hover .pn-logo__icon {
+  filter: drop-shadow(0 0 16px rgba(0,200,151,0.6));
+  transform: scale(1.05);
+}
+.pn-logo__text {
+  display: flex;
+  flex-direction: column;
+  line-height: 1;
+}
+.pn-logo__name {
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: var(--fs-lg);
+  font-weight: 700;
+  color: var(--text-primary);
+  letter-spacing: -0.02em;
+}
+.pn-logo__accent { color: var(--color-primary); }
+.pn-logo__tagline {
+  font-size: 0.6rem;
+  font-weight: 500;
+  color: var(--text-muted);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  margin-top: 1px;
+}
