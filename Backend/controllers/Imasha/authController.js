@@ -219,7 +219,7 @@ class AuthController {
       });
 
       res.redirect(
-        `${result.redirectUrl}?token=${result.accessToken}&user=${encodeURIComponent(JSON.stringify(result.user))}`
+        `${process.env.CLIENT_URL}/login?token=${result.accessToken}&user=${encodeURIComponent(JSON.stringify(result.user))}`
       );
     } catch (error) {
       console.error('❌ CALLBACK ERROR:');

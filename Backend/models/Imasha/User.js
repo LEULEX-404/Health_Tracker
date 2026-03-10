@@ -108,6 +108,10 @@ const userSchema = new mongoose.Schema(
       type: Boolean,
       default: false,
     },
+    hasCompletedOnboarding: {
+      type: Boolean,
+      default: false,
+    },
     emailVerificationToken: String,
     passwordResetToken: String,
     passwordResetExpires: Date,
@@ -131,7 +135,7 @@ const userSchema = new mongoose.Schema(
 //Password Hash Middleware
 userSchema.pre("save", async function () {
   if (!this.isModified("password")) return;
-  
+
   try {
     const salt = await bcrypt.genSalt(12);
     this.password = await bcrypt.hash(this.password, salt);

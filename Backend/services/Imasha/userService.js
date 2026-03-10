@@ -18,8 +18,8 @@ export const getAllUsers = async ({ page = 1, limit = 10, role, search, isActive
   if (search) {
     query.$or = [
       { firstName: { $regex: search, $options: 'i' } },
-      { lastName:  { $regex: search, $options: 'i' } },
-      { email:     { $regex: search, $options: 'i' } },
+      { lastName: { $regex: search, $options: 'i' } },
+      { email: { $regex: search, $options: 'i' } },
     ];
   }
 
@@ -38,8 +38,8 @@ export const getAllUsers = async ({ page = 1, limit = 10, role, search, isActive
     users,
     pagination: {
       total,
-      page:       Number(page),
-      limit:      Number(limit),
+      page: Number(page),
+      limit: Number(limit),
       totalPages: Math.ceil(total / limit),
     },
   };
@@ -51,8 +51,8 @@ export const getAllUsers = async ({ page = 1, limit = 10, role, search, isActive
 export const getUserById = async (userId) => {
   const user = await User.findOne({ _id: userId, isDeleted: false })
     .select('-password -emailVerificationToken -passwordResetToken')
-    .populate('linkedDoctor',    'firstName lastName email profileImage')
-    .populate('linkedPatients',  'firstName lastName email profileImage')
+    .populate('linkedDoctor', 'firstName lastName email profileImage')
+    .populate('linkedPatients', 'firstName lastName email profileImage')
     .populate('linkedCaregiver', 'firstName lastName email profileImage');
 
   if (!user) throw new NotFoundError('User not found.');
@@ -156,7 +156,7 @@ export const deleteUser = async (userId, requestingUser) => {
     throw new BadRequestError('You cannot delete your own account.');
   }
 
-    // Add this null check
+  // Add this null check
   if (!requestingUser) {
     throw new ForbiddenError('Requesting user not found.');
   }
@@ -167,9 +167,9 @@ export const deleteUser = async (userId, requestingUser) => {
   }
 
   // Soft delete
-  user.isDeleted  = true;
-  user.deletedAt  = new Date();
-  user.isActive   = false;
+  user.isDeleted = true;
+  user.deletedAt = new Date();
+  user.isActive = false;
   await user.save();
 
   return { message: 'User deleted successfully.' };
@@ -184,7 +184,7 @@ export const linkDoctorPatient = async (doctorId, patientId) => {
     User.findOne({ _id: patientId, role: 'patient', isDeleted: false }),
   ]);
 
-  if (!doctor)  throw new NotFoundError('Doctor not found.');
+  if (!doctor) throw new NotFoundError('Doctor not found.');
   if (!patient) throw new NotFoundError('Patient not found.');
 
   // Link patient to doctor
@@ -210,7 +210,7 @@ export const assignCaregiver = async (patientId, caregiverId) => {
     User.findOne({ _id: caregiverId, role: 'caregiver', isDeleted: false }),
   ]);
 
-  if (!patient)   throw new NotFoundError('Patient not found.');
+  if (!patient) throw new NotFoundError('Patient not found.');
   if (!caregiver) throw new NotFoundError('Caregiver not found.');
 
   // Assign caregiver to patient
@@ -225,4 +225,21 @@ export const assignCaregiver = async (patientId, caregiverId) => {
   }
 
   return { message: 'Caregiver assigned successfully.' };
+};
+
+// ==========================================
+// COMPLETE ONBOARDING
+// ==========================================
+export const completeOnboarding = async (userId) => {
+  const user = await User.findOne({ _id: userId, isDeleted: false });
+
+  if (!user) throw new NotFoundError('User not found.');
+
+  user.hasCompletedOnboarding = true;
+  await user.save();
+
+  return {
+    message: 'Onboarding marked as complete.',
+    hasCompletedOnboarding: user.hasCompletedOnboarding
+  };
 };
