@@ -19,22 +19,30 @@ const SEARCH_INDEX = [
   { title: 'Privacy Policy', path: '/privacy', desc: 'Data privacy policy' },
 ];
 
-export default function SearchBar({ onOpen }) {
+export default function SearchBar() {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState('');
   const [results, setResults] = useState([]);
   const inputRef = useRef(null);
+  const searchRef = useRef(null);
 
+  // Focus input when opened
   useEffect(() => {
-    if (open) {
-      setTimeout(() => inputRef.current?.focus(), 80);
-      onOpen?.(true);
-    } else {
-      onOpen?.(false);
-    }
+    if (open) setTimeout(() => inputRef.current?.focus(), 80);
   }, [open]);
+
+  // Handle outside click
+  useEffect(() => {
+    const handleClickOutside = (e) => {
+      if (searchRef.current && !searchRef.current.contains(e.target)) {
+        setOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
 
   useEffect(() => {
     if (!query.trim()) { setResults([]); return; }
@@ -55,52 +63,46 @@ export default function SearchBar({ onOpen }) {
     if (e.key === 'Escape') close();
   };
 
-  // Inline trigger (when closed, show just the search icon button)
-  if (!open) {
-    return (
+  return (
+    <div className="pn-search" ref={searchRef} onKeyDown={handleKey}>
       <button
-        className="pn-search__trigger"
-        onClick={() => setOpen(true)}
+        className={`pn-search__trigger ${open ? 'active' : ''}`}
+        onClick={() => setOpen(!open)}
         aria-label="Search"
       >
-        <Search size={20} />
+        {open ? <X size={20} /> : <Search size={20} />}
       </button>
-    );
-  }
 
-  // Inline expanded (replaces nav inside header)
-  return (
-    <div className="pn-search__inline" onKeyDown={handleKey}>
-      <div className="pn-search__inline-wrap">
-        <Search size={18} className="pn-search__icon" />
-        <input
-          ref={inputRef}
-          type="text"
-          className="pn-search__input"
-          placeholder={t('nav_search_placeholder') || 'Search pages, features…'}
-          value={query}
-          onChange={e => setQuery(e.target.value)}
-        />
-        <button className="pn-search__close-btn" onClick={close} aria-label="Close search">
-          <X size={18} />
-        </button>
-      </div>
+      {open && (
+        <div className="pn-search__dropdown glass">
+          <div className="pn-search__input-wrap">
+            <Search size={16} className="pn-search__input-icon" />
+            <input
+              ref={inputRef}
+              type="text"
+              className="pn-search__input"
+              placeholder={t('nav_search_placeholder') || 'Search...'}
+              value={query}
+              onChange={e => setQuery(e.target.value)}
+            />
+          </div>
 
-      {results.length > 0 && (
-        <ul className="pn-search__results glass">
-          {results.map((r, i) => (
-            <li key={i} className="pn-search__result" onClick={() => handleSelect(r.path)}>
-              <Search size={13} className="pn-search__result-icon" />
-              <div>
-                <span className="pn-search__result-title">{r.title}</span>
-                <span className="pn-search__result-desc">{r.desc}</span>
-              </div>
-            </li>
-          ))}
-        </ul>
-      )}
-      {query && results.length === 0 && (
-        <p className="pn-search__empty glass">No results for "{query}"</p>
+          {results.length > 0 && (
+            <ul className="pn-search__results-list">
+              {results.map((r, i) => (
+                <li key={i} className="pn-search__result-item" onClick={() => handleSelect(r.path)}>
+                  <div className="pn-search__result-info">
+                    <span className="pn-search__result-title">{r.title}</span>
+                    <span className="pn-search__result-desc">{r.desc}</span>
+                  </div>
+                </li>
+              ))}
+            </ul>
+          )}
+          {query && results.length === 0 && (
+            <p className="pn-search__empty-msg">No results for "{query}"</p>
+          )}
+        </div>
       )}
     </div>
   );

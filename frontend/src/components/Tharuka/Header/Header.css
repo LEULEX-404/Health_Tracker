@@ -15,6 +15,7 @@
 .pn-header__inner {
   height: 100%;
   display: flex;
+  justify-content: center;
   align-items: center;
   gap: 10px;
 }
@@ -44,6 +45,6 @@
   border-color: var(--color-primary);
   color: var(--color-primary);
 }
-@media (max-width: 1024px) {
+@media (max-width: 1200px) {
   .pn-header__hamburger { display: flex; }
 }

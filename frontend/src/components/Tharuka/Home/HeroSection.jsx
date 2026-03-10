@@ -1,8 +1,9 @@
 import { useEffect, useRef } from 'react';
 import { motion } from 'framer-motion';
 import { useTranslation } from 'react-i18next';
-import { ArrowRight, PlayCircle } from 'lucide-react';
+import { PlayCircle, ArrowRight } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import MagneticWrapper from '../Common/MagneticWrapper';
 import './HeroSection.css';
 
 function TypedText({ texts }) {
@@ -37,31 +38,33 @@ export default function HeroSection() {
     <section className="pn-hero" id="hero">
       <div className="container pn-hero__inner">
         <div className="pn-hero__content">
-          <motion.div {...fadeUp(0.1)}>
-            <span className="section-label">
-              <span className="pn-hero__dot" />
-              Because Every Pulse Matters
-            </span>
-          </motion.div>
+          <span className="section-label">
+            <span className="pn-hero__dot" />
+            Because Every Pulse Matters
+          </span>
 
-          <motion.h1 className="pn-hero__title" {...fadeUp(0.2)}>
+          <h1 className="pn-hero__title">
             {t('hero_title')}<br />
             <span className="text-gradient"><TypedText texts={['Reimagined.', 'Personalized.', 'Empowering.', 'Intelligent.']} /></span>
             <span className="pn-hero__cursor">|</span>
-          </motion.h1>
+          </h1>
 
-          <motion.p className="pn-hero__desc" {...fadeUp(0.35)}>
+          <p className="pn-hero__desc">
             {t('hero_desc')}
-          </motion.p>
+          </p>
 
           <motion.div className="pn-hero__ctas" {...fadeUp(0.5)}>
-            <Link to="/signup" className="btn-primary pn-hero__cta-main">
-              {t('hero_cta_start')} <ArrowRight size={16} />
-            </Link>
-            <Link to="/about" className="btn-outline">
-              <PlayCircle size={16} />
-              {t('hero_cta_learn')}
-            </Link>
+            <MagneticWrapper strength={0.4} range={100} display="inline-block">
+              <Link to="/signup" className="btn-primary pn-hero__cta-main">
+                {t('hero_cta_start')} <ArrowRight size={16} />
+              </Link>
+            </MagneticWrapper>
+            <MagneticWrapper strength={0.3} range={80} display="inline-block">
+              <Link to="/about" className="btn-outline">
+                <PlayCircle size={16} />
+                {t('hero_cta_learn')}
+              </Link>
+            </MagneticWrapper>
           </motion.div>
 
           <motion.div className="pn-hero__stats" {...fadeUp(0.65)}>
@@ -107,6 +110,20 @@ export default function HeroSection() {
         animate={{ y: [0,8,0] }} transition={{ duration: 1.5, repeat: Infinity }}>
         <div className="pn-hero__scroll-wheel" />
       </motion.div>
+      {/* Dynamic Background Waves */}
+      <div className="pn-hero__waves-container">
+        <svg className="pn-hero__waves" xmlns="http://www.w3.org/2000/svg" xmlnsXlink="http://www.w3.org/1999/xlink" viewBox="0 24 150 28" preserveAspectRatio="none" shapeRendering="auto">
+          <defs>
+            <path id="gentle-wave" d="M-160 44c30 0 58-18 88-18s 58 18 88 18 58-18 88-18 58 18 88 18 v44h-352z" />
+          </defs>
+          <g className="pn-hero__parallax">
+            <use xlinkHref="#gentle-wave" x="48" y="0" fill="var(--bg-secondary)" opacity="0.2" />
+            <use xlinkHref="#gentle-wave" x="48" y="3" fill="var(--bg-secondary)" opacity="0.4" />
+            <use xlinkHref="#gentle-wave" x="48" y="5" fill="var(--bg-secondary)" opacity="0.7" />
+            <use xlinkHref="#gentle-wave" x="48" y="7" fill="var(--bg-secondary)" />
+          </g>
+        </svg>
+      </div>
     </section>
   );
 }

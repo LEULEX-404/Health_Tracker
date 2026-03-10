@@ -1,0 +1,77 @@
+/* Restored default cursor */
+body, a, button, input, textarea, select {
+  cursor: auto;
+}
+
+.pn-cursor-dot {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 14px;
+  height: 14px;
+  transform: translate3d(-50%, -50%, 0);
+  pointer-events: none;
+  z-index: 999999;
+  will-change: transform;
+  /* CRITICAL: Do NOT transition 'transform' here, as it's updated via JS for speed */
+  transition: opacity 0.3s ease; 
+}
+
+.pn-cursor-dot-inner {
+  width: 100%;
+  height: 100%;
+  background-color: var(--color-primary);
+  clip-path: polygon(50% 0%, 0% 100%, 100% 100%);
+  transform-origin: center;
+  box-shadow: 0 0 15px var(--color-primary);
+  animation: pn-cursor-rotate 4s linear infinite;
+  transition: transform 0.1s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+@keyframes pn-cursor-rotate {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+.pn-cursor-ring {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 32px;
+  height: 32px;
+  background-color: transparent;
+  border: 1.5px solid var(--color-primary);
+  opacity: 0.4;
+  pointer-events: none;
+  z-index: 999998;
+  will-change: transform;
+}
+
+/* Hover States */
+.pn-cursor-ring.hovering {
+  width: 56px;
+  height: 56px;
+  border-color: var(--color-primary);
+  background-color: rgba(0, 200, 151, 0.08);
+  opacity: 1;
+}
+
+.pn-cursor-dot.hovering .pn-cursor-dot-inner {
+  transform: scale(1.4);
+  background-color: var(--color-primary); /* Ensure it stays primary color, NO WHITE */
+  box-shadow: 0 0 25px var(--color-primary);
+}
+
+.pn-cursor-dot.hidden, .pn-cursor-ring.hidden {
+  opacity: 0;
+}
+
+/* Ensure custom cursor is hidden on mobile/tablets */
+@media (max-width: 1024px) {
+  .pn-cursor-dot, .pn-cursor-ring {
+    display: none;
+  }
+  body, a, button {
+    cursor: auto !important;
+  }
+}

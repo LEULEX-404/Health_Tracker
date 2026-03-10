@@ -16,33 +16,31 @@
   border-radius: 50%;
   filter: blur(80px);
   opacity: 0.12;
-  animation: pnFloat 12s ease-in-out infinite;
+  /* Remove transform-based animation to avoid conflict with Framer Motion 'y' */
+  animation: pnPulse 8s ease-in-out infinite alternate;
 }
 .pn-bg-gradient--1 {
   width: 600px; height: 600px;
   background: radial-gradient(circle, #00C897, transparent);
   top: -150px; left: -150px;
-  animation-duration: 14s;
 }
 .pn-bg-gradient--2 {
   width: 500px; height: 500px;
   background: radial-gradient(circle, #00B4D8, transparent);
   bottom: -100px; right: -100px;
-  animation-duration: 10s;
-  animation-delay: -4s;
 }
 .pn-bg-gradient--3 {
   width: 350px; height: 350px;
   background: radial-gradient(circle, #39FF14, transparent);
   top: 50%; left: 50%;
-  transform: translate(-50%, -50%);
-  animation-duration: 16s;
-  animation-delay: -8s;
+  margin-top: -175px; margin-left: -175px;
   opacity: 0.06;
 }
-@keyframes pnFloat {
-  0%, 100% { transform: translate(0, 0) scale(1); }
-  33% { transform: translate(30px, -20px) scale(1.05); }
-  66% { transform: translate(-20px, 30px) scale(0.96); }
+@keyframes pnPulse {
+  0% { opacity: 0.08; scale: 1; }
+  100% { opacity: 0.16; scale: 1.1; }
+}
+@media (max-width: 768px) {
+  .pn-bg-gradient { filter: blur(40px); opacity: 0.08; }
 }
 [data-theme="dark"] .pn-bg-gradient { opacity: 0.2; }

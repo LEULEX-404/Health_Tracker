@@ -1,135 +1,220 @@
 .pn-hctrl {
   display: flex;
   align-items: center;
-  gap: 6px;          /* fixed px — won't move with A+/A- */
-  flex-shrink: 0;
+  gap: 12px;
 }
 
-/* ── Font Size Switcher ── */
-.pn-hctrl__font {
+.pn-hctrl__dropdown-wrap {
+  position: relative;
+}
+
+.pn-hctrl__trigger {
   display: flex;
   align-items: center;
-  background: var(--bg-secondary);
-  border-radius: 99px;
+  gap: 8px;
+  padding: 0 12px;
+  height: 40px;
+  background: rgba(255, 255, 255, 0.05);
   border: 1px solid var(--border-color);
-  overflow: hidden;
-  height: 32px;      /* fixed px — immune to font changes */
-  flex-shrink: 0;
-}
-.pn-hctrl__font-btn {
-  background: none;
-  border: none;
-  padding: 0 9px;
+  border-radius: var(--radius-md);
+  color: var(--text-primary);
   cursor: pointer;
-  font-weight: 700;
-  color: var(--text-muted);
   transition: all var(--transition-fast);
-  font-family: inherit;
-  height: 32px;      /* fixed px */
-  line-height: 32px;
-}
-/* These font-sizes are for the A-/A/A+ label display only — they are fixed px */
-.pn-hctrl__font-btn--small  { font-size: 10px; }
-.pn-hctrl__font-btn--medium { font-size: 13px; }
-.pn-hctrl__font-btn--large  { font-size: 16px; }
-.pn-hctrl__font-btn.active, .pn-hctrl__font-btn:hover {
-  background: var(--color-primary-glow);
-  color: var(--color-primary);
+  font-weight: 500;
+  font-size: 0.9rem;
 }
 
-/* ── Language Switcher ── */
-.pn-hctrl__lang {
+.pn-hctrl__trigger:hover,
+.pn-hctrl__trigger.active {
+  background: rgba(255, 255, 255, 0.1);
+  border-color: var(--primary-color);
+}
+
+.pn-hctrl__trigger-icon {
+  color: var(--text-secondary);
+}
+
+.pn-hctrl__chevron {
+  transition: transform var(--transition-fast);
+  color: var(--text-muted);
+}
+
+.pn-hctrl__chevron.open {
+  transform: rotate(180deg);
+}
+
+.pn-hctrl__menu {
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  min-width: 140px;
+  padding: 8px;
+  z-index: 100;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  animation: slideInDown 0.2s ease-out;
+}
+
+@keyframes slideInDown {
+  from { opacity: 0; transform: translateY(-10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.pn-hctrl__menu-item {
   display: flex;
   align-items: center;
-  gap: 2px;
-  background: var(--bg-secondary);
-  border-radius: 99px;
-  border: 1px solid var(--border-color);
-  padding: 0 8px;
-  height: 32px;      /* fixed px */
-  flex-shrink: 0;
-}
-.pn-hctrl__lang-icon { color: var(--text-muted); flex-shrink: 0; width: 13px; height: 13px; display: block; }
-.pn-hctrl__lang-btn {
-  background: none;
+  gap: 10px;
+  padding: 8px 12px;
   border: none;
-  padding: 2px 6px;
+  background: transparent;
+  color: var(--text-secondary);
+  border-radius: var(--radius-sm);
   cursor: pointer;
-  font-size: 11px;   /* fixed px */
-  font-weight: 700;
-  color: var(--text-muted);
-  border-radius: 99px;
   transition: all var(--transition-fast);
-  font-family: inherit;
-  white-space: nowrap;
-  line-height: 1;
-}
-.pn-hctrl__lang-btn.active, .pn-hctrl__lang-btn:hover {
-  background: var(--color-primary);
-  color: #fff;
+  text-align: left;
+  width: 100%;
+  font-size: 0.9rem;
 }
 
-/* ── Dark Mode Toggle — 44px fixed circle ── */
+.pn-hctrl__menu-item:hover {
+  background: rgba(255, 255, 255, 0.08);
+  color: var(--text-primary);
+}
+
+.pn-hctrl__menu-item.active {
+  background: var(--primary-color-light);
+  color: var(--primary-color);
+}
+
+.pn-hctrl__font-preview--small { font-size: 0.8rem; }
+.pn-hctrl__font-preview--medium { font-size: 1rem; }
+.pn-hctrl__font-preview--large { font-size: 1.2rem; }
+
+.pn-hctrl__active-dot {
+  width: 6px;
+  height: 6px;
+  background: var(--primary-color);
+  border-radius: 50%;
+  margin-left: auto;
+}
+
+/* Theme Toggle */
 .pn-hctrl__theme {
+  width: 40px;
+  height: 40px;
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 44px;       /* fixed px */
-  height: 44px;      /* fixed px */
-  border-radius: 50%;
-  background: var(--bg-secondary);
-  border: 1.5px solid var(--border-color);
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border-color);
+  background: transparent;
   color: var(--text-secondary);
   cursor: pointer;
-  flex-shrink: 0;
-  transition: all var(--transition-normal);
-}
-/* Explicit SVG size so it never changes regardless of font-size */
-.pn-hctrl__theme svg { width: 22px; height: 22px; display: block; color: inherit; }
-.pn-hctrl__theme:hover {
-  border-color: var(--color-primary);
-  color: var(--color-primary);
-  background: rgba(0,200,151,0.1);
-  transform: rotate(20deg);
+  transition: all var(--transition-fast);
 }
 
-/* ── Auth Buttons — fixed px font & padding ── */
+.pn-hctrl__theme:hover {
+  background: rgba(255, 255, 255, 0.05);
+  color: var(--primary-color);
+  border-color: var(--primary-color);
+}
+
+/* Auth Section */
 .pn-hctrl__auth {
   display: flex;
   align-items: center;
-  gap: 6px;          /* fixed px */
-  flex-shrink: 0;
-}
-/* Override btn-primary/btn-outline sizing so A+/A- doesn't resize these buttons */
-.pn-hctrl__login,
-.pn-hctrl__signup {
-  font-size: 13px !important;   /* fixed px */
-  padding: 8px 16px !important; /* fixed px */
-  line-height: 1 !important;
-  height: 36px !important;      /* fixed px */
+  gap: 8px;
+  margin-left: 8px;
 }
 
-/* ── Profile — 44px fixed circle ── */
-.pn-hctrl__profile {
-  width: 44px;       /* fixed px */
-  height: 44px;      /* fixed px */
-  border-radius: 50%;
-  background: linear-gradient(135deg, var(--color-primary-dark), var(--color-primary));
-  border: none;
-  color: #fff;
+.pn-hctrl__login {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.9rem;
+  padding: 8px 16px;
+}
+
+.pn-hctrl__signup {
+  font-size: 0.9rem;
+  padding: 8px 16px;
+}
+
+/* Logged In State */
+.pn-hctrl__logged-in {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.pn-hctrl__icon-btn {
+  position: relative;
+  width: 40px;
+  height: 40px;
   display: flex;
   align-items: center;
   justify-content: center;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border-color);
+  background: transparent;
+  color: var(--text-secondary);
   cursor: pointer;
-  flex-shrink: 0;
-  transition: all var(--transition-normal);
+  transition: all var(--transition-fast);
 }
-/* Explicit SVG size */
-.pn-hctrl__profile svg { width: 22px; height: 22px; display: block; color: #fff; }
-.pn-hctrl__profile:hover { transform: scale(1.08); box-shadow: 0 0 14px var(--color-primary-glow); }
 
-/* ── Responsive: hide controls progressively ── */
-@media (max-width: 1100px) { .pn-hctrl__auth   { display: none; } }
-@media (max-width: 900px)  { .pn-hctrl__font   { display: none; } }
-@media (max-width: 680px)  { .pn-hctrl__lang   { display: none; } }
-@media (max-width: 480px)  { .pn-hctrl { gap: 4px; } }
+.pn-hctrl__icon-btn:hover {
+  background: rgba(255, 255, 255, 0.05);
+  color: var(--primary-color);
+}
+
+.pn-hctrl__badge {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  width: 8px;
+  height: 8px;
+  background: var(--accent-color);
+  border-radius: 50%;
+  border: 2px solid var(--bg-card);
+}
+
+.pn-hctrl__profile {
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  border: 2px solid var(--border-color);
+  background: var(--primary-color-light);
+  color: var(--primary-color);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.pn-hctrl__profile:hover {
+  border-color: var(--primary-color);
+  transform: scale(1.05);
+}
+
+/* Mobile Responsive */
+@media (max-width: 768px) {
+  .pn-hctrl__trigger-text {
+    display: none;
+  }
+  
+  .pn-hctrl__trigger {
+    padding: 0 8px;
+    width: 40px;
+    justify-content: center;
+  }
+  
+  .pn-hctrl__chevron {
+    display: none;
+  }
+  
+  .pn-hctrl__auth {
+    display: none; /* Hide login/signup on mobile header, usually in sidebar */
+  }
+}

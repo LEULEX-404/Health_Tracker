@@ -40,7 +40,7 @@ export async function getCurrentUser(token) {
     });
     const data = await res.json();
     if (!data.success) throw new Error(data.message || 'Unauthorized');
-    return data.data;
+    return data.user || data.data;
 }
 
 /**
