@@ -2,6 +2,7 @@ import Report from '../../models/Imasha/Report.js';
 import User from '../../models/Imasha/User.js';
 import AuditLog from '../../models/Imasha/AuditLog.js';
 import { NotFoundError, ForbiddenError, BadRequestError } from '../../utils/Imasha/errors.js';
+import PDFDocument from 'pdfkit';
 
 // ==========================================
 // GENERATE REPORT
@@ -10,7 +11,7 @@ export const generateReport = async ({ type, title, dateFrom, dateTo, requesting
 
   // Validate date range
   const fromDate = new Date(dateFrom);
-  const toDate   = new Date(dateTo);
+  const toDate = new Date(dateTo);
 
   if (isNaN(fromDate) || isNaN(toDate)) {
     throw new BadRequestError('Invalid date format. Use YYYY-MM-DD.');
@@ -25,12 +26,12 @@ export const generateReport = async ({ type, title, dateFrom, dateTo, requesting
 
   // Create report with 'generating' status
   const report = new Report({
-    title:       title || `${type} Report - ${new Date().toLocaleDateString()}`,
+    title: title || `${type} Report - ${new Date().toLocaleDateString()}`,
     type,
     generatedBy: requestingUser._id,
     dateRange: {
       from: fromDate,
-      to:   toDate,
+      to: toDate,
     },
     status: 'generating',
   });
@@ -39,7 +40,7 @@ export const generateReport = async ({ type, title, dateFrom, dateTo, requesting
 
   try {
     let reportData = {};
-    let summary    = {};
+    let summary = {};
 
     // ==========================================
     // USER ACTIVITY REPORT
@@ -89,24 +90,24 @@ export const generateReport = async ({ type, title, dateFrom, dateTo, requesting
 
       // Audit logs (login activity)
       const loginActivity = await AuditLog.find({
-        action:    { $in: ['LOGIN', 'LOGOUT', 'FAILED_LOGIN'] },
+        action: { $in: ['USER_LOGIN', 'USER_LOGOUT', 'USER_LOGIN_FAILED'] },
         createdAt: { $gte: fromDate, $lte: toDate },
       })
         .populate('userId', 'firstName lastName email role')
         .sort({ createdAt: -1 })
         .limit(100);
 
-      const totalUsers     = allUsers.length;
-      const totalPatients  = allUsers.filter(u => u.role === 'patient').length;
-      const totalDoctors   = allUsers.filter(u => u.role === 'doctor').length;
+      const totalUsers = allUsers.length;
+      const totalPatients = allUsers.filter(u => u.role === 'patient').length;
+      const totalDoctors = allUsers.filter(u => u.role === 'doctor').length;
       const totalCaregivers = allUsers.filter(u => u.role === 'caregiver').length;
-      const activeUsers    = allUsers.filter(u => u.isActive).length;
-      const inactiveUsers  = allUsers.filter(u => !u.isActive).length;
-      const verifiedUsers  = allUsers.filter(u => u.isEmailVerified).length;
+      const activeUsers = allUsers.filter(u => u.isActive).length;
+      const inactiveUsers = allUsers.filter(u => !u.isActive).length;
+      const verifiedUsers = allUsers.filter(u => u.isEmailVerified).length;
       const unverifiedUsers = allUsers.filter(u => !u.isEmailVerified).length;
 
-      const totalLogins  = loginActivity.filter(l => l.action === 'LOGIN').length;
-      const failedLogins = loginActivity.filter(l => l.action === 'FAILED_LOGIN').length;
+      const totalLogins = loginActivity.filter(l => l.action === 'USER_LOGIN').length;
+      const failedLogins = loginActivity.filter(l => l.action === 'USER_LOGIN_FAILED').length;
 
       summary = {
         totalUsers,
@@ -157,11 +158,11 @@ export const generateReport = async ({ type, title, dateFrom, dateTo, requesting
     // ==========================================
     if (type === 'system') {
       // Total counts
-      const totalUsers      = await User.countDocuments({ isDeleted: false });
-      const totalDeleted    = await User.countDocuments({ isDeleted: true });
-      const activeUsers     = await User.countDocuments({ isDeleted: false, isActive: true });
-      const inactiveUsers   = await User.countDocuments({ isDeleted: false, isActive: false });
-      const verifiedUsers   = await User.countDocuments({ isDeleted: false, isEmailVerified: true });
+      const totalUsers = await User.countDocuments({ isDeleted: false });
+      const totalDeleted = await User.countDocuments({ isDeleted: true });
+      const activeUsers = await User.countDocuments({ isDeleted: false, isActive: true });
+      const inactiveUsers = await User.countDocuments({ isDeleted: false, isActive: false });
+      const verifiedUsers = await User.countDocuments({ isDeleted: false, isEmailVerified: true });
       const unverifiedUsers = await User.countDocuments({ isDeleted: false, isEmailVerified: false });
 
       // Users by role
@@ -184,7 +185,7 @@ export const generateReport = async ({ type, title, dateFrom, dateTo, requesting
         {
           $group: {
             _id: {
-              year:  { $year:  '$createdAt' },
+              year: { $year: '$createdAt' },
               month: { $month: '$createdAt' },
             },
             count: { $sum: 1 },
@@ -203,7 +204,7 @@ export const generateReport = async ({ type, title, dateFrom, dateTo, requesting
 
       // Error logs
       const errorLogs = await AuditLog.find({
-        status:    'failed',
+        status: 'failure',
         createdAt: { $gte: fromDate, $lte: toDate },
       })
         .populate('userId', 'firstName lastName email')
@@ -220,19 +221,25 @@ export const generateReport = async ({ type, title, dateFrom, dateTo, requesting
         createdAt: { $gte: fromDate, $lte: toDate },
       });
 
+      // New users in this period
+      const newRegistrationsCount = await User.countDocuments({
+        isDeleted: false,
+        createdAt: { $gte: fromDate, $lte: toDate },
+      });
+
       summary = {
         totalUsers,
-        totalPatients:    usersByRole.find(r => r._id === 'patient')?.count    || 0,
-        totalDoctors:     usersByRole.find(r => r._id === 'doctor')?.count     || 0,
-        totalCaregivers:  usersByRole.find(r => r._id === 'caregiver')?.count  || 0,
+        totalPatients: usersByRole.find(r => r._id === 'patient')?.count || 0,
+        totalDoctors: usersByRole.find(r => r._id === 'doctor')?.count || 0,
+        totalCaregivers: usersByRole.find(r => r._id === 'caregiver')?.count || 0,
         activeUsers,
         inactiveUsers,
-        newRegistrations: 0,
+        newRegistrations: newRegistrationsCount,
         verifiedUsers,
         unverifiedUsers,
-        deletedUsers:     totalDeleted,
-        totalLogins:      recentAuditLogs.filter(l => l.action === 'LOGIN').length,
-        failedLogins:     errorLogs.length,
+        deletedUsers: totalDeleted,
+        totalLogins: recentAuditLogs.filter(l => l.action === 'USER_LOGIN').length,
+        failedLogins: errorLogs.length,
       };
 
       reportData = {
@@ -248,8 +255,8 @@ export const generateReport = async ({ type, title, dateFrom, dateTo, requesting
         systemHealth: {
           totalAuditLogs,
           totalReports,
-          errorCount:    errorLogs.length,
-          recentErrors:  errorLogs.slice(0, 10),
+          errorCount: errorLogs.length,
+          recentErrors: errorLogs.slice(0, 10),
         },
         monthlyGrowth,
         recentActivity: recentAuditLogs.slice(0, 20),
@@ -257,9 +264,9 @@ export const generateReport = async ({ type, title, dateFrom, dateTo, requesting
     }
 
     // Update report with completed data
-    report.data    = reportData;
+    report.data = reportData;
     report.summary = summary;
-    report.status  = 'completed';
+    report.status = 'completed';
     await report.save();
 
     return report;
@@ -283,7 +290,7 @@ export const getAllReports = async ({ page = 1, limit = 10, type, status, reques
     query.generatedBy = requestingUser._id;
   }
 
-  if (type)   query.type   = type;
+  if (type) query.type = type;
   if (status) query.status = status;
 
   const skip = (page - 1) * limit;
@@ -302,8 +309,8 @@ export const getAllReports = async ({ page = 1, limit = 10, type, status, reques
     reports,
     pagination: {
       total,
-      page:       Number(page),
-      limit:      Number(limit),
+      page: Number(page),
+      limit: Number(limit),
       totalPages: Math.ceil(total / limit),
     },
   };
@@ -351,4 +358,275 @@ export const deleteReport = async (reportId, requestingUser) => {
   await report.save();
 
   return { message: 'Report deleted successfully.' };
+};
+
+// ==========================================
+// GENERATE PDF REPORT
+// ==========================================
+export const generateReportPdf = async (reportId, requestingUser, res) => {
+  const report = await getReportById(reportId, requestingUser);
+
+  // Initialize PDF Document
+  const doc = new PDFDocument({ margin: 50, size: 'A4' });
+
+  // Set response headers
+  res.setHeader('Content-Type', 'application/pdf');
+  res.setHeader(
+    'Content-Disposition',
+    `attachment; filename="PulseNova_Report_${report.type}_${report._id}.pdf"`
+  );
+
+  // Pipe the PDF to the response stream
+  doc.pipe(res);
+
+  // --- Theme Colors ---
+  const PRIMARY = '#00C897';
+  const PRIMARY_DARK = '#00A07A';
+  const SECONDARY = '#333333';
+  const LIGHT_GRAY = '#F4F7F6';
+  const TEXT_MUTED = '#666666';
+
+  // --- Top Header Bar ---
+  doc.rect(0, 0, doc.page.width, 10).fill(PRIMARY);
+
+  // --- Header Section ---
+  doc.moveDown(1);
+
+  // Custom Heartbeat Logo Vector (Matching exact Logo.jsx svg path)
+  // Outer circle: cx=18, cy=18, r=17 -> Center roughly at (68, 55). radius 17
+  doc.circle(68, 55, 17).lineWidth(2).strokeColor(PRIMARY).stroke();
+
+  // Inner Pulse: M4 18 L10 18 L13 11 L16 25 L19 14 L22 20 L25 18 L32 18
+  // Offset by (+50, +37) ->
+  doc.strokeColor(PRIMARY_DARK).lineWidth(2.2)
+    .moveTo(54, 55)
+    .lineTo(60, 55)
+    .lineTo(63, 48)
+    .lineTo(66, 62)
+    .lineTo(69, 51)
+    .lineTo(72, 57)
+    .lineTo(75, 55)
+    .lineTo(82, 55)
+    .stroke();
+
+  // Company Name
+  doc.fillColor(PRIMARY_DARK).font('Helvetica-Bold').fontSize(28).text('PulseNova', 100, 40, { align: 'left' });
+  doc.fillColor(SECONDARY).font('Helvetica').fontSize(10).text('Every Pulse Matters', 100, 70, { align: 'left' });
+
+  // Company Details (Right side)
+  doc.fillColor(TEXT_MUTED).fontSize(9)
+    .text('100, Kandy road, malabe', 50, 45, { align: 'right' })
+    .text('support@healthcare.com', 50, 58, { align: 'right' })
+    .text('+94 76 215 7137', 50, 71, { align: 'right' });
+
+  // Divider Line
+  doc.moveTo(50, 110).lineTo(doc.page.width - 50, 110).lineWidth(1).strokeColor('#E0E0E0').stroke();
+
+  // --- Report Title & Meta ---
+  doc.moveDown(4);
+
+  // Title Card Background
+  doc.rect(50, 130, doc.page.width - 100, 80).fill(LIGHT_GRAY);
+
+  doc.fillColor(SECONDARY).font('Helvetica-Bold').fontSize(22).text(report.title, 70, 145, { align: 'left' });
+
+  doc.font('Helvetica').fontSize(10).fillColor(TEXT_MUTED)
+    .text(`Report Type: `, 70, 175, { continued: true }).font('Helvetica-Bold').fillColor(PRIMARY_DARK).text(`${report.type === 'user_activity' ? 'User Activity & Growth' : 'System Health'}`)
+    .font('Helvetica').fillColor(TEXT_MUTED).text(`Date Range: `, 70, 190, { continued: true }).font('Helvetica-Bold').fillColor(SECONDARY).text(`${new Date(report.dateRange.from).toLocaleDateString()} - ${new Date(report.dateRange.to).toLocaleDateString()}`);
+
+  // Right side meta
+  doc.font('Helvetica').fillColor(TEXT_MUTED).fontSize(9)
+    .text(`Generated By: ${report.generatedBy.firstName} ${report.generatedBy.lastName} (${report.generatedBy.role})`, 50, 175, { align: 'right', width: doc.page.width - 120 })
+    .text(`Date: ${new Date(report.createdAt).toLocaleString()}`, 50, 190, { align: 'right', width: doc.page.width - 120 });
+
+  doc.moveDown(3);
+
+  // --- Summary Metrics Box Layout ---
+  doc.fillColor(PRIMARY_DARK).font('Helvetica-Bold').fontSize(16).text('EXECUTIVE SUMMARY', 50, doc.y);
+  doc.moveDown(0.5);
+  doc.moveTo(50, doc.y).lineTo(doc.page.width - 50, doc.y).lineWidth(2).strokeColor(PRIMARY).stroke();
+  doc.moveDown(1);
+
+  const summary = report.summary;
+
+  // Helper to draw a metric card
+  const drawMetricCard = (x, y, title, value) => {
+    doc.rect(x, y, 110, 60).fill('white').lineWidth(1).strokeColor('#E0E0E0').stroke();
+    doc.fillColor(TEXT_MUTED).font('Helvetica').fontSize(9).text(title, x, y + 15, { width: 110, align: 'center' });
+    doc.fillColor(PRIMARY_DARK).font('Helvetica-Bold').fontSize(18).text(String(value), x, y + 35, { width: 110, align: 'center' });
+  };
+
+  const startY = doc.y;
+  drawMetricCard(50, startY, 'Total Users', summary.totalUsers);
+  drawMetricCard(175, startY, 'Active Users', summary.activeUsers);
+  drawMetricCard(300, startY, 'Total Patients', summary.totalPatients);
+  drawMetricCard(425, startY, 'New Registrations', summary.newRegistrations);
+
+  doc.moveDown(6);
+
+  // --- Detailed Data Section ---
+  if (report.data) {
+    doc.fillColor(PRIMARY_DARK).font('Helvetica-Bold').fontSize(16).text('DETAILED REPORT LOGS', 50, doc.y);
+    doc.moveDown(0.5);
+    doc.moveTo(50, doc.y).lineTo(doc.page.width - 50, doc.y).lineWidth(2).strokeColor(PRIMARY).stroke();
+    doc.moveDown(1);
+
+    if (report.type === 'system' && report.data.recentActivity) {
+      // System Health Metrics Table
+      if (report.data.systemHealth) {
+        doc.font('Helvetica-Bold').fontSize(12).fillColor(SECONDARY).text('System Health Errors', 50, doc.y);
+        doc.moveDown(0.5);
+
+        doc.rect(50, doc.y, doc.page.width - 100, 20).fill('#D9534F');
+        let errY = doc.y + 6;
+        doc.font('Helvetica-Bold').fontSize(10).fillColor('#FFFFFF');
+        doc.text('Date & Time', 60, errY, { continued: false });
+        doc.text('User Email', 190, errY, { continued: false });
+        doc.text('Error Description', 310, errY, { continued: false });
+        doc.moveDown(1.5);
+
+        doc.font('Helvetica').fontSize(9);
+        report.data.systemHealth.recentErrors.slice(0, 10).forEach((err, i) => {
+          if (i % 2 === 0) doc.rect(50, doc.y - 2, doc.page.width - 100, 18).fill('#FAFAFA');
+          doc.fillColor(TEXT_MUTED).text(new Date(err.createdAt).toLocaleString(), 60, doc.y + 2);
+
+          let userEmail = 'System / Unknown';
+          if (err.userId && err.userId.email) {
+            userEmail = err.userId.email;
+          } else if (err.description) {
+            const emailMatch = err.description.match(/[\w.-]+@[\w.-]+\.\w+/);
+            if (emailMatch) {
+              userEmail = emailMatch[0];
+            } else {
+              userEmail = 'Unknown User';
+            }
+          }
+
+          doc.fillColor(SECONDARY).text(userEmail, 190, doc.y - 11);
+
+          doc.fillColor('#D9534F').text(`${err.action} - ${err.description}`, 310, doc.y - 11);
+          doc.moveDown(0.5);
+        });
+        doc.moveTo(50, doc.y + 5).lineTo(doc.page.width - 50, doc.y + 5).lineWidth(1).strokeColor('#E0E0E0').stroke();
+        doc.moveDown(2);
+      }
+
+      // Audit Logs Table
+      doc.font('Helvetica-Bold').fontSize(12).fillColor(SECONDARY).text('Recent Audit Logs', 50, doc.y);
+      doc.moveDown(0.5);
+
+      doc.rect(50, doc.y, doc.page.width - 100, 20).fill(PRIMARY_DARK);
+      const headY = doc.y + 6;
+      doc.font('Helvetica-Bold').fontSize(10).fillColor('#FFFFFF');
+      doc.text('Date & Time', 60, headY, { continued: false });
+      doc.text('User', 190, headY, { continued: false });
+      doc.text('Action', 310, headY, { continued: false });
+
+      doc.moveDown(1.5);
+
+      doc.font('Helvetica').fontSize(9);
+      report.data.recentActivity.slice(0, 15).forEach((log, i) => {
+        let userName = 'System';
+        if (log.userId) {
+          if (log.userId.firstName) userName = `${log.userId.firstName} ${log.userId.lastName}`;
+          else if (log.userId.email) userName = log.userId.email;
+        } else if (log.description) {
+          const emailMatch = log.description.match(/[\w.-]+@[\w.-]+\.\w+/);
+          if (emailMatch) {
+            userName = emailMatch[0];
+          } else {
+            userName = 'Unknown User';
+          }
+        }
+
+        if (i % 2 === 0) doc.rect(50, doc.y - 2, doc.page.width - 100, 18).fill('#FAFAFA');
+
+        doc.fillColor(TEXT_MUTED).text(new Date(log.createdAt).toLocaleString(), 60, doc.y + 2);
+        doc.fillColor(SECONDARY).text(userName, 190, doc.y - 11);
+
+        const actionColor = log.status === 'success' ? PRIMARY_DARK : '#D9534F';
+
+        // Clean the description to avoid printing the email twice
+        let cleanDescription = log.description;
+        if (cleanDescription.includes(userName)) {
+          cleanDescription = cleanDescription.replace(userName, '').replace(':', '').trim();
+        }
+
+        doc.fillColor(actionColor).text(`${log.action} - ${cleanDescription}`, 310, doc.y - 11);
+
+        doc.moveDown(0.5);
+      });
+      doc.moveTo(50, doc.y + 5).lineTo(doc.page.width - 50, doc.y + 5).lineWidth(1).strokeColor('#E0E0E0').stroke();
+      doc.moveDown(2);
+
+      // Monthly Growth Table
+      if (report.data.monthlyGrowth && report.data.monthlyGrowth.length > 0) {
+        doc.font('Helvetica-Bold').fontSize(12).fillColor(SECONDARY).text('Monthly Growth (Last 6 Months)', 50, doc.y);
+        doc.moveDown(0.5);
+
+        doc.rect(50, doc.y, doc.page.width - 100, 20).fill(PRIMARY_DARK);
+        const gwY = doc.y + 6;
+        doc.font('Helvetica-Bold').fontSize(10).fillColor('#FFFFFF');
+        doc.text('Month/Year', 60, gwY, { continued: false });
+        doc.text('New Users', 310, gwY, { continued: false });
+
+        doc.moveDown(1.5);
+
+        doc.font('Helvetica').fontSize(9);
+        report.data.monthlyGrowth.forEach((gw, i) => {
+          if (i % 2 === 0) doc.rect(50, doc.y - 2, doc.page.width - 100, 18).fill('#FAFAFA');
+
+          // Format month to 2 digits
+          const monthStr = gw._id.month.toString().padStart(2, '0');
+          doc.fillColor(TEXT_MUTED).text(`${monthStr}/${gw._id.year}`, 60, doc.y + 2);
+          doc.fillColor(PRIMARY_DARK).text(`+ ${gw.count} users`, 310, doc.y - 11);
+          doc.moveDown(0.5);
+        });
+        doc.moveTo(50, doc.y + 5).lineTo(doc.page.width - 50, doc.y + 5).lineWidth(1).strokeColor('#E0E0E0').stroke();
+        doc.moveDown(2);
+      }
+    }
+
+    if (report.type === 'user_activity' && report.data.newRegistrations) {
+      // Table Header Background
+      doc.rect(50, doc.y, doc.page.width - 100, 20).fill(PRIMARY_DARK);
+
+      const headY = doc.y + 6;
+      doc.font('Helvetica-Bold').fontSize(10).fillColor('#FFFFFF');
+      doc.text('Join Date', 60, headY, { continued: false });
+      doc.text('Name', 160, headY, { continued: false });
+      doc.text('Role', 320, headY, { continued: false });
+      doc.text('Email', 400, headY, { continued: false });
+
+      doc.moveDown(1.5);
+
+      doc.font('Helvetica').fontSize(9);
+      report.data.newRegistrations.users.slice(0, 15).forEach((usr, i) => {
+        if (i % 2 === 0) doc.rect(50, doc.y - 2, doc.page.width - 100, 18).fill('#FAFAFA');
+
+        doc.fillColor(TEXT_MUTED).text(new Date(usr.createdAt).toLocaleDateString(), 60, doc.y + 2);
+        doc.fillColor(SECONDARY).text(`${usr.firstName} ${usr.lastName}`, 160, doc.y - 11);
+        doc.fillColor(PRIMARY_DARK).text(usr.role.toUpperCase(), 320, doc.y - 11);
+        doc.fillColor(TEXT_MUTED).text(usr.email, 400, doc.y - 11);
+        doc.moveDown(0.5);
+      });
+      // Bottom table border
+      doc.moveTo(50, doc.y + 5).lineTo(doc.page.width - 50, doc.y + 5).lineWidth(1).strokeColor('#E0E0E0').stroke();
+    }
+  }
+
+  // --- Footer ---
+  const pageHeight = doc.page.height;
+
+  // Footer Line
+  doc.moveTo(50, pageHeight - 65).lineTo(doc.page.width - 50, pageHeight - 65).lineWidth(1).strokeColor('#E0E0E0').stroke();
+
+  doc.fontSize(8).fillColor('#aaaaaa')
+    .text('PulseNova Health Tracking System - Confidential & Proprietary', 50, pageHeight - 50, { align: 'center', lineBreak: false })
+    .text('Generated via PulseNova Admin Dashboard - Do not distribute without authorization', 50, pageHeight - 40, { align: 'center', lineBreak: false });
+
+  // Bottom Color Bar
+  doc.rect(0, pageHeight - 10, doc.page.width, 10).fill(PRIMARY_DARK);
+
+  doc.end();
 };
