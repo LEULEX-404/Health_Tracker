@@ -10,6 +10,15 @@ import './styles/Tharuka/variables.css';
 import './styles/Tharuka/global.css';
 import ScrollAura from './components/Tharuka/Common/ScrollAura';
 
+import { AuthProvider, useAuth } from './context/Imasha/AuthContext';
+import { Navigate } from 'react-router-dom';
+
+// Pages — Priya
+import ExercisePage from './pages/Priya/Exercise';
+import FindSpecialistPage from './pages/Priya/FindSpecialist';
+
+import ProtectedRoute from './components/Imasha/ProtectedRoute';
+
 // Pages — Tharuka (Lazy Loaded for Performance)
 const HomePage = lazy(() => import('./pages/Tharuka/HomePage'));
 const AboutPage = lazy(() => import('./pages/Tharuka/AboutPage'));
@@ -26,14 +35,7 @@ const ForgotPasswordPage = lazy(() => import('./pages/Imasha/ForgotPasswordPage'
 const ResetPasswordPage = lazy(() => import('./pages/Imasha/ResetPasswordPage'));
 const VerifyEmailPage = lazy(() => import('./pages/Imasha/VerifyEmailPage'));
 const OnboardingPage = lazy(() => import('./pages/Imasha/OnboardingPage'));
-import { AuthProvider, useAuth } from './context/Imasha/AuthContext';
-import { Navigate } from 'react-router-dom';
-
-// Pages — Priya
-import ExercisePage from './pages/Priya/Exercise';
-import FindSpecialistPage from './pages/Priya/FindSpecialist';
-
-import ProtectedRoute from './components/Imasha/ProtectedRoute';
+const AdminDashboard = lazy(() => import('./pages/Imasha/Admin/AdminDashboard'));
 
 const AppWrapper = () => (
   <ThemeProvider>
@@ -77,6 +79,9 @@ function App() {
             </>
           ) : (
             <>
+              {/* Admin Routes */}
+              <Route path="/admin/dashboard" element={<ProtectedRoute><AdminDashboard /></ProtectedRoute>} />
+
               {/* Public Routes */}
               <Route path="/" element={<HomePage />} />
               <Route path="/about" element={<AboutPage />} />
@@ -99,7 +104,7 @@ function App() {
             </>
           )}
         </Routes>
-      </Suspense>
+      </Suspense >
     </>
   );
 }
