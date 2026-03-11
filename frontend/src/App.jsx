@@ -12,10 +12,6 @@ import './styles/Tharuka/variables.css';
 import './styles/Tharuka/global.css';
 import ScrollAura from './components/Tharuka/Common/ScrollAura';
 
-import { AuthProvider, useAuth } from './context/Imasha/AuthContext';
-import { Navigate } from 'react-router-dom';
-
-
 // Pages — Tharuka (Lazy Loaded for Performance)
 const HomePage = lazy(() => import('./pages/Tharuka/HomePage'));
 const AboutPage = lazy(() => import('./pages/Tharuka/AboutPage'));
