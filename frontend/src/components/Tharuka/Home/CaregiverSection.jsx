@@ -44,7 +44,7 @@ export default function CaregiverSection() {
             })}
           </ul>
           <MagneticWrapper strength={0.35} range={90} display="inline-block">
-            <Link to="/dashboard" className="btn-primary pn-care__cta">
+            <Link to="/services" className="btn-primary pn-care__cta">
               <LayoutDashboard size={16} />
               {t('care_cta')}
             </Link>

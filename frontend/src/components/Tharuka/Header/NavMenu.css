@@ -2,14 +2,14 @@
 .pn-nav--desktop {
   display: flex;
   align-items: center;
-  gap: clamp(4px, 1.2vw, 12px); /* Adaptive gap based on viewport */
-  flex: 1;                     /* Allow nav to grow/shrink */
+  gap: clamp(2px, 1vw, 10px);
+  flex: 1;
   justify-content: flex-start;
   margin-left: 10px;
 }
 .pn-nav__link {
   position: relative;
-  font-size: 15px;     /* Increased base size */
+  font-size: 15px;
   font-weight: 500;
   color: var(--text-secondary);
   padding: 8px 12px;
@@ -19,16 +19,19 @@
   text-decoration: none;
   line-height: 1.4;
   letter-spacing: 0.01em;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
 }
 
 /* Language-specific defensive scaling & wrapping */
 [data-lang="si"] .pn-nav__link,
 [data-lang="ta"] .pn-nav__link {
-  font-size: 13.8px;      /* Scale down slightly for wider scripts */
-  letter-spacing: -0.01em; /* Tighten tracking */
-  white-space: normal;     /* Allow wrapping for 'Find Specialist' etc. */
+  font-size: 13.8px;
+  letter-spacing: -0.01em;
+  white-space: normal;
   text-align: center;
-  max-width: 90px;        /* Force wrap for long phrases */
+  max-width: 90px;
   line-height: 1.1;
   display: flex;
   align-items: center;
@@ -53,6 +56,63 @@
 .pn-nav__link:hover { color: var(--color-primary); background: rgba(0,200,151,0.07); }
 .pn-nav__link:hover::after, .pn-nav__link.active::after { left: 10%; right: 10%; }
 .pn-nav__link.active { color: var(--color-primary); font-weight: 600; }
+
+/* ---- Nutrition Dropdown ---- */
+.pn-nav__dropdown-wrap {
+  position: relative;
+}
+.pn-nav__dd-chevron {
+  transition: transform 0.25s ease;
+  flex-shrink: 0;
+}
+.pn-nav__dd-chevron.open {
+  transform: rotate(180deg);
+}
+.pn-nav__dropdown-trigger::after {
+  display: none; /* no underline on dropdown trigger */
+}
+
+.pn-nav__dropdown-menu {
+  position: absolute;
+  top: calc(100% + 8px);
+  left: 0;
+  min-width: 220px;
+  width: max-content;
+  border-radius: var(--radius-md);
+  padding: 6px;
+  z-index: 999;
+  box-shadow: var(--shadow-lg);
+  animation: pnDdFadeIn 0.18s ease;
+}
+@keyframes pnDdFadeIn {
+  from { opacity: 0; transform: translateY(-6px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.pn-nav__dropdown-item {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.55rem 0.85rem;
+  border-radius: var(--radius-sm);
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--text-secondary);
+  text-decoration: none;
+  transition: all var(--transition-fast);
+}
+.pn-nav__dropdown-item:hover,
+.pn-nav__dropdown-item.active {
+  background: rgba(0,200,151,0.1);
+  color: var(--color-primary);
+}
+.pn-nav__dd-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--color-primary);
+  opacity: 0.8;
+}
 
 /* Mobile Nav */
 .pn-nav--mobile {
@@ -89,15 +149,54 @@
   gap: 0.25rem;
 }
 .pn-nav--mobile .pn-nav__link {
-  display: block;
+  display: flex;
   width: 100%;
   text-align: left;
   padding: 0.8rem 1rem;
   border-radius: var(--radius-md);
 }
 
+/* ---- Mobile Nutrition Accordion ---- */
+.pn-nav__mobile-accordion {
+  display: flex;
+  flex-direction: column;
+}
+.pn-nav__mobile-acc-trigger {
+  display: flex;
+  width: 100%;
+  text-align: left;
+  padding: 0.8rem 1rem;
+  border-radius: var(--radius-md);
+  justify-content: space-between;
+}
+.pn-nav__mobile-acc-content {
+  overflow: hidden;
+  max-height: 0;
+  transition: max-height 0.3s ease;
+}
+.pn-nav__mobile-acc-content.open {
+  max-height: 150px;
+}
+.pn-nav__mobile-sub-link {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.6rem 1rem 0.6rem 2rem;
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--text-secondary);
+  text-decoration: none;
+  border-radius: var(--radius-sm);
+  transition: all var(--transition-fast);
+}
+.pn-nav__mobile-sub-link:hover,
+.pn-nav__mobile-sub-link.active {
+  background: rgba(0,200,151,0.1);
+  color: var(--color-primary);
+}
+
 /* Show/hide */
-@media (max-width: 1200px) { /* Increased breakpoint to prevent overflow */
+@media (max-width: 1200px) {
   .pn-nav--desktop { display: none; }
   .pn-nav--mobile { display: flex; }
 }

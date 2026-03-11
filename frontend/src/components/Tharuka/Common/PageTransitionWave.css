@@ -1,0 +1,38 @@
+/* PageTransitionWave — Realistic Glass Wave Wipe */
+.pn-trans-wave-root {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 2147483647;
+  overflow: hidden;
+}
+
+.pn-trans-wave-bg {
+  position: absolute;
+  top: -10%; 
+  bottom: -10%;
+  width: 150vw;
+  background: linear-gradient(
+    90deg, 
+    rgba(255, 255, 255, 0) 0%, 
+    rgba(0, 200, 151, 0.15) 40%, 
+    rgba(0, 200, 151, 0.45) 50%, 
+    rgba(0, 200, 151, 0.15) 60%, 
+    rgba(255, 255, 255, 0) 100%
+  );
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  clip-path: ellipse(100% 60% at 50% 50%);
+  transform: translateX(-100%);
+  will-change: transform;
+}
+
+/* Sweep horizontally across */
+.pn-trans-wave-root.pn-wave-active .pn-trans-wave-bg {
+  animation: pnGlassWave 1.2s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+}
+
+@keyframes pnGlassWave {
+  0% { transform: translateX(-100%) skewX(-15deg); }
+  100% { transform: translateX(100vw) skewX(5deg); }
+}

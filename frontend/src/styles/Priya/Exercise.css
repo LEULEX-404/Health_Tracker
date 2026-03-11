@@ -162,6 +162,61 @@
   box-shadow: var(--shadow-glow);
 }
 
+.pr-primary-btn:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
+.pr-exercise-gate {
+  padding: 1rem 0;
+  text-align: center;
+}
+
+.pr-exercise-gate p {
+  margin: 0 0 1rem;
+  color: var(--text-secondary);
+  font-family: 'Inter', sans-serif;
+  font-size: var(--fs-md);
+  line-height: 1.5;
+}
+
+.pr-exercise-gate-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  justify-content: center;
+}
+
+.pr-exercise-gate-actions .pr-primary-btn {
+  width: auto;
+  min-width: 140px;
+  margin-top: 0;
+  text-decoration: none;
+}
+
+.pr-btn-login {
+  background: var(--bg-secondary);
+  color: var(--text-primary);
+  border: 1px solid var(--border-color-strong);
+}
+
+.pr-btn-login:hover {
+  background: var(--border-color-strong);
+}
+
+.pr-btn-signup {
+  background: linear-gradient(135deg, var(--color-primary), var(--color-primary-dark));
+  color: #fff;
+}
+
+.pr-history-gate {
+  padding: 1.5rem 1rem;
+}
+
+.pr-history-gate .pr-exercise-gate-actions {
+  margin-top: 0.5rem;
+}
+
 .pr-side-column {
   display: grid;
   gap: 1rem;
