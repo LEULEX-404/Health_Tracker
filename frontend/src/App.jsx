@@ -19,6 +19,7 @@ const TermsPage = lazy(() => import('./pages/Tharuka/TermsPage'));
 const PrivacyPolicyPage = lazy(() => import('./pages/Tharuka/PrivacyPolicyPage'));
 const ContactPage = lazy(() => import('./pages/Tharuka/ContactPage'));
 const FaqPage = lazy(() => import('./pages/Tharuka/FaqPage'));
+const HealthDataPage = lazy(() => import('./pages/Tharuka/HealthDataPage'));
 const ServicesPage = lazy(() => import('./pages/Tharuka/ServicesPage'));
 
 // Pages — Imasha (Auth) (Lazy Loaded)
@@ -107,7 +108,7 @@ function App() {
               <Route path="/find-specialist" element={<ProtectedRoute><FindSpecialistPage /></ProtectedRoute>} />
 
               {/* Protected Nutrition Routes */}
-              <Route path="/health-data" element={<ProtectedRoute><ServicesPage /></ProtectedRoute>} />
+              <Route path="/health-data" element={<ProtectedRoute><HealthDataPage /></ProtectedRoute>} />
               <Route path="/meal-plan" element={<ProtectedRoute><ServicesPage /></ProtectedRoute>} />
             </>
           )}
