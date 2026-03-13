@@ -1,524 +1,1150 @@
 /* ================================================================
    PulseNova — Auth Common Styles (Imasha)
+   Split-screen layout: Green left | Themed right
    ================================================================ */
 
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Space+Grotesk:wght@400;500;600;700;800&display=swap');
 
+
+/* ── CSS Variables ─────────────────────────────────────────────── */
 :root {
   --auth-primary: #00c897;
-  --auth-primary-hover: #00e6ad;
+  --auth-primary-dark: #009973;
   --auth-primary-glow: rgba(0, 200, 151, 0.35);
   --auth-accent: #39ff14;
 
-  /* DEFAULT: Dark Theme */
-  --auth-bg-color: #050a08;
-  --auth-card-bg: rgba(8, 18, 13, 0.9);
-  --auth-card-border: rgba(0, 200, 151, 0.25);
-  --auth-text-main: #ffffff;
-  --auth-text-muted: #88b098;
-  --auth-text-label: #a0d1b6;
-  --auth-input-bg: rgba(0, 30, 20, 0.6);
-  --auth-input-border: rgba(0, 200, 151, 0.2);
+  /* Dark (default) */
+  --auth-bg: #07110d;
+  --auth-right-bg: #07110d;
+  --auth-card-bg: rgba(10, 24, 17, 0.95);
+  --auth-card-border: rgba(0, 200, 151, 0.22);
+  --auth-text-main: #e8f5ee;
+  --auth-text-muted: #7aaa94;
+  --auth-text-label: #9eceb5;
+  --auth-input-bg: rgba(0, 30, 20, 0.7);
+  --auth-input-border: rgba(0, 200, 151, 0.25);
   --auth-divider: rgba(0, 200, 151, 0.15);
-  --auth-shadow: 0 40px 100px rgba(0, 0, 0, 0.8);
-  --auth-overlay: radial-gradient(circle at 50% 50%, rgba(0, 200, 151, 0.08) 0%, rgba(5, 10, 8, 0.92) 100%);
+  --auth-error: #ff5c5c;
+  --auth-error-bg: rgba(255, 92, 92, 0.08);
+  --auth-shadow: 0 30px 80px rgba(0, 0, 0, 0.6);
 }
 
 .light-theme {
-  --auth-bg-color: #f4fffb;
-  --auth-card-bg: rgba(255, 255, 255, 0.98);
-  --auth-card-border: rgba(0, 200, 151, 0.35);
-  --auth-text-main: #061a12;
+  --auth-bg: #f0faf5;
+  --auth-right-bg: #f0faf5;
+  --auth-card-bg: #ffffff;
+  --auth-card-border: rgba(0, 200, 151, 0.3);
+  --auth-text-main: #062514;
   --auth-text-muted: #4a7a63;
-  --auth-text-label: #123d2a;
+  --auth-text-label: #0f3a25;
   --auth-input-bg: #ffffff;
   --auth-input-border: rgba(0, 200, 151, 0.4);
-  --auth-divider: rgba(0, 200, 151, 0.2);
-  --auth-shadow: 0 25px 50px rgba(0, 200, 151, 0.15);
-  --auth-overlay: radial-gradient(circle at 50% 50%, rgba(0, 200, 151, 0.05) 0%, rgba(244, 255, 251, 0.75) 100%);
+  --auth-divider: rgba(0, 200, 151, 0.18);
+  --auth-error: #d93025;
+  --auth-error-bg: rgba(217, 48, 37, 0.06);
+  --auth-shadow: 0 20px 50px rgba(0, 200, 151, 0.12);
 }
 
+/* ── Root Reset ─────────────────────────────────────────────────── */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+/* ── Split Layout ───────────────────────────────────────────────── */
 .Imasha-auth-page {
+  display: flex;
   min-height: 100vh;
   width: 100%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
   font-family: 'Inter', sans-serif;
-  background: var(--auth-bg-color);
+  background: var(--auth-bg);
+  overflow: hidden;
+  position: fixed;
+  inset: 0;
+}
+
+/* ── LEFT PANEL (green) ─────────────────────────────────────────── */
+.Imasha-auth-left {
+  flex: 0 0 50%;
+  height: 100vh;
+  background: linear-gradient(160deg, rgba(0, 200, 151, 0.75) 0%, rgba(0, 153, 115, 0.85) 55%, rgba(0, 110, 82, 0.9) 100%);
+  backdrop-filter: blur(0px);
+  background-color: #00c897;
+  display: flex;
+  flex-direction: column;
   position: relative;
-  overflow-x: hidden;
-  padding: 2rem;
-  box-sizing: border-box;
-  transition: all 0.4s ease;
+  overflow: hidden;
+  padding: 2rem 2.5rem;
+  justify-content: space-between;
+  /* Spread elements to cover height */
 }
 
-.Imasha-auth-bg {
-  position: fixed;
+/* Dark mode — deep forest teal */
+:not(.light-theme) .Imasha-auth-left {
+  background: linear-gradient(160deg, #003d2e 0%, #002619 55%, #001610 100%);
+}
+
+/* Light mode — still dark-ish green (lighter shade but still readable with white text) */
+.light-theme .Imasha-auth-left {
+  background: linear-gradient(160deg, #006e52 0%, #005040 55%, #003828 100%);
+}
+
+/* ── Animated gradient bg on left — slow colour shift ── */
+@keyframes Imasha-bg-shift {
+  0% {
+    background-position: 0% 50%;
+  }
+
+  50% {
+    background-position: 100% 50%;
+  }
+
+  100% {
+    background-position: 0% 50%;
+  }
+}
+
+/* Dark mode animated bg */
+:not(.light-theme) .Imasha-auth-left {
+  background: linear-gradient(-45deg, #001a12, #003d2e, #002619, #004535, #001a12);
+  background-size: 400% 400%;
+  animation: Imasha-bg-shift 14s ease infinite;
+}
+
+/* Light mode animated bg */
+.light-theme .Imasha-auth-left {
+  background: linear-gradient(-45deg, #003828, #006e52, #004a3a, #005040, #003828);
+  background-size: 400% 400%;
+  animation: Imasha-bg-shift 14s ease infinite;
+}
+
+/* Remove old pseudoelement circles (replaced by JS orbs) */
+.Imasha-auth-left::before,
+.Imasha-auth-left::after {
+  display: none;
+}
+
+/* ── Floating Orbs (large blurred blobs) ─────────────────────────── */
+.Imasha-orbs {
+  position: absolute;
   inset: 0;
-  background-image: url('/images/Imasha/auth-bg.png');
-  background-size: cover;
-  background-position: center;
-  background-repeat: no-repeat;
-  filter: brightness(0.6) saturate(1.2) contrast(1.1) blur(10px);
   z-index: 0;
-  transition: filter 0.5s ease;
-  transform: scale(1.1);
-  /* Prevent white edges from blur */
+  pointer-events: none;
+  overflow: hidden;
 }
 
-.light-theme .Imasha-auth-bg {
-  filter: brightness(1.1) saturate(1.5) opacity(0.3) blur(4px);
+.Imasha-orb {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(55px);
+  animation-timing-function: ease-in-out;
+  animation-iteration-count: infinite;
+  animation-direction: alternate;
+  will-change: transform;
 }
 
-.Imasha-auth-bg-overlay {
-  position: fixed;
-  inset: 0;
-  background: var(--auth-overlay);
+
+.Imasha-orb--1 {
+  width: 340px;
+  height: 340px;
+  background: radial-gradient(circle, rgba(0, 200, 151, 0.28) 0%, transparent 70%);
+  top: -60px;
+  right: -60px;
+  animation: Imasha-orb-drift-1 12s ease-in-out infinite alternate;
+}
+
+.Imasha-orb--2 {
+  width: 280px;
+  height: 280px;
+  background: radial-gradient(circle, rgba(57, 255, 20, 0.15) 0%, transparent 70%);
+  bottom: 10%;
+  left: -80px;
+  animation: Imasha-orb-drift-2 16s ease-in-out infinite alternate;
+}
+
+.Imasha-orb--3 {
+  width: 200px;
+  height: 200px;
+  background: radial-gradient(circle, rgba(0, 200, 151, 0.18) 0%, transparent 70%);
+  top: 45%;
+  right: 5%;
+  animation: Imasha-orb-drift-3 10s ease-in-out infinite alternate;
+}
+
+@keyframes Imasha-orb-drift-1 {
+  0% {
+    transform: translate3d(0, 0, 0) scale(1);
+  }
+
+  33% {
+    transform: translate3d(-30px, 40px, 0) scale(1.1);
+  }
+
+  66% {
+    transform: translate3d(20px, -20px, 0) scale(0.95);
+  }
+
+  100% {
+    transform: translate3d(-10px, 60px, 0) scale(1.05);
+  }
+}
+
+@keyframes Imasha-orb-drift-2 {
+  0% {
+    transform: translate3d(0, 0, 0) scale(1);
+  }
+
+  50% {
+    transform: translate3d(50px, -40px, 0) scale(1.15);
+  }
+
+  100% {
+    transform: translate3d(20px, 30px, 0) scale(0.9);
+  }
+}
+
+@keyframes Imasha-orb-drift-3 {
+  0% {
+    transform: translate3d(0, 0, 0) scale(0.9);
+  }
+
+  50% {
+    transform: translate3d(-40px, 30px, 0) scale(1.1);
+  }
+
+  100% {
+    transform: translate3d(10px, -30px, 0) scale(1);
+  }
+}
+
+/* ── Animated Mesh Grid ──────────────────────────────────────────── */
+@keyframes Imasha-mesh-drift {
+  0% {
+    transform: translate3d(0, 0, 0);
+  }
+
+  100% {
+    transform: translate3d(44px, 44px, 0);
+  }
+}
+
+.Imasha-mesh-grid {
+  position: absolute;
+  inset: -44px;
+  /* Extra space for drift */
   z-index: 1;
-  transition: background 0.4s ease;
+  pointer-events: none;
+  background-image:
+    linear-gradient(rgba(0, 200, 151, 0.07) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(0, 200, 151, 0.07) 1px, transparent 1px);
+  background-size: 44px 44px;
+  animation: Imasha-mesh-drift 30s linear infinite;
+  will-change: transform;
 }
 
-.light-theme .Imasha-auth-bg-overlay {
-  background: radial-gradient(circle at 50% 50%, rgba(0, 200, 151, 0.15) 0%, rgba(180, 255, 230, 0.4) 100%);
-  background-image: linear-gradient(135deg, rgba(0, 200, 151, 0.3) 0%, rgba(244, 255, 251, 0.6) 100%);
-}
-
+/* ── Floating Particles ──────────────────────────────────────────── */
 .Imasha-particles {
-  position: fixed;
+  position: absolute;
   inset: 0;
   z-index: 2;
   pointer-events: none;
+  overflow: hidden;
 }
 
 .Imasha-particle {
   position: absolute;
   border-radius: 50%;
-  background: radial-gradient(circle, var(--auth-primary), transparent 70%);
+  background: radial-gradient(circle, rgba(0, 230, 173, 0.9), rgba(57, 255, 20, 0.4) 50%, transparent 70%);
   animation: Imasha-float linear infinite;
   opacity: 0;
+  will-change: transform, opacity;
 }
 
 @keyframes Imasha-float {
   0% {
-    transform: translateY(100vh) scale(0);
+    transform: translate3d(0, 105vh, 0) scale(0) rotate(0deg);
     opacity: 0;
   }
 
-  10% {
-    opacity: 0.8;
+  8% {
+    opacity: 0.7;
   }
 
-  90% {
+  88% {
     opacity: 0.3;
   }
 
   100% {
-    transform: translateY(-10vh) scale(1.2);
+    transform: translate3d(0, -80px, 0) scale(1.3) rotate(180deg);
     opacity: 0;
   }
 }
 
-/* ── Centered Container ─────────────────────────────────────────── */
-.Imasha-auth-center-container {
-  display: flex;
-  flex-direction: column;
-  width: 100%;
-  max-width: 1050px;
-  z-index: 10;
-  position: relative;
-  gap: 2.5rem;
-}
-
-/* Theme Toggle Wrapper */
-.Imasha-theme-toggle-wrap {
+/* ── Pulse Rings (expanding concentric circles) ──────────────────── */
+.Imasha-pulse-rings {
   position: absolute;
-  top: 0;
-  right: 0;
-  display: flex;
-  gap: 1rem;
+  bottom: -40px;
+  left: -40px;
+  z-index: 1;
+  pointer-events: none;
 }
 
-.Imasha-theme-btn {
-  background: var(--auth-card-bg);
-  border: 1px solid var(--auth-card-border);
-  color: var(--auth-primary);
-  width: 40px;
-  height: 40px;
-  border-radius: 12px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  backdrop-filter: blur(10px);
+.Imasha-ring {
+  position: absolute;
+  border-radius: 50%;
+  border: 1.5px solid rgba(0, 200, 151, 0.35);
+  animation: Imasha-ring-expand 7.2s ease-out infinite;
+  width: 80px;
+  height: 80px;
+  bottom: 0;
+  left: 0;
+  transform-origin: center;
+  will-change: transform, opacity;
 }
 
-.Imasha-theme-btn:hover {
-  transform: translateY(-2px);
-  border-color: var(--auth-primary);
-  box-shadow: 0 5px 15px var(--auth-primary-glow);
-}
-
-/* Top Logo */
-.Imasha-auth-top-logo {
-  display: flex;
-  justify-content: center;
-  width: 100%;
-  margin-bottom: 0.5rem;
-}
-
-.Imasha-auth-top-logo .pn-logo__name {
-  color: var(--auth-text-main) !important;
-  font-size: 2.8rem !important;
-  font-weight: 800 !important;
-  text-shadow: 0 0 25px var(--auth-primary-glow), 0 0 50px rgba(0, 200, 151, 0.15);
-  letter-spacing: -1.2px;
-}
-
-.Imasha-auth-top-logo .pn-logo__accent {
-  color: var(--auth-primary) !important;
-  text-shadow: 0 0 20px var(--auth-accent), 0 0 40px var(--auth-primary-glow);
-}
-
-.Imasha-auth-top-logo .pn-logo__icon {
-  transform: scale(1.4);
-  filter: drop-shadow(0 0 15px var(--auth-primary-glow)) drop-shadow(0 0 30px rgba(0, 200, 151, 0.2));
-}
-
-.Imasha-auth-top-logo .pn-logo__tagline {
-  color: var(--auth-primary) !important;
-  font-size: 0.85rem !important;
-  font-weight: 700 !important;
-  opacity: 1;
-  text-shadow: 0 0 15px var(--auth-primary-glow);
-  letter-spacing: 1.5px;
-  text-transform: uppercase;
-}
-
-/* Main Content Area */
-.Imasha-auth-main-content {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 4rem;
-  width: 100%;
-}
-
-/* Side Panel (Features) */
-.Imasha-auth-side-panel {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  max-width: 480px;
-  gap: 2rem;
-}
-
-.Imasha-auth-stats-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 1.25rem;
-  margin-bottom: 0.5rem;
-}
-
-.Imasha-stat-card {
-  background: var(--auth-card-bg);
-  border: 1px solid var(--auth-card-border);
-  border-radius: 24px;
-  padding: 1.25rem;
-  backdrop-filter: blur(15px);
-  display: flex;
-  flex-direction: column;
-  gap: 0.75rem;
-  position: relative;
-  overflow: hidden;
-  transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-}
-
-.Imasha-stat-card:hover {
-  transform: translateY(-8px) scale(1.02);
-  border-color: var(--auth-primary);
-  background: rgba(0, 200, 151, 0.12);
-  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.25), 0 0 25px var(--auth-primary-glow);
-}
-
-.light-theme .Imasha-stat-card:hover {
-  background: #ffffff;
-  border-color: var(--auth-primary);
-  box-shadow: 0 15px 35px rgba(0, 200, 151, 0.2), 0 0 15px var(--auth-primary-glow);
-}
-
-.Imasha-stat-info {
-  display: flex;
-  flex-direction: column;
-}
-
-.Imasha-stat-label {
-  font-size: 0.75rem;
-  color: var(--auth-text-muted);
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-  font-weight: 600;
-}
-
-.Imasha-stat-value {
-  font-size: 1.4rem;
-  font-weight: 800;
-  color: var(--auth-text-main);
-}
-
-.Imasha-stat-value small {
-  font-size: 0.8rem;
-  font-weight: 500;
-  color: var(--auth-primary);
-}
-
-/* Pulse Animation */
-.Imasha-pulse-icon {
-  color: #ff4d4d;
-  filter: drop-shadow(0 0 8px rgba(255, 77, 77, 0.4));
-  animation: Imasha-heartbeat 1.2s infinite ease-in-out;
-}
-
-@keyframes Imasha-heartbeat {
+@keyframes Imasha-ring-expand {
   0% {
-    transform: scale(1);
+    transform: translate3d(0, 0, 0) scale(0.5);
+    opacity: 0.8;
+    border-color: rgba(0, 200, 151, 0.5);
   }
 
-  15% {
-    transform: scale(1.25);
+  70% {
+    opacity: 0.15;
+    border-color: rgba(57, 255, 20, 0.2);
   }
 
-  30% {
-    transform: scale(1);
-  }
-
-  45% {
-    transform: scale(1.15);
-  }
-
-  60% {
-    transform: scale(1);
+  100% {
+    transform: translate3d(0, 0, 0) scale(9);
+    opacity: 0;
   }
 }
 
-.Imasha-pulse-wave {
-  display: flex;
-  align-items: flex-end;
-  gap: 3px;
-  height: 20px;
-  margin-top: 5px;
+/* ── ECG / Heartbeat Line ────────────────────────────────────────── */
+.Imasha-ecg-wrap {
+  position: absolute;
+  bottom: 2.5rem;
+  left: 0;
+  right: 0;
+  height: 60px;
+  z-index: 3;
+  pointer-events: none;
+  overflow: hidden;
+  opacity: 0.25;
 }
 
-.Imasha-pulse-wave span {
-  width: 4px;
-  background: #ff4d4d;
-  border-radius: 2px;
-  animation: Imasha-wave 1s infinite ease-in-out;
-}
-
-.Imasha-pulse-wave span:nth-child(2) {
-  animation-delay: 0.2s;
-  height: 60%;
-}
-
-.Imasha-pulse-wave span:nth-child(3) {
-  animation-delay: 0.4s;
+.Imasha-ecg-svg {
+  width: 200%;
   height: 100%;
+  animation: Imasha-ecg-scroll 4.5s linear infinite;
 }
 
-.Imasha-pulse-wave span:nth-child(4) {
-  animation-delay: 0.6s;
-  height: 40%;
+.Imasha-ecg-path {
+  fill: none;
+  stroke: url(#ecg-gradient);
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  filter: drop-shadow(0 0 4px rgba(0, 200, 151, 0.8)) drop-shadow(0 0 10px rgba(57, 255, 20, 0.4));
 }
 
-@keyframes Imasha-wave {
+@keyframes Imasha-ecg-scroll {
+  0% {
+    transform: translateX(0);
+  }
+
+  100% {
+    transform: translateX(-50%);
+  }
+}
+
+/* ── Breathing glow on stat values ─────────────────────────────── */
+@keyframes Imasha-value-breathe {
 
   0%,
   100% {
-    height: 30%;
+    text-shadow: 0 0 14px rgba(0, 200, 151, 0.5);
   }
 
   50% {
-    height: 90%;
+    text-shadow: 0 0 28px rgba(0, 200, 151, 0.9), 0 0 50px rgba(57, 255, 20, 0.35);
   }
 }
 
-/* Progress Bar */
-.Imasha-progress-bar {
-  width: 100%;
-  height: 6px;
-  background: var(--auth-divider);
-  border-radius: 3px;
-  margin-top: 8px;
+.Imasha-stat-value {
+  animation: Imasha-value-breathe 3s ease-in-out infinite;
 }
 
-.Imasha-progress-fill {
-  height: 100%;
-  background: linear-gradient(90deg, var(--auth-primary), #00ff8c);
-  border-radius: 3px;
-  box-shadow: 0 0 10px var(--auth-primary-glow);
+/* ── Feature icon pulse glow ────────────────────────────────────── */
+@keyframes Imasha-icon-pulse {
+
+  0%,
+  100% {
+    box-shadow: 0 0 0 0 rgba(0, 200, 151, 0);
+  }
+
+  50% {
+    box-shadow: 0 0 14px 4px rgba(0, 200, 151, 0.35);
+  }
+}
+
+.Imasha-feature-card-icon {
+  animation: Imasha-icon-pulse 4s ease-in-out infinite;
+}
+
+/* ── Floating content (subtle vertical drift) ─────────────────── */
+@keyframes Imasha-content-float {
+
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+
+  50% {
+    transform: translateY(-6px);
+  }
 }
 
 .Imasha-auth-trust-badge {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 0.6rem;
-  margin-top: 1rem;
-  padding: 0.75rem;
-  background: var(--auth-divider);
-  border-radius: 12px;
-  color: var(--auth-text-muted);
-  font-size: 0.8rem;
-  font-weight: 500;
+  animation: Imasha-content-float 5s ease-in-out infinite;
 }
 
-.Imasha-auth-features-list {
+/* ── Right panel subtle animated bg glow orbs ────────────────────── */
+.Imasha-right-glow {
+  position: absolute;
+  border-radius: 50%;
+  pointer-events: none;
+  filter: blur(70px);
+  z-index: 0;
+}
+
+.Imasha-right-glow--1 {
+  width: 320px;
+  height: 320px;
+  background: radial-gradient(circle, rgba(0, 200, 151, 0.09) 0%, transparent 70%);
+  top: -60px;
+  right: -60px;
+  animation: Imasha-right-orb-1 15s ease-in-out infinite alternate;
+}
+
+.Imasha-right-glow--2 {
+  width: 260px;
+  height: 260px;
+  background: radial-gradient(circle, rgba(57, 255, 20, 0.05) 0%, transparent 70%);
+  bottom: -40px;
+  left: -40px;
+  animation: Imasha-right-orb-2 18s ease-in-out infinite alternate;
+}
+
+@keyframes Imasha-right-orb-1 {
+  0% {
+    transform: translate(0, 0) scale(1);
+    opacity: 0.7;
+  }
+
+  50% {
+    transform: translate(-30px, 40px) scale(1.15);
+    opacity: 1;
+  }
+
+  100% {
+    transform: translate(20px, 20px) scale(0.9);
+    opacity: 0.6;
+  }
+}
+
+@keyframes Imasha-right-orb-2 {
+  0% {
+    transform: translate(0, 0) scale(1);
+    opacity: 0.6;
+  }
+
+  50% {
+    transform: translate(40px, -30px) scale(1.2);
+    opacity: 1;
+  }
+
+  100% {
+    transform: translate(-20px, 20px) scale(0.85);
+    opacity: 0.5;
+  }
+}
+
+/* Form card subtle shimmer border */
+@keyframes Imasha-card-border-shift {
+
+  0%,
+  100% {
+    border-color: var(--auth-card-border);
+  }
+
+  50% {
+    border-color: rgba(0, 200, 151, 0.4);
+  }
+}
+
+.Imasha-form-card {
+  animation: Imasha-scale-in 0.5s cubic-bezier(0.2, 0.8, 0.2, 1) both,
+    Imasha-card-border-shift 6s ease-in-out infinite 0.6s;
+}
+
+
+/* Left inner content (above particles) */
+.Imasha-auth-left-content {
+  position: relative;
+  z-index: 10;
   display: flex;
   flex-direction: column;
+  height: 100%;
+  color: white;
+  text-align: left;
+  /* Restore left alignment */
+}
+
+/* Logo - Centered & Glowing (Scale removed to save vertical space) */
+.Imasha-auth-top-logo {
+  margin-bottom: 0px;
+  display: flex;
+  justify-content: center;
+  width: 100%;
+}
+
+.Imasha-auth-top-logo .pn-logo__icon {
+  filter: drop-shadow(0 0 12px rgba(57, 255, 20, 0.6)) drop-shadow(0 0 25px rgba(0, 200, 151, 0.4)) !important;
+}
+
+.Imasha-auth-top-logo .pn-logo__name {
+  color: #fff !important;
+  font-size: 2rem !important;
+  /* Even bigger name */
+  font-weight: 800 !important;
+  text-shadow: 0 0 15px rgba(255, 255, 255, 0.4), 0 0 35px rgba(0, 200, 151, 0.5) !important;
+}
+
+.Imasha-auth-top-logo .pn-logo__accent {
+  color: #39ff14 !important;
+  font-size: 2rem !important;
+  font-weight: 800 !important;
+  text-shadow: 0 0 15px rgba(57, 255, 20, 0.8), 0 0 35px rgba(57, 255, 20, 0.5) !important;
+}
+
+/* Title/subtitle - Optimized for space filling */
+.Imasha-auth-left-title {
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 2.2rem;
+  /* Increased size */
+  font-weight: 800;
+  line-height: 1.1;
+  margin-bottom: 0.75rem;
+  letter-spacing: -1px;
+  background: linear-gradient(135deg, #fff 30%, rgba(255, 255, 255, 0.8) 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  text-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+}
+
+.Imasha-auth-left-subtitle {
+  font-size: 1rem;
+  /* Better visibility */
+  color: rgba(255, 255, 255, 0.85);
+  max-width: 440px;
+  line-height: 1.5;
+  margin-bottom: 1rem;
+}
+
+
+/* Stat cards grid - Taller cards */
+.Imasha-auth-stats-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
   gap: 1.25rem;
+  margin-top: 1.5rem;
+  margin-bottom: 1.5rem;
+  width: 100%;
+}
+
+.Imasha-stat-card {
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 16px;
+  padding: 1.25rem 0.75rem;
+  /* Taller cards to fill verticality */
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  backdrop-filter: blur(10px);
+  transition: all 0.3s ease;
+  flex: 1;
+}
+
+.Imasha-stat-card:hover {
+  background: rgba(255, 255, 255, 0.15);
+  transform: translateY(-3px);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.25), 0 0 15px rgba(0, 200, 151, 0.15);
+  border-color: rgba(0, 200, 151, 0.4);
+}
+
+.Imasha-stat-value {
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 1.75rem;
+  /* Bolder value */
+  font-weight: 800;
+  color: #fff;
+  line-height: 1;
+  text-shadow: 0 0 12px rgba(0, 200, 151, 0.6);
+}
+
+.Imasha-stat-label {
+  font-size: 0.7rem;
+  font-weight: 500;
+  color: rgba(255, 255, 255, 0.65);
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+}
+
+/* Feature list - Filling area with bigger icons/text */
+.Imasha-auth-features-list {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.25rem 2rem;
+  /* Wider gaps */
+  margin-top: 2rem;
+  margin-bottom: 2rem;
 }
 
 .Imasha-auth-feature-card {
   display: flex;
   align-items: center;
-  gap: 1.5rem;
-  padding: 1.5rem 2rem;
-  background: var(--auth-card-bg);
-  border: 1px solid var(--auth-card-border);
-  border-radius: 24px;
-  backdrop-filter: blur(10px);
-  transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  gap: 0.6rem;
+  padding: 0.4rem 0;
+  /* Minimal padding */
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  transition: all 0.25s;
+}
+
+.Imasha-auth-feature-card:last-child {
+  border-bottom: none;
+}
+
+/* Custom Smooth Scrollbar */
+.Imasha-auth-right::-webkit-scrollbar {
+  width: 8px;
+}
+
+.Imasha-auth-right::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.Imasha-auth-right::-webkit-scrollbar-thumb {
+  background: rgba(0, 200, 151, 0.15);
+  border-radius: 10px;
+  border: 2px solid transparent;
+  background-clip: content-box;
+}
+
+.Imasha-auth-right::-webkit-scrollbar-thumb:hover {
+  background: rgba(0, 200, 151, 0.3);
+  background-clip: content-box;
+}
+
+.Imasha-auth-right {
+  overscroll-behavior: contain;
+}
+
+.Imasha-auth-feature-card {
+  transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275), opacity 0.4s;
+  will-change: transform, opacity;
 }
 
 .Imasha-auth-feature-card:hover {
-  transform: translateX(12px) scale(1.02);
-  background: rgba(0, 200, 151, 0.1);
-  border-color: var(--auth-primary);
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2), 0 0 20px var(--auth-primary-glow);
-}
-
-.light-theme .Imasha-auth-feature-card:hover {
-  background: #ffffff;
-  border-color: var(--auth-primary);
-  box-shadow: 0 10px 25px rgba(0, 200, 151, 0.15), 0 0 15px var(--auth-primary-glow);
+  transform: translateX(10px);
 }
 
 .Imasha-feature-card-icon {
-  width: 56px;
-  height: 56px;
-  background: rgba(0, 200, 151, 0.1);
-  color: var(--auth-primary);
-  border-radius: 14px;
+  width: 36px;
+  height: 36px;
+  background: rgba(255, 255, 255, 0.12);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 10px;
   display: flex;
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
+  transition: all 0.25s;
+  color: #fff;
+}
+
+.Imasha-feature-card-icon svg {
+  width: 18px;
+  height: 18px;
 }
 
 .Imasha-feature-card-text strong {
   display: block;
-  color: var(--auth-text-main);
-  font-size: 1.15rem;
-  margin-bottom: 0.3rem;
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 0.9rem;
+  /* Much bigger presence */
   font-weight: 700;
+  color: #fff;
+  margin-bottom: 1px;
 }
 
 .Imasha-feature-card-text span {
-  color: var(--auth-text-muted);
-  font-size: 0.95rem;
-  line-height: 1.4;
+  font-size: 0.72rem;
+  color: rgba(255, 255, 255, 0.8);
+  line-height: 1.35;
 }
 
-/* Auth Card (Form) */
-.Imasha-auth-card {
+/* Trust badge */
+.Imasha-auth-trust-badge {
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+  margin-top: 0.25rem;
+  padding: 0.4rem 0.6rem;
+  background: rgba(0, 200, 151, 0.08);
+  border: 1px solid rgba(0, 200, 151, 0.2);
+  border-radius: 8px;
+  font-size: 0.65rem;
+  color: rgba(255, 255, 255, 0.7);
+  align-self: flex-start;
+}
+
+/* ── RIGHT PANEL (form side) ────────────────────────────────────── */
+/* ── RIGHT PANEL (form side) ────────────────────────────────────── */
+.Imasha-auth-right {
+  flex: 0 0 50%;
+  height: 100vh;
+  background: var(--auth-right-bg);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  padding: 4rem 2.5rem 5rem;
+  overflow-y: auto;
+  overflow-x: hidden;
+  position: relative;
+  scroll-behavior: smooth;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* Theme toggle floating top-right of right panel */
+.Imasha-theme-toggle-wrap {
+  position: absolute;
+  top: 1.5rem;
+  right: 1.5rem;
+  z-index: 50;
+}
+
+.Imasha-theme-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 12px;
+  border: 1px solid var(--auth-card-border);
+  background: var(--auth-card-bg);
+  color: var(--auth-primary);
+  cursor: pointer;
+  transition: all 0.3s;
+}
+
+.Imasha-theme-btn:hover {
+  border-color: var(--auth-primary);
+  box-shadow: 0 4px 15px var(--auth-primary-glow);
+  transform: translateY(-2px);
+}
+
+/* Sign In / Sign Up toggle */
+.Imasha-auth-toggle {
+  width: 100%;
+  max-width: 500px;
+  display: flex;
+  background: var(--auth-input-bg);
+  border: 1px solid var(--auth-input-border);
+  border-radius: 14px;
+  padding: 0.3rem;
+  margin-top: 0;
+  margin-bottom: 1.5rem;
+  flex-shrink: 0;
+}
+
+.Imasha-auth-toggle-btn {
   flex: 1;
-  max-width: 480px;
+  padding: 0.75rem 1rem;
+  border: none;
+  background: transparent;
+  color: var(--auth-text-muted);
+  font-weight: 600;
+  font-size: 0.95rem;
+  font-family: 'Inter', sans-serif;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: all 0.3s;
+  text-align: center;
+  text-decoration: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.Imasha-auth-toggle-btn.active {
+  background: var(--auth-primary);
+  color: #fff;
+  box-shadow: 0 4px 12px rgba(0, 200, 151, 0.35);
+}
+
+.Imasha-auth-toggle-btn:hover:not(.active) {
+  color: var(--auth-primary);
+  background: var(--auth-divider);
+}
+
+/* Form card */
+.Imasha-form-card {
+  width: 100%;
+  max-width: 500px;
   background: var(--auth-card-bg);
   border: 1px solid var(--auth-card-border);
-  border-radius: 30px;
-  padding: 2.5rem 3rem;
-  backdrop-filter: blur(25px);
+  border-radius: 24px;
+  padding: 2.2rem 2.8rem 2rem;
   box-shadow: var(--auth-shadow);
-  box-sizing: border-box;
+  animation: Imasha-scale-in 0.5s cubic-bezier(0.2, 0.8, 0.2, 1) both;
 }
 
+/* Mascot */
 .Imasha-mascot-wrap {
   display: flex;
   justify-content: center;
+  margin-bottom: 1rem;
+}
+
+/* Form titles */
+.Imasha-form-header {
   margin-bottom: 1.5rem;
 }
 
 .Imasha-form-title {
-  font-size: 1.75rem;
+  font-size: 1.55rem;
   font-weight: 800;
   color: var(--auth-text-main);
-  margin: 0 0 0.4rem;
-  letter-spacing: -0.5px;
+  margin: 0 0 0.3rem;
   text-align: center;
+  letter-spacing: -0.4px;
 }
 
 .Imasha-form-subtitle {
-  font-size: 0.95rem;
+  font-size: 0.88rem;
   color: var(--auth-text-muted);
-  margin-bottom: 2rem;
   text-align: center;
+  margin: 0;
 }
 
-/* ── Entry Animations ─────────────────────────────────────────── */
-.Imasha-auth-card {
-  animation: Imasha-scale-in 0.6s cubic-bezier(0.2, 0.8, 0.2, 1);
+/* ── Inputs ─────────────────────────────────────────────────────── */
+.Imasha-field-group {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  margin-bottom: 1.25rem;
 }
 
-.Imasha-mascot-wrap,
-.Imasha-form-header,
-.Imasha-field-group>*,
-.Imasha-btn-primary,
-.Imasha-google-btn,
-.Imasha-auth-link-text,
-.Imasha-divider {
-  opacity: 0;
-  animation: Imasha-fade-in-slide-up 0.5s ease forwards;
+.Imasha-field {
+  display: flex;
+  flex-direction: column;
 }
 
-.Imasha-mascot-wrap {
-  animation-delay: 0.1s;
+.Imasha-label {
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: var(--auth-text-label);
+  text-transform: uppercase;
+  letter-spacing: 0.9px;
+  margin-bottom: 0.4rem;
 }
 
-.Imasha-form-header {
-  animation-delay: 0.2s;
+.Imasha-input-wrap {
+  position: relative;
+  display: flex;
+  align-items: center;
 }
 
-.Imasha-field-group>*:nth-child(1) {
-  animation-delay: 0.3s;
+.Imasha-input-icon {
+  position: absolute;
+  left: 0.9rem;
+  color: var(--auth-text-muted);
+  pointer-events: none;
+  transition: color 0.25s;
+  display: flex;
+  align-items: center;
 }
 
-.Imasha-field-group>*:nth-child(2) {
-  animation-delay: 0.4s;
+.Imasha-input {
+  width: 100%;
+  background: var(--auth-input-bg);
+  border: 1.5px solid var(--auth-input-border);
+  border-radius: 12px;
+  color: var(--auth-text-main);
+  padding: 0.85rem 0.9rem 0.85rem 2.7rem;
+  font-size: 0.95rem;
+  font-family: 'Inter', sans-serif;
+  outline: none;
+  transition: border-color 0.25s, box-shadow 0.25s, background 0.25s;
 }
 
+.Imasha-input::placeholder {
+  color: var(--auth-text-muted);
+  opacity: 0.7;
+}
+
+.Imasha-input:focus {
+  border-color: var(--auth-primary);
+  background: rgba(0, 200, 151, 0.04);
+  box-shadow: 0 0 0 3px var(--auth-primary-glow);
+}
+
+.Imasha-input.has-error {
+  border-color: var(--auth-error) !important;
+  box-shadow: 0 0 0 3px var(--auth-error-bg) !important;
+}
+
+.Imasha-input-wrap:focus-within .Imasha-input-icon {
+  color: var(--auth-primary);
+}
+
+.Imasha-input-wrap.has-error .Imasha-input-icon {
+  color: var(--auth-error);
+}
+
+/* Inline error message */
+.Imasha-field-error {
+  font-size: 0.75rem;
+  color: var(--auth-error);
+  margin-top: 0.35rem;
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+  animation: Imasha-fade-in-slide-up 0.25s ease both;
+}
+
+/* Password toggle button */
+.Imasha-pw-toggle {
+  position: absolute;
+  right: 0.9rem;
+  background: none;
+  border: none;
+  color: var(--auth-text-muted);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  padding: 0;
+  transition: color 0.2s;
+}
+
+.Imasha-pw-toggle:hover {
+  color: var(--auth-primary);
+}
+
+/* ── Field Row (2 columns) ──────────────────────────────────────── */
+.Imasha-field-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.8rem;
+}
+
+/* ── Primary Button ─────────────────────────────────────────────── */
 .Imasha-btn-primary {
-  animation-delay: 0.5s;
+  width: 100%;
+  padding: 0.95rem;
+  background: linear-gradient(135deg, var(--auth-primary), #00e6ad);
+  color: #fff;
+  border: none;
+  border-radius: 12px;
+  font-size: 1rem;
+  font-weight: 700;
+  font-family: 'Inter', sans-serif;
+  cursor: pointer;
+  transition: all 0.3s;
+  box-shadow: 0 6px 20px rgba(0, 200, 151, 0.35);
+  margin-bottom: 0.75rem;
+  position: relative;
+  overflow: hidden;
 }
 
+.Imasha-btn-primary:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 28px rgba(0, 200, 151, 0.5);
+}
+
+.Imasha-btn-primary:active:not(:disabled) {
+  transform: translateY(0);
+}
+
+.Imasha-btn-primary:disabled {
+  opacity: 0.65;
+  cursor: not-allowed;
+  transform: none;
+}
+
+/* Spinner / loading state */
+.Imasha-btn-loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+}
+
+.Imasha-spinner {
+  width: 16px;
+  height: 16px;
+  border: 2px solid rgba(255, 255, 255, 0.4);
+  border-top-color: #fff;
+  border-radius: 50%;
+  animation: Imasha-spin 0.7s linear infinite;
+  display: inline-block;
+}
+
+@keyframes Imasha-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* ── Google Button ──────────────────────────────────────────────── */
 .Imasha-google-btn {
-  animation-delay: 0.55s;
+  width: 100%;
+  padding: 0.9rem;
+  background: var(--auth-input-bg);
+  border: 1.5px solid var(--auth-input-border);
+  color: var(--auth-text-main);
+  border-radius: 12px;
+  font-size: 0.95rem;
+  font-weight: 600;
+  font-family: 'Inter', sans-serif;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+  transition: all 0.3s;
+  text-decoration: none;
 }
 
-/* Special delay for Google btn */
-.Imasha-auth-link-text {
-  animation-delay: 0.6s;
+.Imasha-google-btn:hover {
+  border-color: var(--auth-primary);
+  background: rgba(0, 200, 151, 0.06);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 14px rgba(0, 200, 151, 0.12);
 }
 
+.Imasha-google-icon {
+  width: 18px;
+  height: 18px;
+  flex-shrink: 0;
+  display: flex;
+}
+
+.Imasha-google-icon svg {
+  width: 100%;
+  height: 100%;
+}
+
+/* ── Divider ────────────────────────────────────────────────────── */
 .Imasha-divider {
-  animation-delay: 0.7s;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin: 0.75rem 0;
+  font-size: 0.78rem;
+  color: var(--auth-text-muted);
 }
 
+.Imasha-divider::before,
+.Imasha-divider::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: var(--auth-divider);
+}
+
+/* ── Forgot & Nav Links ─────────────────────────────────────────── */
+.Imasha-forgot-row {
+  display: flex;
+  justify-content: flex-end;
+  margin: -0.25rem 0 0.75rem;
+}
+
+.Imasha-auth-link {
+  color: var(--auth-primary);
+  font-weight: 600;
+  font-size: 0.85rem;
+  text-decoration: none;
+  transition: opacity 0.2s;
+}
+
+.Imasha-auth-link:hover {
+  opacity: 0.75;
+}
+
+.Imasha-auth-link-text {
+  text-align: center;
+  margin-top: 1.2rem;
+  font-size: 0.88rem;
+  color: var(--auth-text-muted);
+}
+
+/* ── Secondary / Back Button ────────────────────────────────────── */
+.Imasha-btn-secondary {
+  width: 100%;
+  padding: 0.85rem;
+  background: transparent;
+  color: var(--auth-text-main);
+  border: 1.5px solid var(--auth-card-border);
+  border-radius: 12px;
+  font-size: 0.95rem;
+  font-weight: 600;
+  font-family: 'Inter', sans-serif;
+  cursor: pointer;
+  transition: all 0.3s;
+}
+
+.Imasha-btn-secondary:hover {
+  background: var(--auth-divider);
+  border-color: var(--auth-primary);
+}
+
+/* ── Info Box ───────────────────────────────────────────────────── */
+.Imasha-info-box {
+  background: var(--auth-divider);
+  border-left: 3px solid var(--auth-primary);
+  padding: 0.85rem 1rem;
+  border-radius: 8px;
+  font-size: 0.82rem;
+  color: var(--auth-text-muted);
+  margin: 1rem 0;
+  line-height: 1.5;
+}
+
+/* Success icon */
+.Imasha-icon-circle-success {
+  width: 64px;
+  height: 64px;
+  background: rgba(0, 200, 151, 0.12);
+  color: var(--auth-primary);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 1.2rem;
+  box-shadow: 0 0 18px var(--auth-primary-glow);
+}
+
+/* ── Animations ─────────────────────────────────────────────────── */
 @keyframes Imasha-scale-in {
   from {
     opacity: 0;
-    transform: scale(0.98) translateY(10px);
+    transform: scale(0.97) translateY(12px);
   }
 
   to {
@@ -530,7 +1156,7 @@
 @keyframes Imasha-fade-in-slide-up {
   from {
     opacity: 0;
-    transform: translateY(10px);
+    transform: translateY(6px);
   }
 
   to {
@@ -539,247 +1165,65 @@
   }
 }
 
-/* Inputs */
-.Imasha-field-group {
-  display: flex;
-  flex-direction: column;
-  gap: 1.25rem;
-  margin-bottom: 2rem;
-}
-
-.Imasha-label {
-  font-size: 0.75rem;
-  font-weight: 700;
-  color: var(--auth-text-label);
-  text-transform: uppercase;
-  letter-spacing: 1px;
-  margin-bottom: 0.5rem;
-}
-
-.Imasha-input-wrap {
-  position: relative;
-  display: flex;
-  align-items: center;
-}
-
-.Imasha-input-icon {
-  position: absolute;
-  left: 1rem;
-  color: var(--auth-text-muted);
-  transition: color 0.3s;
-}
-
-.Imasha-input {
-  width: 100%;
-  background: var(--auth-input-bg);
-  border: 1.5px solid var(--auth-input-border);
-  border-radius: 14px;
-  color: var(--auth-text-main);
-  padding: 1rem 1rem 1rem 3rem;
-  font-size: 1rem;
-  outline: none;
-  transition: all 0.3s;
-}
-
-.Imasha-input:focus {
-  border-color: var(--auth-primary);
-  background: rgba(0, 200, 151, 0.05);
-  box-shadow: 0 0 0 4px var(--auth-primary-glow);
-}
-
-.Imasha-input-wrap:focus-within .Imasha-input-icon {
-  color: var(--auth-primary);
-}
-
-.Imasha-pw-toggle {
-  position: absolute;
-  right: 1.25rem;
-  background: none;
-  border: none;
-  color: var(--auth-text-muted);
-  cursor: pointer;
-}
-
-.Imasha-btn-primary {
-  width: 100%;
-  padding: 1.05rem;
-  background: linear-gradient(135deg, var(--auth-primary), #00ff8c);
-  color: #fff;
-  border: none;
-  border-radius: 14px;
-  font-size: 1.05rem;
-  font-weight: 700;
-  cursor: pointer;
-  transition: all 0.3s;
-  box-shadow: 0 10px 20px var(--auth-primary-glow);
-  margin-bottom: 1rem;
-  position: relative;
-  overflow: hidden;
-}
-
-.Imasha-btn-primary::after {
-  content: '';
-  position: absolute;
-  top: -50%;
-  left: -50%;
-  width: 200%;
-  height: 200%;
-  background: radial-gradient(circle, rgba(255, 255, 255, 0.2) 0%, transparent 60%);
-  opacity: 0;
-  transition: opacity 0.3s;
-}
-
-.Imasha-btn-primary:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 15px 30px rgba(0, 200, 151, 0.45);
-}
-
-.Imasha-btn-primary:hover::after {
-  opacity: 1;
-}
-
-/* Google Auth Button */
-.Imasha-google-btn {
-  width: 100%;
-  padding: 1rem;
-  background: var(--auth-input-bg);
-  border: 1px solid var(--auth-input-border);
-  color: var(--auth-text-main);
-  border-radius: 14px;
-  font-size: 1rem;
-  font-weight: 600;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 12px;
-  transition: all 0.3s;
-  text-decoration: none;
-}
-
-.Imasha-google-btn:hover {
-  background: var(--auth-divider);
-  border-color: var(--auth-primary);
-  transform: translateY(-2px);
-  box-shadow: 0 5px 15px rgba(0, 200, 151, 0.1);
-}
-
-.Imasha-google-icon {
-  width: 18px;
-  height: 18px;
-  flex-shrink: 0;
-}
-
-.Imasha-google-icon svg {
-  width: 100%;
-  height: 100%;
-}
-
-.Imasha-btn-secondary {
-  width: 100%;
-  padding: 0.9rem;
-  background: rgba(255, 255, 255, 0.05);
-  color: var(--auth-text-main);
-  border: 1px solid var(--auth-card-border);
-  border-radius: 12px;
-  font-size: 0.95rem;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.3s;
-}
-
-.Imasha-btn-secondary:hover {
-  background: var(--auth-divider);
-  border-color: var(--auth-primary);
-}
-
-.Imasha-icon-circle-success {
-  width: 70px;
-  height: 70px;
-  background: rgba(0, 200, 151, 0.1);
-  color: var(--auth-primary);
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  margin: 0 auto 1.5rem;
-  box-shadow: 0 0 20px var(--auth-primary-glow);
-}
-
-.Imasha-info-box {
-  background: var(--auth-divider);
-  border-left: 4px solid var(--auth-primary);
-  padding: 1rem;
-  border-radius: 8px;
-  font-size: 0.85rem;
-  color: var(--auth-text-muted);
-  margin: 1.5rem 0;
-  line-height: 1.5;
-}
-
-.Imasha-auth-link-text {
-  text-align: center;
-  margin-top: 1.5rem;
-  color: var(--auth-text-muted);
-}
-
-.Imasha-divider {
-  text-align: center;
-  margin: 1.5rem 0;
-  position: relative;
-  font-size: 0.8rem;
-  color: var(--auth-text-muted);
-}
-
-.Imasha-divider::before,
-.Imasha-divider::after {
-  content: '';
-  position: absolute;
-  top: 50%;
-  width: 15%;
-  height: 1px;
-  background: var(--auth-divider);
-}
-
-.Imasha-divider::before {
-  left: 0;
-}
-
-.Imasha-divider::after {
-  right: 0;
-}
-
-.Imasha-auth-link {
-  color: var(--auth-primary);
-  font-weight: 700;
-  text-decoration: none;
-}
-
 /* ── Responsive ─────────────────────────────────────────────────── */
+@media (max-width: 1024px) {
+  .Imasha-auth-left {
+    padding: 2rem;
+  }
+}
+
 @media (max-width: 900px) {
   .Imasha-auth-page {
-    padding: 1.5rem;
+    flex-direction: column;
+    position: relative;
+    /* Remove fixed lock to allow body scroll */
+    overflow-y: visible;
+    height: auto;
+    min-height: 100vh;
   }
 
-  .Imasha-auth-center-container {
-    gap: 1.5rem;
-  }
-
-  .Imasha-auth-side-panel {
+  .Imasha-auth-left {
     display: none;
   }
 
-  .Imasha-auth-main-content {
+  .Imasha-auth-right {
+    flex: none;
     width: 100%;
+    padding: 6rem 1.5rem 3rem;
+    /* Extra top padding for mobile to fix cutoff */
+    min-height: 100vh;
+    justify-content: flex-start;
+    /* Start from top on mobile */
+    position: relative;
+    overflow: visible;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
   }
 
-  .Imasha-auth-card {
-    width: 100%;
-    padding: 2.2rem 1.8rem;
-    border-radius: 25px;
+  .Imasha-auth-toggle {
+    margin-top: 1rem;
   }
 
-  .Imasha-auth-top-logo .pn-logo__name {
-    font-size: 1.8rem !important;
+  .Imasha-form-card {
+    padding: 1.75rem 1.5rem 1.25rem;
+  }
+}
+
+@media (max-height: 800px) and (min-width: 901px) {
+  .Imasha-auth-left {
+    padding: 1.5rem 2rem;
+  }
+
+  .Imasha-auth-left-title {
+    font-size: 2rem;
+  }
+
+  .Imasha-auth-stats-grid {
+    margin-bottom: 1.5rem;
+  }
+
+  .Imasha-auth-features-list {
+    gap: 0.6rem;
   }
 }
