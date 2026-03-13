@@ -17,7 +17,7 @@ const ROLE_REDIRECTS = {
     patient: '/',
     doctor: '/doctor-dashboard',
     caregiver: '/caregiver-dashboard',
-    admin: '/admin',
+    admin: '/admin/dashboard',
 };
 
 export function AuthProvider({ children }) {

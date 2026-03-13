@@ -167,12 +167,12 @@ export const getCaregiverById = async (req, res, next) => {
  */
 export const updateCaregiver = async (req, res, next) => {
   try {
-    const caregiver = await adminService.updateCaregiver(req.params.id, req.body);
+    const updatedCaregiver = await adminService.updateCaregiver(req.params.id, req.body);
 
     res.status(200).json({
       success: true,
       message: 'Caregiver updated successfully.',
-      data: caregiver,
+      data: updatedCaregiver,
     });
   } catch (error) {
     next(error);
@@ -180,7 +180,7 @@ export const updateCaregiver = async (req, res, next) => {
 };
 
 /**
- * Delete caregiver
+ * Delete caregiver (soft delete)
  * DELETE /api/admin/caregivers/:id
  */
 export const deleteCaregiver = async (req, res, next) => {
@@ -190,6 +190,31 @@ export const deleteCaregiver = async (req, res, next) => {
     res.status(200).json({
       success: true,
       message: result.message,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+// ==========================================
+// SYSTEM / ADMIN OVERVIEW CONTROLLERS
+// ==========================================
+
+/**
+ * Get system audit logs
+ * GET /api/admin/audit-logs
+ */
+export const getAuditLogs = async (req, res, next) => {
+  try {
+    const { page, limit } = req.query;
+
+    const result = await adminService.getAuditLogs({ page, limit });
+
+    res.status(200).json({
+      success: true,
+      message: 'Audit logs fetched successfully.',
+      data: result.logs,
+      pagination: result.pagination,
     });
   } catch (error) {
     next(error);

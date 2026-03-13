@@ -29,6 +29,7 @@ const ForgotPasswordPage = lazy(() => import('./pages/Imasha/ForgotPasswordPage'
 const ResetPasswordPage = lazy(() => import('./pages/Imasha/ResetPasswordPage'));
 const VerifyEmailPage = lazy(() => import('./pages/Imasha/VerifyEmailPage'));
 const OnboardingPage = lazy(() => import('./pages/Imasha/OnboardingPage'));
+const AdminDashboard = lazy(() => import('./pages/Imasha/Admin/AdminDashboard'));
 
 // Pages — Priya
 import ExercisePage from './pages/Priya/Exercise';
@@ -80,6 +81,9 @@ function App() {
             </>
           ) : (
             <>
+              {/* Admin Routes */}
+              <Route path="/admin/dashboard" element={<ProtectedRoute><AdminDashboard /></ProtectedRoute>} />
+
               {/* Public Routes */}
               <Route path="/" element={<HomePage />} />
               <Route path="/about" element={<AboutPage />} />
@@ -109,7 +113,7 @@ function App() {
             </>
           )}
         </Routes>
-      </Suspense>
+      </Suspense >
     </>
   );
 }
