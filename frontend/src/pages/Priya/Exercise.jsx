@@ -56,6 +56,7 @@ export default function ExercisePage() {
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
   const [dateBounds, setDateBounds] = useState(() => getExerciseDateBounds());
+  const guestDateBounds = getExerciseDateBounds(2);
 
   const fetchData = useCallback(async () => {
     if (!token) return;
@@ -191,13 +192,13 @@ export default function ExercisePage() {
                     <span>BPM</span>
                   </div>
 
-                  <label htmlFor="activityDate">Date of Activity (current or next week only)</label>
+                  <label htmlFor="activityDate">Date of Activity (current + next 2 weeks)</label>
                   <div className="pr-input-wrap">
                     <input
                       id="activityDate"
-                      type="text"
-                      placeholder="mm/dd/yyyy"
-                      inputMode="numeric"
+                      type="date"
+                      min={guestDateBounds.min}
+                      max={guestDateBounds.max}
                     />
                     <CalendarDays size={16} />
                   </div>
