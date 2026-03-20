@@ -167,6 +167,12 @@
   cursor: not-allowed;
 }
 
+.pr-guest-form input:disabled,
+.pr-guest-form select:disabled {
+  opacity: 0.65;
+  cursor: not-allowed;
+}
+
 .pr-exercise-gate {
   padding: 1rem 0;
   text-align: center;
