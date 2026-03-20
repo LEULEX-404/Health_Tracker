@@ -171,14 +171,14 @@ export default function ExercisePage() {
                     <div>
                       <label htmlFor="duration">Duration (min)</label>
                       <div className="pr-input-wrap">
-                        <input id="duration" type="number" defaultValue="45" min={1} />
+                        <input id="duration" type="number" min={1} placeholder="45" />
                         <span>MIN</span>
                       </div>
                     </div>
                     <div>
                       <label htmlFor="calories">Calories Burned (kcal)</label>
                       <div className="pr-input-wrap">
-                        <input id="calories" type="number" defaultValue="320" min={0} />
+                        <input id="calories" type="number" min={0} placeholder="320" />
                         <span>KCAL</span>
                       </div>
                     </div>
@@ -187,7 +187,7 @@ export default function ExercisePage() {
                   <label htmlFor="heartRate">Average Heart Rate (BPM)</label>
                   <div className="pr-input-wrap">
                     <Heart size={16} />
-                    <input id="heartRate" type="number" defaultValue="135" min={0} />
+                    <input id="heartRate" type="number" defaultValue="" min={0} placeholder="135" />
                     <span>BPM</span>
                   </div>
 
