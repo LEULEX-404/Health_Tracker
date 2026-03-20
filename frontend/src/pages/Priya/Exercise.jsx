@@ -195,9 +195,9 @@ export default function ExercisePage() {
                   <div className="pr-input-wrap">
                     <input
                       id="activityDate"
-                      type="date"
-                      min={dateBounds.min}
-                      max={dateBounds.max}
+                      type="text"
+                      placeholder="mm/dd/yyyy"
+                      inputMode="numeric"
                     />
                     <CalendarDays size={16} />
                   </div>
