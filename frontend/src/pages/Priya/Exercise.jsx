@@ -83,6 +83,11 @@ export default function ExercisePage() {
     setDateBounds(getExerciseDateBounds());
   }, []);
 
+  const handleGuestSubmit = (e) => {
+    e.preventDefault();
+    toast.error('Please log in or sign up to save your exercise.');
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!user || !token) {
@@ -149,9 +154,9 @@ export default function ExercisePage() {
               </h2>
 
               {!isLoggedIn ? (
-                <form className="pr-guest-form" onSubmit={(e) => e.preventDefault()}>
+                <form className="pr-guest-form" onSubmit={handleGuestSubmit}>
                   <label htmlFor="activityType">Exercise Type</label>
-                  <select id="activityType" disabled defaultValue="">
+                  <select id="activityType" defaultValue="">
                     <option value="" disabled>
                       Select activity (e.g. Running, Cycling)
                     </option>
@@ -166,14 +171,14 @@ export default function ExercisePage() {
                     <div>
                       <label htmlFor="duration">Duration (min)</label>
                       <div className="pr-input-wrap">
-                        <input id="duration" type="number" disabled defaultValue="45" min={1} required />
+                        <input id="duration" type="number" defaultValue="45" min={1} />
                         <span>MIN</span>
                       </div>
                     </div>
                     <div>
                       <label htmlFor="calories">Calories Burned (kcal)</label>
                       <div className="pr-input-wrap">
-                        <input id="calories" type="number" disabled defaultValue="320" min={0} required />
+                        <input id="calories" type="number" defaultValue="320" min={0} />
                         <span>KCAL</span>
                       </div>
                     </div>
@@ -182,7 +187,7 @@ export default function ExercisePage() {
                   <label htmlFor="heartRate">Average Heart Rate (BPM)</label>
                   <div className="pr-input-wrap">
                     <Heart size={16} />
-                    <input id="heartRate" type="number" disabled defaultValue="135" min={0} />
+                    <input id="heartRate" type="number" defaultValue="135" min={0} />
                     <span>BPM</span>
                   </div>
 
@@ -191,17 +196,15 @@ export default function ExercisePage() {
                     <input
                       id="activityDate"
                       type="date"
-                      disabled
                       min={dateBounds.min}
                       max={dateBounds.max}
-                      required
                     />
                     <CalendarDays size={16} />
                   </div>
 
-                  <button type="button" className="pr-primary-btn" disabled>
+                  <button type="submit" className="pr-primary-btn">
                     <BadgeCheck size={18} />
-                    Save Activity (Login Required)
+                    Save Activity
                   </button>
                 </form>
               ) : (
