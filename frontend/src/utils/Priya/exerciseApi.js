@@ -1,4 +1,4 @@
-const BASE_URL = 'http://localhost:5000/api/exercise';
+const BASE_URL = '/api/exercise';
 
 function getAuthHeaders(token) {
     const headers = { 'Content-Type': 'application/json' };
