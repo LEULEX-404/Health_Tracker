@@ -8,7 +8,7 @@ import { sendNotification } from "../../services/Tharindu/notificationService.js
 export const requestBooking = async (req, res) => {
     try {
         const { caregiverId, date, startTime, endTime, notes } = req.body;
-        const patientId = req.user.id;
+        const patientId = req.user._id;
 
         // Verify caregiver exists and is actually a caregiver
         const caregiver = await User.findById(caregiverId);
@@ -46,7 +46,7 @@ export const requestBooking = async (req, res) => {
  */
 export const getMyBookings = async (req, res) => {
     try {
-        const userId = req.user.id;
+        const userId = req.user._id;
         const role = req.user.role;
 
         const query = role === "caregiver" ? { caregiverId: userId } : { patientId: userId };
@@ -73,7 +73,7 @@ export const updateBookingStatus = async (req, res) => {
     try {
         const { bookingId } = req.params;
         const { status } = req.body;
-        const caregiverId = req.user.id;
+        const caregiverId = req.user._id;
 
         const booking = await CaregiverBooking.findOne({ _id: bookingId, caregiverId });
 
@@ -106,7 +106,7 @@ export const updateBookingStatus = async (req, res) => {
 export const deleteBooking = async (req, res) => {
     try {
         const { bookingId } = req.params;
-        const userId = req.user.id;
+        const userId = req.user._id;
 
         // Find booking where the user is either the patient or the caregiver
         const booking = await CaregiverBooking.findOne({

@@ -172,19 +172,19 @@ app.get('/', (req, res) => {
     success: true,
     message: 'Healthcare Authentication API',
     version: '1.0.0',
-      endpoints: {
-        health: '/health',
-        auth: '/api/auth',
-        users: '/api/users',
-        admin: '/api/admin',
-        healthData: "/api/health-data",
-        reports: "/api/reports",
-        apiDocs: 'http://localhost:5000/api-docs/Tharuka',
-        docs: 'See API_DOCUMENTATION.md',
-        swaggerImasha: 'http://localhost:5000/api-docs/imasha',
-        swaggerTharindu: 'http://localhost:5000/api-docs/tharindu',
-        swaggerPriya: "http://localhost:5000/api-docs/priya",
-      },
+    endpoints: {
+      health: '/health',
+      auth: '/api/auth',
+      users: '/api/users',
+      admin: '/api/admin',
+      healthData: "/api/health-data",
+      reports: "/api/reports",
+      apiDocs: 'http://localhost:5000/api-docs/Tharuka',
+      docs: 'See API_DOCUMENTATION.md',
+      swaggerImasha: 'http://localhost:5000/api-docs/imasha',
+      swaggerTharindu: 'http://localhost:5000/api-docs/tharindu',
+      swaggerPriya: "http://localhost:5000/api-docs/priya",
+    },
   });
 });
 
@@ -216,7 +216,7 @@ const startContinuousSimulator = () => {
 
   setInterval(async () => {
     try {
-      const users = await User.find({role: "patient"}, "_id");
+      const users = await User.find({ role: "patient" }, "_id");
 
       if (!users.length) {
         console.log("[Simulator] No users found, skipping...");
@@ -241,7 +241,7 @@ const startContinuousSimulator = () => {
     } catch (err) {
       console.error("[Simulator] Error:", err.message);
     }
-  }, process.env.SIMULATOR_INTERVAL_MS || 60000);
+  }, process.env.SIMULATOR_INTERVAL_MS || 60000000);
 };
 
 // Start simulator AFTER DB is connected
