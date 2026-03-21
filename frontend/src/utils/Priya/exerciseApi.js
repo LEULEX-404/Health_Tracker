@@ -1,4 +1,4 @@
-const BASE_URL = 'http://localhost:5000/api/exercise';
+const BASE_URL = '/api/exercise';
 
 function getAuthHeaders(token) {
     const headers = { 'Content-Type': 'application/json' };
@@ -7,30 +7,38 @@ function getAuthHeaders(token) {
 }
 
 /**
- * Get start of current week (Monday) and end of next week (Sunday) for date validation.
- * User can only select dates in current week and next week — no past dates before current week.
+ * Get start of current week (Monday) and end for the allowed range.
+ *
+ * @param {number} nextWeeksAhead - How many weeks ahead beyond the current week.
+ * For example:
+ *  - nextWeeksAhead=1 => current week + next week (2 weeks total)
+ *  - nextWeeksAhead=2 => current week + next 2 weeks (3 weeks total)
  */
-export function getExerciseDateBounds() {
+export function getExerciseDateBounds(nextWeeksAhead = 1) {
     const now = new Date();
     const day = now.getDay(); // 0 = Sun, 1 = Mon, ..., 6 = Sat
     const toMonday = day === 0 ? -6 : 1 - day;
     const startCurrentWeek = new Date(now);
     startCurrentWeek.setDate(now.getDate() + toMonday);
     startCurrentWeek.setHours(0, 0, 0, 0);
-    const endNextWeek = new Date(startCurrentWeek);
-    endNextWeek.setDate(startCurrentWeek.getDate() + 13); // current week (7) + next week (7) - 1
+
+    // totalWeeks includes current week (1) + the "ahead" weeks.
+    // endDayOffset = (totalWeeks * 7) - 1
+    const totalWeeks = 1 + Number(nextWeeksAhead);
+    const endAllowed = new Date(startCurrentWeek);
+    endAllowed.setDate(startCurrentWeek.getDate() + totalWeeks * 7 - 1);
     return {
         min: startCurrentWeek.toISOString().slice(0, 10),
-        max: endNextWeek.toISOString().slice(0, 10)
+        max: endAllowed.toISOString().slice(0, 10)
     };
 }
 
 /**
- * Check if a date string (YYYY-MM-DD) is within allowed range (current week and next week only).
+ * Check if a date string (YYYY-MM-DD) is within allowed range.
  */
-export function isDateInAllowedRange(dateStr) {
+export function isDateInAllowedRange(dateStr, nextWeeksAhead = 1) {
     if (!dateStr) return false;
-    const { min, max } = getExerciseDateBounds();
+    const { min, max } = getExerciseDateBounds(nextWeeksAhead);
     return dateStr >= min && dateStr <= max;
 }
 
