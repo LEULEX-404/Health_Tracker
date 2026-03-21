@@ -29,6 +29,7 @@ const ForgotPasswordPage = lazy(() => import('./pages/Imasha/ForgotPasswordPage'
 const ResetPasswordPage = lazy(() => import('./pages/Imasha/ResetPasswordPage'));
 const VerifyEmailPage = lazy(() => import('./pages/Imasha/VerifyEmailPage'));
 const OnboardingPage = lazy(() => import('./pages/Imasha/OnboardingPage'));
+const ProfilePage = lazy(() => import('./pages/Imasha/ProfilePage'));
 const AdminDashboard = lazy(() => import('./pages/Imasha/Admin/AdminDashboard'));
 
 // Pages — Priya
@@ -67,7 +68,7 @@ function App() {
   return (
     <>
       <PageTransitionWave />
-      
+
       <AnimatePresence mode="wait">
         {initialLoading && <Preloader key="preloader" />}
       </AnimatePresence>
@@ -99,7 +100,8 @@ function App() {
               <Route path="/forgot-password" element={<ForgotPasswordPage />} />
               <Route path="/reset-password" element={<ResetPasswordPage />} />
               <Route path="/verify-email" element={<VerifyEmailPage />} />
-              
+              <Route path="/profile" element={<ProtectedRoute><ProfilePage /></ProtectedRoute>} />
+
               {/* Optional Onboarding Route */}
               <Route path="/onboarding" element={<ProtectedRoute><OnboardingPage /></ProtectedRoute>} />
 
