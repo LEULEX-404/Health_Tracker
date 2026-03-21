@@ -5,10 +5,10 @@ import { CheckCircle2 } from 'lucide-react';
 import './ServicesSection.css';
 
 const services = [
-  { key: 'nutrition', img: '/images/Tharuka/services_nutrition.png', align: 'right' },
-  { key: 'exercise',  img: '/images/Tharuka/services_exercise.png',  align: 'left'  },
-  { key: 'health',   img: '/images/Tharuka/hero_dashboard.png',     align: 'right' },
-  { key: 'caregiver',img: '/images/Tharuka/about_team.png',         align: 'left'  },
+  { key: 'nutrition', img: '/images/Tharuka/smart_nutrition.png', align: 'right' },
+  { key: 'exercise',  img: '/images/Tharuka/fitness_tracking.png',  align: 'left'  },
+  { key: 'health',   img: '/images/Tharuka/health_team.png',        align: 'right' },
+  { key: 'caregiver',img: '/images/Tharuka/caregiver_real.png',     align: 'left'  },
 ];
 
 const ServiceRow = memo(({ svc, index }) => {

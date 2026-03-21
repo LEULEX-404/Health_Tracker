@@ -1,6 +1,7 @@
 import bcrypt from 'bcryptjs';
 import User from '../../models/Imasha/User.js';
 import Doctor from '../../models/Imasha/Doctor.js';
+import AuditLog from '../../models/Imasha/AuditLog.js';
 import { NotFoundError, BadRequestError, ConflictError } from '../../utils/Imasha/errors.js';
 import { USER_ROLES } from '../../constants/Imasha/index.js';
 import { validateEmail, validatePassword } from '../../utils/Imasha/validation.js';
@@ -380,9 +381,9 @@ export const createCaregiver = async (caregiverData) => {
  * Get all caregivers
  */
 export const getAllCaregivers = async ({ page = 1, limit = 10, search, isActive }) => {
-  const query = { 
+  const query = {
     role: USER_ROLES.CAREGIVER,
-    isDeleted: false 
+    isDeleted: false
   };
 
   // Filter by status
@@ -426,10 +427,10 @@ export const getAllCaregivers = async ({ page = 1, limit = 10, search, isActive 
  * Get caregiver by ID
  */
 export const getCaregiverById = async (caregiverId) => {
-  const caregiver = await User.findOne({ 
-    _id: caregiverId, 
+  const caregiver = await User.findOne({
+    _id: caregiverId,
     role: USER_ROLES.CAREGIVER,
-    isDeleted: false 
+    isDeleted: false
   })
     .select('-password -emailVerificationToken -passwordResetToken')
     .populate('linkedPatients', 'firstName lastName email profileImage');
@@ -445,10 +446,10 @@ export const getCaregiverById = async (caregiverId) => {
  * Update caregiver
  */
 export const updateCaregiver = async (caregiverId, updateData) => {
-  const caregiver = await User.findOne({ 
-    _id: caregiverId, 
+  const caregiver = await User.findOne({
+    _id: caregiverId,
     role: USER_ROLES.CAREGIVER,
-    isDeleted: false 
+    isDeleted: false
   });
 
   if (!caregiver) {
@@ -458,9 +459,9 @@ export const updateCaregiver = async (caregiverId, updateData) => {
   // Validate email if provided
   if (updateData.email && updateData.email !== caregiver.email) {
     validateEmail(updateData.email);
-    
+
     // Check if email already exists
-    const existingUser = await User.findOne({ 
+    const existingUser = await User.findOne({
       email: updateData.email.toLowerCase(),
       _id: { $ne: caregiverId }
     });
@@ -477,8 +478,8 @@ export const updateCaregiver = async (caregiverId, updateData) => {
 
   // Allowed fields for update
   const allowedFields = [
-    'firstName', 'lastName', 'email', 'password', 
-    'phone', 'dateOfBirth', 'gender', 'address', 
+    'firstName', 'lastName', 'email', 'password',
+    'phone', 'dateOfBirth', 'gender', 'address',
     'isActive', 'isEmailVerified'
   ];
 
@@ -508,10 +509,10 @@ export const updateCaregiver = async (caregiverId, updateData) => {
  * Delete caregiver (soft delete)
  */
 export const deleteCaregiver = async (caregiverId) => {
-  const caregiver = await User.findOne({ 
-    _id: caregiverId, 
+  const caregiver = await User.findOne({
+    _id: caregiverId,
     role: USER_ROLES.CAREGIVER,
-    isDeleted: false 
+    isDeleted: false
   });
 
   if (!caregiver) {
@@ -535,4 +536,34 @@ export const deleteCaregiver = async (caregiverId) => {
   await caregiver.save();
 
   return { message: 'Caregiver deleted successfully.' };
+};
+
+// ==========================================
+// SYSTEM / ADMIN OVERVIEW
+// ==========================================
+
+/**
+ * Get system audit logs
+ */
+export const getAuditLogs = async ({ page = 1, limit = 20 }) => {
+  const skip = (Number(page) - 1) * Number(limit);
+
+  const [logs, total] = await Promise.all([
+    AuditLog.find()
+      .populate('userId', 'firstName lastName email role profileImage')
+      .sort({ createdAt: -1 })
+      .skip(skip)
+      .limit(Number(limit)),
+    AuditLog.countDocuments(),
+  ]);
+
+  return {
+    logs,
+    pagination: {
+      total,
+      page: Number(page),
+      limit: Number(limit),
+      totalPages: Math.ceil(total / Number(limit)) || 1,
+    },
+  };
 };

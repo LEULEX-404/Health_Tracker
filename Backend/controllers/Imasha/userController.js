@@ -161,3 +161,23 @@ export const assignCaregiver = async (req, res, next) => {
     next(error);
   }
 };
+
+// ==========================================
+// COMPLETE ONBOARDING
+// ==========================================
+// PATCH /api/users/:id/onboarding
+export const completeOnboarding = async (req, res, next) => {
+  try {
+    const result = await userService.completeOnboarding(req.params.id);
+
+    res.status(200).json({
+      success: true,
+      message: result.message,
+      data: {
+        hasCompletedOnboarding: result.hasCompletedOnboarding
+      },
+    });
+  } catch (error) {
+    next(error);
+  }
+};

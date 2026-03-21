@@ -9,6 +9,7 @@ import {
     resetPassword,
     verifyEmail
 } from '../../utils/Imasha/authApi';
+import { completeUserOnboarding } from '../../utils/Imasha/userApi';
 
 const AuthContext = createContext(null);
 
@@ -16,7 +17,7 @@ const ROLE_REDIRECTS = {
     patient: '/',
     doctor: '/doctor-dashboard',
     caregiver: '/caregiver-dashboard',
-    admin: '/admin',
+    admin: '/admin/dashboard',
 };
 
 export function AuthProvider({ children }) {
@@ -41,7 +42,9 @@ export function AuthProvider({ children }) {
         localStorage.setItem('pn_token', accessToken);
         setToken(accessToken);
         setUser(userData);
-        const redirectTo = ROLE_REDIRECTS[userData?.role] || '/login';
+        const redirectTo = (userData?.role === 'patient' && !userData?.hasCompletedOnboarding)
+            ? '/onboarding'
+            : ROLE_REDIRECTS[userData?.role] || '/login';
         navigate(redirectTo);
         return data;
     }, [navigate]);
@@ -72,10 +75,25 @@ export function AuthProvider({ children }) {
         return await verifyEmail(token);
     }, []);
 
+    const markOnboardingComplete = useCallback(async () => {
+        const userId = user?.id || user?._id;
+        if (!userId || !token) return;
+        const result = await completeUserOnboarding(userId, token);
+        setUser(prev => ({ ...prev, hasCompletedOnboarding: true }));
+        return result;
+    }, [user, token]);
+
+    const oauthLogin = useCallback(({ token: newToken, user: newUser }) => {
+        localStorage.setItem('pn_token', newToken);
+        setToken(newToken);
+        setUser(newUser);
+    }, []);
+
     return (
         <AuthContext.Provider value={{
             user, token, loading, login, register, logout,
-            requestPasswordReset, completePasswordReset, confirmEmail
+            requestPasswordReset, completePasswordReset, confirmEmail,
+            markOnboardingComplete, oauthLogin
         }}>
             {children}
         </AuthContext.Provider>
