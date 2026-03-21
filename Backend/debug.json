@@ -1,0 +1,18 @@
+{
+  "users": [
+    {
+      "id": "69a1664f84361c24414fd16c",
+      "name": "Miyuru",
+      "email": "miyurut20@gmail.com"
+    },
+    {
+      "id": "69be4b021f500ea24f436ad7",
+      "name": "Test",
+      "email": "caregiver@gmail.com"
+    }
+  ],
+  "bookings": [
+    "69941f3ed55064c9992a67cb",
+    "69a1664f84361c24414fd16c"
+  ]
+}

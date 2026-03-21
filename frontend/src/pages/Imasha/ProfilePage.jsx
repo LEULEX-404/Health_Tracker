@@ -15,6 +15,7 @@ import Header from '../../components/Tharuka/Header/Header';
 import Footer from '../../components/Tharuka/Footer/Footer';
 import BackgroundEffect from '../../components/Tharuka/Common/BackgroundEffect';
 import toast from 'react-hot-toast';
+import PatientAlertsTab from '../Tharindu/PatientAlertsTab';
 import './ProfilePage.css';
 
 /* ── Static data ────────────────────────────────────────── */
@@ -352,6 +353,21 @@ export default function ProfilePage() {
                             </div>
                         </form>
                     </div>
+                </motion.div>
+            );
+        }
+
+        if (activeTab === 'alerts') {
+            return (
+                <motion.div
+                    key="alerts"
+                    initial={{ opacity: 0, scale: 0.97 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    exit={{ opacity: 0 }}
+                    transition={{ duration: 0.22 }}
+                    className="ims-profile__settings"
+                >
+                    <PatientAlertsTab />
                 </motion.div>
             );
         }

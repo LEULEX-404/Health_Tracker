@@ -13,11 +13,11 @@ import userRoutes from './routes/Imasha/userRoutes.js';
 import userReportRoutes from './routes/Imasha/reportRoutes.js';
 import adminRoutes from './routes/Imasha/adminRoutes.js';
 import {
-  errorHandler,
-  notFound,
-  handleDuplicateKeyError,
-  handleValidationError,
-  handleCastError,
+    errorHandler,
+    notFound,
+    handleDuplicateKeyError,
+    handleValidationError,
+    handleCastError,
 } from './middleware/Imasha/errorMiddleware.js';
 
 
@@ -72,18 +72,18 @@ connectDB();
 // ==========================================
 // Helmet helps secure Express apps by setting various HTTP headers
 app.use(helmet({
-  contentSecurityPolicy: NODE_ENV === 'production' ? undefined : false,
-  crossOriginEmbedderPolicy: false,
+    contentSecurityPolicy: NODE_ENV === 'production' ? undefined : false,
+    crossOriginEmbedderPolicy: false,
 }));
 
 // ==========================================
 // CORS CONFIGURATION
 // ==========================================
 app.use(cors({
-  origin: [CLIENT_URL, ADMIN_DASHBOARD_URL],
-  credentials: true, // Allow cookies to be sent
-  methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH'],
-  allowedHeaders: ['Content-Type', 'Authorization'],
+    origin: [CLIENT_URL, ADMIN_DASHBOARD_URL],
+    credentials: true, // Allow cookies to be sent
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH'],
+    allowedHeaders: ['Content-Type', 'Authorization'],
 }));
 
 // ==========================================
@@ -101,11 +101,11 @@ app.use(cookieParser(COOKIE_SECRET));
 // LOGGING MIDDLEWARE
 // ==========================================
 if (NODE_ENV === 'development') {
-  // Detailed logging in development
-  app.use(morgan('dev'));
+    // Detailed logging in development
+    app.use(morgan('dev'));
 } else {
-  // Combined logging in production
-  app.use(morgan('combined'));
+    // Combined logging in production
+    app.use(morgan('combined'));
 }
 
 // ─────────────────────────────────────────────
@@ -118,22 +118,22 @@ app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 // ─────────────────────────────────────────────
 // Tharuka Swagger
 app.use(
-  "/api-docs/Tharuka",
-  swaggerUi.serveFiles(tharukaSwaggerSpec),
-  swaggerUi.setup(tharukaSwaggerSpec, {
-    customCss: '.swagger-ui .topbar { display: none }',
-    customSiteTitle: 'Tharuka Health System API',
-  })
+    "/api-docs/Tharuka",
+    swaggerUi.serveFiles(tharukaSwaggerSpec),
+    swaggerUi.setup(tharukaSwaggerSpec, {
+        customCss: '.swagger-ui .topbar { display: none }',
+        customSiteTitle: 'Tharuka Health System API',
+    })
 );
 
 // Imasha Swagger
 app.use(
-  "/api-docs/imasha",
-  swaggerUi.serveFiles(imashaOpenApi),
-  swaggerUi.setup(imashaOpenApi, {
-    customCss: '.swagger-ui .topbar { display: none }',
-    customSiteTitle: 'Imasha Module API',
-  })
+    "/api-docs/imasha",
+    swaggerUi.serveFiles(imashaOpenApi),
+    swaggerUi.setup(imashaOpenApi, {
+        customCss: '.swagger-ui .topbar { display: none }',
+        customSiteTitle: 'Imasha Module API',
+    })
 );
 
 // ==========================================
@@ -142,50 +142,50 @@ app.use(
 
 // Health check endpoint
 app.get('/health', (req, res) => {
-  res.status(200).json({
-    success: true,
-    message: 'Server is running',
-    timestamp: new Date().toISOString(),
-    environment: NODE_ENV,
-  });
+    res.status(200).json({
+        success: true,
+        message: 'Server is running',
+        timestamp: new Date().toISOString(),
+        environment: NODE_ENV,
+    });
 });
 
 app.use(
-  "/api-docs/priya",
-  swaggerUi.serve,
-  swaggerUi.setup(priyaOpenApi, {
-    customCss: ".swagger-ui .topbar { display: none }",
-    customSiteTitle: "Priya Module API",
-  })
+    "/api-docs/priya",
+    swaggerUi.serve,
+    swaggerUi.setup(priyaOpenApi, {
+        customCss: ".swagger-ui .topbar { display: none }",
+        customSiteTitle: "Priya Module API",
+    })
 );
 
 
 
 // Swagger UI for Tharindu module APIs (Alerts, Notifications, Bookings)
 app.use('/api-docs/tharindu', swaggerUi.serve, swaggerUi.setup(tharinduOpenApi, {
-  customCss: '.swagger-ui .topbar { display: none }',
-  customSiteTitle: 'Tharindu Module API',
+    customCss: '.swagger-ui .topbar { display: none }',
+    customSiteTitle: 'Tharindu Module API',
 }));
 // Root endpoint
 app.get('/', (req, res) => {
-  res.status(200).json({
-    success: true,
-    message: 'Healthcare Authentication API',
-    version: '1.0.0',
-      endpoints: {
-        health: '/health',
-        auth: '/api/auth',
-        users: '/api/users',
-        admin: '/api/admin',
-        healthData: "/api/health-data",
-        reports: "/api/reports",
-        apiDocs: 'http://localhost:5000/api-docs/Tharuka',
-        docs: 'See API_DOCUMENTATION.md',
-        swaggerImasha: 'http://localhost:5000/api-docs/imasha',
-        swaggerTharindu: 'http://localhost:5000/api-docs/tharindu',
-        swaggerPriya: "http://localhost:5000/api-docs/priya",
-      },
-  });
+    res.status(200).json({
+        success: true,
+        message: 'Healthcare Authentication API',
+        version: '1.0.0',
+        endpoints: {
+            health: '/health',
+            auth: '/api/auth',
+            users: '/api/users',
+            admin: '/api/admin',
+            healthData: "/api/health-data",
+            reports: "/api/reports",
+            apiDocs: 'http://localhost:5000/api-docs/Tharuka',
+            docs: 'See API_DOCUMENTATION.md',
+            swaggerImasha: 'http://localhost:5000/api-docs/imasha',
+            swaggerTharindu: 'http://localhost:5000/api-docs/tharindu',
+            swaggerPriya: "http://localhost:5000/api-docs/priya",
+        },
+    });
 });
 
 // Authentication routes
@@ -212,36 +212,36 @@ app.use("/api/notifications", notificationRoutes);
 // CONTINUOUS SIMULATOR
 // ─────────────────────────────────────────────
 const startContinuousSimulator = () => {
-  console.log("🤖 Continuous simulator started for all users...");
+    console.log("🤖 Continuous simulator started for all users...");
 
-  setInterval(async () => {
-    try {
-      const users = await User.find({role: "patient"}, "_id");
+    setInterval(async () => {
+        try {
+            const users = await User.find({ role: "patient" }, "_id");
 
-      if (!users.length) {
-        console.log("[Simulator] No users found, skipping...");
-        return;
-      }
+            if (!users.length) {
+                console.log("[Simulator] No users found, skipping...");
+                return;
+            }
 
-      for (const user of users) {
-        const roll = Math.random();
-        const scenario =
-          roll < 0.15
-            ? "emergency"
-            : roll < 0.25
-              ? "oxygen_drop"
-              : "normal";
+            for (const user of users) {
+                const roll = Math.random();
+                const scenario =
+                    roll < 0.15
+                        ? "emergency"
+                        : roll < 0.25
+                            ? "oxygen_drop"
+                            : "normal";
 
-        const result = await runSimulator(user._id.toString(), scenario);
+                const result = await runSimulator(user._id.toString(), scenario);
 
-        console.log(
-          `[Simulator] userId=${user._id} | scenario=${scenario} | alerts=${result.alerts.length}`
-        );
-      }
-    } catch (err) {
-      console.error("[Simulator] Error:", err.message);
-    }
-  }, process.env.SIMULATOR_INTERVAL_MS || 60000);
+                console.log(
+                    `[Simulator] userId=${user._id} | scenario=${scenario} | alerts=${result.alerts.length}`
+                );
+            }
+        } catch (err) {
+            console.error("[Simulator] Error:", err.message);
+        }
+    }, process.env.SIMULATOR_INTERVAL_MS || 60000);
 };
 
 // Start simulator AFTER DB is connected
@@ -253,34 +253,34 @@ app.use('/api/reports', userReportRoutes);
 // MEAL REMINDER PROCESSOR
 // ─────────────────────────────────────────────
 const startMealReminderProcessor = () => {
-  console.log("🔔 Meal reminder processor started...");
+    console.log("🔔 Meal reminder processor started...");
 
-  // Process reminders every minute
-  setInterval(async () => {
-    try {
-      const users = await User.find({ role: "patient" }, "_id");
+    // Process reminders every minute
+    setInterval(async () => {
+        try {
+            const users = await User.find({ role: "patient" }, "_id");
 
-      for (const user of users) {
-        // Generate reminders for active meal plans
-        await reminderService.generateRemindersForActivePlans(user._id.toString());
+            for (const user of users) {
+                // Generate reminders for active meal plans
+                await reminderService.generateRemindersForActivePlans(user._id.toString());
 
-        // Get pending reminders that are due
-        const pendingReminders = await reminderService.getPendingReminders(user._id.toString(), 10);
+                // Get pending reminders that are due
+                const pendingReminders = await reminderService.getPendingReminders(user._id.toString(), 10);
 
-        // Send reminders
-        for (const reminder of pendingReminders) {
-          try {
-            await reminderService.sendReminder(reminder._id.toString());
-            console.log(`[Reminder] Sent reminder ${reminder._id} to user ${user._id}`);
-          } catch (err) {
-            console.error(`[Reminder] Failed to send reminder ${reminder._id}:`, err.message);
-          }
+                // Send reminders
+                for (const reminder of pendingReminders) {
+                    try {
+                        await reminderService.sendReminder(reminder._id.toString());
+                        console.log(`[Reminder] Sent reminder ${reminder._id} to user ${user._id}`);
+                    } catch (err) {
+                        console.error(`[Reminder] Failed to send reminder ${reminder._id}:`, err.message);
+                    }
+                }
+            }
+        } catch (err) {
+            console.error("[Reminder Processor] Error:", err.message);
         }
-      }
-    } catch (err) {
-      console.error("[Reminder Processor] Error:", err.message);
-    }
-  }, 60000); // Run every minute
+    }, 60000); // Run every minute
 };
 
 // Start reminder processor AFTER DB is connected
@@ -309,10 +309,10 @@ app.use('/api/admin/appointments', adminAppointmentsRoutes);
 // ==========================================
 // ERROR HANDLING MIDDLEWARE
 try {
-  const bookingEmailController = require('./controllers/bookingEmailController');
-  app.post('/api/send-booking-email', bookingEmailController.sendBookingSuccessEmail);
+    const bookingEmailController = require('./controllers/bookingEmailController');
+    app.post('/api/send-booking-email', bookingEmailController.sendBookingSuccessEmail);
 } catch (error) {
-  console.warn('bookingEmailController not found. /api/send-booking-email is disabled.');
+    console.warn('bookingEmailController not found. /api/send-booking-email is disabled.');
 }
 // ==========================================
 
@@ -331,16 +331,16 @@ app.use(errorHandler);
 // START SERVER
 // ==========================================
 const server = app.listen(PORT, () => {
-  console.log('');
-  console.log('='.repeat(50));
-  console.log('Healthcare Authentication Server Started');
-  console.log('='.repeat(50));
-  console.log(`Server: http://localhost:${PORT}`);
-  console.log(`Environment: ${NODE_ENV}`);
-  console.log(`Health Check: http://localhost:${PORT}/health`);
-  console.log(`Auth API: http://localhost:${PORT}/api/auth`);
-  console.log('='.repeat(50));
-  console.log('');
+    console.log('');
+    console.log('='.repeat(50));
+    console.log('Healthcare Authentication Server Started');
+    console.log('='.repeat(50));
+    console.log(`Server: http://localhost:${PORT}`);
+    console.log(`Environment: ${NODE_ENV}`);
+    console.log(`Health Check: http://localhost:${PORT}/health`);
+    console.log(`Auth API: http://localhost:${PORT}/api/auth`);
+    console.log('='.repeat(50));
+    console.log('');
 });
 
 // ==========================================
@@ -349,42 +349,42 @@ const server = app.listen(PORT, () => {
 
 // Handle unhandled promise rejections
 process.on('unhandledRejection', (err) => {
-  console.error('❌ Unhandled Promise Rejection:', err);
-  console.error('Shutting down server...');
+    console.error('❌ Unhandled Promise Rejection:', err);
+    console.error('Shutting down server...');
 
-  server.close(() => {
-    process.exit(1);
-  });
+    server.close(() => {
+        process.exit(1);
+    });
 });
 
 // Handle uncaught exceptions
 process.on('uncaughtException', (err) => {
-  console.error('❌ Uncaught Exception:', err);
-  console.error('Shutting down server...');
+    console.error('❌ Uncaught Exception:', err);
+    console.error('Shutting down server...');
 
-  server.close(() => {
-    process.exit(1);
-  });
+    server.close(() => {
+        process.exit(1);
+    });
 });
 
 // Handle SIGTERM (for deployment platforms like Heroku)
 process.on('SIGTERM', () => {
-  console.log('👋 SIGTERM received. Shutting down gracefully...');
+    console.log('👋 SIGTERM received. Shutting down gracefully...');
 
-  server.close(() => {
-    console.log('✅ Server closed');
-    process.exit(0);
-  });
+    server.close(() => {
+        console.log('✅ Server closed');
+        process.exit(0);
+    });
 });
 
 // Handle SIGINT (Ctrl+C)
 process.on('SIGINT', () => {
-  console.log('\n👋 SIGINT received. Shutting down gracefully...');
+    console.log('\n👋 SIGINT received. Shutting down gracefully...');
 
-  server.close(() => {
-    console.log('✅ Server closed');
-    process.exit(0);
-  });
+    server.close(() => {
+        console.log('✅ Server closed');
+        process.exit(0);
+    });
 });
 
 export default app;
