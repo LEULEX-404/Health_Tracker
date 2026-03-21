@@ -86,7 +86,7 @@ function App() {
           ) : (
             <>
               {/* Admin Routes */}
-              <Route path="/admin/dashboard" element={<ProtectedRoute><AdminDashboard /></ProtectedRoute>} />
+              <Route path="/admin/dashboard" element={<ProtectedRoute allowedRoles={['admin']}><AdminDashboard /></ProtectedRoute>} />
 
               {/* Public Routes */}
               <Route path="/" element={<HomePage />} />
