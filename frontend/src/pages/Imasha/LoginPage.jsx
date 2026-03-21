@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { Mail, AlertCircle, CheckCircle2 } from 'lucide-react';
+import { Mail } from 'lucide-react';
 import { toast } from 'react-hot-toast';
 
 import AuthLayout from '../../components/Imasha/AuthLayout';
@@ -11,53 +11,79 @@ import { useAuth } from '../../context/Imasha/AuthContext';
 
 import '../../styles/Imasha/AuthCommon.css';
 
+/* ── Validators ── */
+function validateEmail(v) {
+    if (!v.trim()) return 'Email is required.';
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v)) return 'Enter a valid email address.';
+    return '';
+}
+function validatePassword(v) {
+    if (!v) return 'Password is required.';
+    if (v.length < 6) return 'Must be at least 6 characters.';
+    return '';
+}
+
 export default function LoginPage() {
     const { login, oauthLogin } = useAuth();
     const navigate = useNavigate();
 
     const [form, setForm] = useState({ email: '', password: '' });
+    const [errors, setErrors] = useState({ email: '', password: '' });
+    const [touched, setTouched] = useState({ email: false, password: false });
     const [isPasswordFocused, setIsPasswordFocused] = useState(false);
     const [isHappy, setIsHappy] = useState(false);
     const [loading, setLoading] = useState(false);
 
-    // Handle Google OAuth Callback
+    /* Google OAuth callback */
     useEffect(() => {
         const params = new URLSearchParams(window.location.search);
         const token = params.get('token');
         const userDataStr = params.get('user');
-
         if (token && userDataStr) {
             try {
                 const userData = JSON.parse(decodeURIComponent(userDataStr));
-
-                // Set session via context
                 oauthLogin({ token, user: userData });
-
                 toast.success('Google login successful!');
-
-                // Redirect based on onboarding status
                 if (userData.role === 'patient' && !userData.hasCompletedOnboarding) {
                     navigate('/onboarding');
                 } else {
                     navigate('/');
                 }
-            } catch (err) {
-                console.error('Failed to parse Google user data:', err);
+            } catch {
                 toast.error('Google login failed. Please try again.');
             }
         }
     }, [navigate, oauthLogin]);
 
+    /* Real-time validation on change */
     function handleChange(e) {
-        setForm((prev) => ({ ...prev, [e.target.name]: e.target.value }));
+        const { name, value } = e.target;
+        setForm((prev) => ({ ...prev, [name]: value }));
+        if (touched[name]) {
+            setErrors((prev) => ({
+                ...prev,
+                [name]: name === 'email' ? validateEmail(value) : validatePassword(value),
+            }));
+        }
+    }
+
+    function handleBlur(e) {
+        const { name, value } = e.target;
+        setTouched((prev) => ({ ...prev, [name]: true }));
+        setErrors((prev) => ({
+            ...prev,
+            [name]: name === 'email' ? validateEmail(value) : validatePassword(value),
+        }));
     }
 
     async function handleSubmit(e) {
         e.preventDefault();
-        if (!form.email || !form.password) {
-            toast.error('Please fill in all fields.');
-            return;
-        }
+        const emailErr = validateEmail(form.email);
+        const passErr = validatePassword(form.password);
+        setTouched({ email: true, password: true });
+        setErrors({ email: emailErr, password: passErr });
+        if (emailErr || passErr) return;
+
         setLoading(true);
         try {
             await login({ email: form.email, password: form.password });
@@ -75,6 +101,11 @@ export default function LoginPage() {
 
     return (
         <AuthLayout>
+            <div className="Imasha-auth-toggle">
+                <Link to="/login" className="Imasha-auth-toggle-btn active">Sign In</Link>
+                <Link to="/register" className="Imasha-auth-toggle-btn">Sign Up</Link>
+            </div>
+
             <div className="Imasha-form-card">
                 {/* Mascot */}
                 <div className="Imasha-mascot-wrap">
@@ -100,10 +131,12 @@ export default function LoginPage() {
                             type="email"
                             value={form.email}
                             onChange={handleChange}
+                            onBlur={handleBlur}
                             placeholder="your@email.com"
                             required
                             autoComplete="email"
                             icon={<Mail size={16} />}
+                            error={touched.email ? errors.email : ''}
                         />
 
                         <PasswordInput
@@ -113,35 +146,29 @@ export default function LoginPage() {
                             onChange={handleChange}
                             placeholder="Enter your password"
                             autoComplete="current-password"
+                            required
                             onPasswordFocusChange={setIsPasswordFocused}
+                            error={touched.password ? errors.password : ''}
                         />
                     </div>
 
-                    <div style={{ textAlign: 'right', marginBottom: '1.25rem', marginTop: '-0.5rem' }}>
-                        <Link to="/forgot-password" title="Reset your password" style={{ color: 'var(--auth-primary)', fontSize: '0.85rem', fontWeight: '600' }}>
+                    <div className="Imasha-forgot-row">
+                        <Link to="/forgot-password" className="Imasha-auth-link">
                             Forgot password?
                         </Link>
                     </div>
 
-                    <button
-                        type="submit"
-                        className="Imasha-btn-primary"
-                        disabled={loading}
-                    >
+                    <button type="submit" className="Imasha-btn-primary" disabled={loading}>
                         {loading ? (
                             <span className="Imasha-btn-loading">
                                 <span className="Imasha-spinner" /> Signing in…
                             </span>
-                        ) : 'Sign In'}
+                        ) : 'Sign In →'}
                     </button>
 
-                    <div className="Imasha-divider"><span>OR</span></div>
+                    <div className="Imasha-divider"><span>or continue with</span></div>
 
-                    <button
-                        type="button"
-                        onClick={handleGoogleLogin}
-                        className="Imasha-google-btn"
-                    >
+                    <button type="button" onClick={handleGoogleLogin} className="Imasha-google-btn">
                         <div className="Imasha-google-icon">
                             <svg viewBox="0 0 24 24">
                                 <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" />
@@ -158,8 +185,6 @@ export default function LoginPage() {
                     Don&apos;t have an account?{' '}
                     <Link to="/register" className="Imasha-auth-link">Create account</Link>
                 </p>
-
-                <div className="Imasha-divider" style={{ margin: '2rem 0 0' }}>Doctor & Admin Access</div>
             </div>
         </AuthLayout>
     );

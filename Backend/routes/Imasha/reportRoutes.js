@@ -4,6 +4,7 @@ import {
   getAllReports,
   getReportById,
   deleteReport,
+  downloadReportPdf,
 } from '../../controllers/Imasha/reportController.js';
 import { authenticate, isAdmin } from '../../middleware/Imasha/authMiddleware.js';
 
@@ -36,5 +37,11 @@ router.get('/:id', authenticate, getReportById);
  * @access  Private
  */
 router.delete('/:id', authenticate, deleteReport);
+/**
+ * @route   GET /api/reports/:id/pdf
+ * @desc    Convert and download report as PDF
+ * @access  Private
+ */
+router.get('/:id/pdf', authenticate, downloadReportPdf);
 
 export default router;

@@ -55,7 +55,7 @@ export default function HeroSection() {
 
           <motion.div className="pn-hero__ctas" {...fadeUp(0.5)}>
             <MagneticWrapper strength={0.4} range={100} display="inline-block">
-              <Link to="/signup" className="btn-primary pn-hero__cta-main">
+              <Link to="/register" className="btn-primary pn-hero__cta-main">
                 {t('hero_cta_start')} <ArrowRight size={16} />
               </Link>
             </MagneticWrapper>
@@ -84,7 +84,7 @@ export default function HeroSection() {
           transition={{ duration: 0.9, delay: 0.3, ease: [0.22, 1, 0.36, 1] }}
         >
           <div className="pn-hero__img-wrap">
-            <img src="/images/Tharuka/hero_dashboard.png" alt="PulseNova Dashboard" className="pn-hero__img" />
+            <img src="/images/Tharuka/hero_collaboration.png" alt="PulseNova - Health Collaboration" className="pn-hero__img" onError={(e) => { e.target.src = '/images/Tharuka/hero_dashboard.png'; }} />
             {/* Floating cards */}
             <motion.div className="pn-hero__float-card pn-hero__float-card--1"
               animate={{ y: [0,-10,0] }} transition={{ duration: 3, repeat: Infinity, ease: 'easeInOut' }}>
@@ -117,10 +117,10 @@ export default function HeroSection() {
             <path id="gentle-wave" d="M-160 44c30 0 58-18 88-18s 58 18 88 18 58-18 88-18 58 18 88 18 v44h-352z" />
           </defs>
           <g className="pn-hero__parallax">
-            <use xlinkHref="#gentle-wave" x="48" y="0" fill="var(--bg-secondary)" opacity="0.2" />
-            <use xlinkHref="#gentle-wave" x="48" y="3" fill="var(--bg-secondary)" opacity="0.4" />
-            <use xlinkHref="#gentle-wave" x="48" y="5" fill="var(--bg-secondary)" opacity="0.7" />
-            <use xlinkHref="#gentle-wave" x="48" y="7" fill="var(--bg-secondary)" />
+            <use xlinkHref="#gentle-wave" x="48" y="0" fill="#00c897" opacity="0.08" />
+            <use xlinkHref="#gentle-wave" x="48" y="3" fill="#00c897" opacity="0.15" />
+            <use xlinkHref="#gentle-wave" x="48" y="5" fill="#00c897" opacity="0.28" />
+            <use xlinkHref="#gentle-wave" x="48" y="7" fill="#00c897" opacity="0.5" />
           </g>
         </svg>
       </div>

@@ -1,8 +1,8 @@
 import { useId } from 'react';
 
 /**
- * Reusable labelled form input with icon.
- * Props: label, icon (ReactNode), type, value, onChange, placeholder, name, required, ...rest
+ * Reusable labelled form input with icon and inline error support.
+ * Props: label, icon, type, value, onChange, placeholder, name, required, error, ...rest
  */
 export default function AuthFormInput({
     label,
@@ -16,13 +16,21 @@ export default function AuthFormInput({
     style,
     as = 'input',
     children,
+    error = '',
     ...rest
 }) {
     const id = useId();
+    const hasError = Boolean(error);
+
     return (
         <div className="Imasha-field" style={style}>
-            {label && <label className="Imasha-label" htmlFor={id}>{label}</label>}
-            <div className="Imasha-input-wrap">
+            {label && (
+                <label className="Imasha-label" htmlFor={id}>
+                    {label}
+                    {required && <span style={{ color: 'var(--auth-error)', marginLeft: '3px' }}>*</span>}
+                </label>
+            )}
+            <div className={`Imasha-input-wrap${hasError ? ' has-error' : ''}`}>
                 {icon && <span className="Imasha-input-icon">{icon}</span>}
                 {as === 'select' ? (
                     <select
@@ -31,7 +39,7 @@ export default function AuthFormInput({
                         value={value}
                         onChange={onChange}
                         required={required}
-                        className="Imasha-select"
+                        className={`Imasha-input${hasError ? ' has-error' : ''}`}
                         {...rest}
                     >
                         {children}
@@ -45,11 +53,18 @@ export default function AuthFormInput({
                         onChange={onChange}
                         placeholder={placeholder}
                         required={required}
-                        className="Imasha-input"
+                        className={`Imasha-input${hasError ? ' has-error' : ''}`}
+                        aria-invalid={hasError}
+                        aria-describedby={hasError ? `${id}-error` : undefined}
                         {...rest}
                     />
                 )}
             </div>
+            {hasError && (
+                <span className="Imasha-field-error" id={`${id}-error`} role="alert">
+                    ⚠ {error}
+                </span>
+            )}
         </div>
     );
 }

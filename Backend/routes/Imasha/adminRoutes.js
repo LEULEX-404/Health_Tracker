@@ -10,6 +10,7 @@ import {
   getCaregiverById,
   updateCaregiver,
   deleteCaregiver,
+  getAuditLogs,
 } from '../../controllers/Imasha/adminController.js';
 import { authenticate, isAdmin } from '../../middleware/Imasha/authMiddleware.js';
 
@@ -92,5 +93,16 @@ router.put('/caregivers/:id', authenticate, isAdmin, updateCaregiver);
  * @access  Private/Admin
  */
 router.delete('/caregivers/:id', authenticate, isAdmin, deleteCaregiver);
+
+// ==========================================
+// SYSTEM MANAGEMENT ROUTES (Admin Only)
+// ==========================================
+
+/**
+ * @route   GET /api/admin/audit-logs
+ * @desc    Get system audit logs
+ * @access  Private/Admin
+ */
+router.get('/audit-logs', authenticate, isAdmin, getAuditLogs);
 
 export default router;

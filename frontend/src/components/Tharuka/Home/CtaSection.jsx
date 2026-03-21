@@ -27,7 +27,7 @@ export default function CtaSection() {
           <h2 className="pn-cta__title">{t('cta_title')}</h2>
           <p className="pn-cta__desc">{t('cta_desc')}</p>
           <div className="pn-cta__actions">
-            <Link to="/signup" className="pn-cta__btn">
+            <Link to="/register" className="pn-cta__btn">
               {t('cta_button')} <ArrowRight size={18} />
             </Link>
             <p className="pn-cta__sub">{t('cta_sub')}</p>

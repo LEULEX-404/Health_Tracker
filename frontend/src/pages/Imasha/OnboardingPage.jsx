@@ -235,44 +235,73 @@ export default function OnboardingPage() {
                                 ))}
                             </div>
 
-                            <button
-                                onClick={handleNext}
-                                disabled={isFinishing}
-                                style={{ 
-                                    background: '#00c897',
-                                    color: '#ffffff',
-                                    border: 'none',
-                                    padding: '1.1rem 2.5rem',
-                                    borderRadius: '16px',
-                                    fontSize: '1.05rem',
-                                    fontWeight: '700',
-                                    cursor: 'pointer',
-                                    display: 'flex',
-                                    alignItems: 'center',
-                                    gap: '12px',
-                                    boxShadow: '0 20px 35px -8px rgba(0, 200, 151, 0.35)',
-                                    transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)'
-                                }}
-                                onMouseEnter={(e) => {
-                                    e.currentTarget.style.transform = 'translateY(-3px)';
-                                    e.currentTarget.style.boxShadow = '0 25px 40px -8px rgba(0, 200, 151, 0.45)';
-                                    e.currentTarget.style.background = '#00e6ad';
-                                }}
-                                onMouseLeave={(e) => {
-                                    e.currentTarget.style.transform = 'translateY(0)';
-                                    e.currentTarget.style.boxShadow = '0 20px 35px -8px rgba(0, 200, 151, 0.35)';
-                                    e.currentTarget.style.background = '#00c897';
-                                }}
-                            >
-                                {isFinishing ? (
-                                    <>Initializing...</>
-                                ) : (
-                                    <>
-                                        {currentStep === STEPS.length - 1 ? "Start Journey" : "Continue"}
-                                        <ArrowRight size={20} />
-                                    </>
-                                )}
-                            </button>
+                            <div style={{ display: 'flex', gap: '1rem', alignItems: 'center' }}>
+                                <button
+                                    onClick={handleNext}
+                                    disabled={isFinishing}
+                                    style={{ 
+                                        background: '#00c897',
+                                        color: '#ffffff',
+                                        border: 'none',
+                                        padding: '1.1rem 2.5rem',
+                                        borderRadius: '16px',
+                                        fontSize: '1.05rem',
+                                        fontWeight: '700',
+                                        cursor: 'pointer',
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        gap: '12px',
+                                        boxShadow: '0 20px 35px -8px rgba(0, 200, 151, 0.35)',
+                                        transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)'
+                                    }}
+                                    onMouseEnter={(e) => {
+                                        e.currentTarget.style.transform = 'translateY(-3px)';
+                                        e.currentTarget.style.boxShadow = '0 25px 40px -8px rgba(0, 200, 151, 0.45)';
+                                        e.currentTarget.style.background = '#00e6ad';
+                                    }}
+                                    onMouseLeave={(e) => {
+                                        e.currentTarget.style.transform = 'translateY(0)';
+                                        e.currentTarget.style.boxShadow = '0 20px 35px -8px rgba(0, 200, 151, 0.35)';
+                                        e.currentTarget.style.background = '#00c897';
+                                    }}
+                                >
+                                    {isFinishing ? (
+                                        <>Initializing...</>
+                                    ) : (
+                                        <>
+                                            {currentStep === STEPS.length - 1 ? "Start Journey" : "Continue"}
+                                            <ArrowRight size={20} />
+                                        </>
+                                    )}
+                                </button>
+                                
+                                <button
+                                    onClick={async () => {
+                                        setIsFinishing(true);
+                                        try {
+                                            await markOnboardingComplete();
+                                            navigate('/');
+                                        } catch (e) {
+                                            navigate('/');
+                                        }
+                                    }}
+                                    disabled={isFinishing}
+                                    style={{
+                                        background: 'transparent',
+                                        color: '#5a8870',
+                                        border: 'none',
+                                        padding: '1.1rem 1.5rem',
+                                        fontSize: '1rem',
+                                        fontWeight: '600',
+                                        cursor: 'pointer',
+                                        transition: 'color 0.2s'
+                                    }}
+                                    onMouseEnter={(e) => e.currentTarget.style.color = '#1d4d36'}
+                                    onMouseLeave={(e) => e.currentTarget.style.color = '#5a8870'}
+                                >
+                                    Skip for now
+                                </button>
+                            </div>
                         </motion.div>
                     </AnimatePresence>
                 </div>

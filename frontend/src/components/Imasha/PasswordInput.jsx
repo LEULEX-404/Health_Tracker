@@ -2,10 +2,7 @@ import { useState, useId } from 'react';
 import { Eye, EyeOff } from 'lucide-react';
 
 /**
- * Reusable password input with show/hide toggle.
- * Props:
- *   value, onChange, onFocus, onBlur, placeholder, id, label
- *   onPasswordFocusChange {(isFocused: boolean) => void}
+ * Password input with show/hide toggle and optional inline error.
  */
 export default function PasswordInput({
     value,
@@ -16,18 +13,26 @@ export default function PasswordInput({
     label = 'Password',
     name,
     autoComplete,
+    error = '',
+    required = false,
 }) {
     const [show, setShow] = useState(false);
     const generatedId = useId();
     const inputId = id || generatedId;
+    const hasError = Boolean(error);
 
     function handleFocus() { onPasswordFocusChange?.(true); }
     function handleBlur() { onPasswordFocusChange?.(false); }
 
     return (
         <div className="Imasha-field">
-            {label && <label className="Imasha-label" htmlFor={inputId}>{label}</label>}
-            <div className="Imasha-input-wrap">
+            {label && (
+                <label className="Imasha-label" htmlFor={inputId}>
+                    {label}
+                    {required && <span style={{ color: 'var(--auth-error)', marginLeft: '3px' }}>*</span>}
+                </label>
+            )}
+            <div className={`Imasha-input-wrap${hasError ? ' has-error' : ''}`}>
                 <span className="Imasha-input-icon">
                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none"
                         stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -45,8 +50,10 @@ export default function PasswordInput({
                     onBlur={handleBlur}
                     placeholder={placeholder}
                     autoComplete={autoComplete}
-                    className="Imasha-input"
+                    required={required}
+                    className={`Imasha-input${hasError ? ' has-error' : ''}`}
                     style={{ paddingRight: '2.8rem' }}
+                    aria-invalid={hasError}
                 />
                 <button
                     type="button"
@@ -58,6 +65,9 @@ export default function PasswordInput({
                     {show ? <EyeOff size={17} /> : <Eye size={17} />}
                 </button>
             </div>
+            {hasError && (
+                <span className="Imasha-field-error" role="alert">⚠ {error}</span>
+            )}
         </div>
     );
 }

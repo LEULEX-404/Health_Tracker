@@ -107,3 +107,15 @@ export const deleteReport = async (req, res, next) => {
     next(error);
   }
 };
+
+// ==========================================
+// DOWNLOAD REPORT AS PDF
+// ==========================================
+// GET /api/reports/:id/pdf
+export const downloadReportPdf = async (req, res, next) => {
+  try {
+    await reportService.generateReportPdf(req.params.id, req.user, res);
+  } catch (error) {
+    next(error);
+  }
+};
