@@ -1,11 +1,12 @@
 import { useState, useRef, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
-import { Sun, Moon, Globe, User, LogIn, ChevronDown, Bell } from 'lucide-react';
+import { Sun, Moon, Globe, User, LogIn, ChevronDown } from 'lucide-react';
 import { useTheme } from '../../../context/Tharuka/ThemeContext';
 import { useFontSize } from '../../../context/Tharuka/FontSizeContext';
 import { useAuth } from '../../../context/Imasha/AuthContext';
 import { triggerPageWave } from '../Common/PageTransitionWave';
+import NotificationBell from './NotificationBell';
 import './HeaderControls.css';
 
 const LANGS = [
@@ -126,10 +127,7 @@ export default function HeaderControls() {
       {/* Auth-dependent Controls */}
       {isLoggedIn ? (
         <div className="pn-hctrl__logged-in">
-          <button className="pn-hctrl__icon-btn" aria-label="Notifications">
-            <Bell size={20} />
-            <span className="pn-hctrl__badge" />
-          </button>
+          <NotificationBell />
           
           <div className="pn-hctrl__profile-wrap">
             <button 
