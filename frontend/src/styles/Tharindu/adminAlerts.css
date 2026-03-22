@@ -1,0 +1,336 @@
+/* ============================================
+   PulseNova — Admin Alerts & Settings (Tharindu)
+   Integrated directly within Imasha's Admin Dashboard
+   ============================================ */
+
+   .tharindu-alerts-module {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+  }
+  
+  /* ─── TABS ─── */
+  .tharindu-tabs-header {
+    margin-bottom: 0 !important;
+  }
+  .tharindu-tabs {
+    display: flex;
+    gap: 1rem;
+    border-bottom: 1px solid var(--admin-border);
+  }
+  .tharindu-tab {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.75rem 1rem;
+    background: transparent;
+    border: none;
+    color: var(--admin-text-muted);
+    font-size: var(--fs-sm);
+    font-weight: 600;
+    cursor: pointer;
+    border-bottom: 2px solid transparent;
+    transition: all 0.2s ease;
+  }
+  .tharindu-tab:hover {
+    color: var(--admin-text);
+  }
+  .tharindu-tab.active {
+    color: var(--admin-primary);
+    border-bottom-color: var(--admin-primary);
+  }
+  /* ─── FILTERS & SEARCH ─── */
+  .tharindu-filters-bar {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    background: var(--admin-card-bg);
+    padding: 1rem;
+    border-radius: 12px;
+    border: 1px solid var(--admin-border);
+    margin-bottom: 1.5rem;
+  }
+  
+  .tharindu-search-box {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    background: var(--admin-bg);
+    padding: 0.5rem 1rem;
+    border-radius: 8px;
+    border: 1px solid var(--admin-border);
+    flex: 1;
+    min-width: 250px;
+    transition: border-color 0.2s;
+  }
+  
+  .tharindu-search-box:focus-within {
+    border-color: var(--admin-primary);
+  }
+  
+  .tharindu-search-box input {
+    border: none;
+    background: transparent;
+    width: 100%;
+    color: var(--admin-text);
+    outline: none;
+  }
+  
+  .tharindu-filter-group {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+  }
+  
+  .tharindu-filter-select {
+    padding: 0.5rem 1rem;
+    border-radius: 8px;
+    border: 1px solid var(--admin-border);
+    background: var(--admin-bg);
+    color: var(--admin-text);
+    outline: none;
+    min-width: 150px;
+    transition: border-color 0.2s;
+  }
+  
+  .tharindu-filter-select:focus {
+    border-color: var(--admin-primary);
+  }
+  
+  .filter-icon {
+    color: var(--admin-text-muted);
+  }
+  
+  /* ─── PAGINATION ─── */
+  .tharindu-pagination {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 1rem;
+    margin-top: 1.5rem;
+    padding-top: 1rem;
+    border-top: 1px solid var(--admin-border);
+  }
+  
+  .tharindu-page-info {
+    font-size: var(--fs-sm);
+    color: var(--admin-text-muted);
+  }
+  
+  .tharindu-page-controls {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+  
+  .tharindu-page-btn {
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+    padding: 0.5rem 0.75rem;
+    background: var(--admin-bg);
+    border: 1px solid var(--admin-border);
+    border-radius: 6px;
+    color: var(--admin-text);
+    font-size: var(--fs-xs);
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  
+  .tharindu-page-btn:hover:not(:disabled) {
+    background: var(--admin-hover);
+    border-color: var(--admin-primary);
+    color: var(--admin-primary);
+  }
+  
+  .tharindu-page-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+  
+  .tharindu-page-numbers {
+    font-size: var(--fs-sm);
+    font-weight: 600;
+    color: var(--admin-text);
+    padding: 0 0.5rem;
+  }
+  
+  /* ─── MONITORING ─── */
+  .tharindu-row-new {
+    background: rgba(239, 68, 68, 0.03);
+  }
+  .tharindu-severity-low { background: rgba(16, 185, 129, 0.15); color: #10b981; }
+  .tharindu-severity-medium { background: rgba(245, 158, 11, 0.15); color: #f59e0b; }
+  .tharindu-severity-high { background: rgba(249, 115, 22, 0.15); color: #f97316; }
+  .tharindu-severity-critical { background: rgba(239, 68, 68, 0.15); color: #ef4444; font-weight: 700; }
+  
+  .inline-icon {
+    display: inline-block;
+    vertical-align: middle;
+    margin-right: 4px;
+    margin-top: -2px;
+  }
+  
+  /* ─── SETTINGS CONFIG ─── */
+  .tharindu-settings-container {
+    padding: 1rem 0;
+  }
+  
+  .tharindu-patient-selector {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    margin-bottom: 2rem;
+    max-width: 400px;
+  }
+  .tharindu-patient-selector label {
+    font-size: var(--fs-sm);
+    font-weight: 600;
+    color: var(--admin-text);
+  }
+  .tharindu-select {
+    width: 100%;
+    padding: 0.75rem 1rem;
+    border-radius: 8px;
+    border: 1px solid var(--admin-border);
+    background: var(--admin-card-bg);
+    color: var(--admin-text);
+    font-size: var(--fs-sm);
+    outline: none;
+    transition: border-color 0.2s;
+  }
+  .tharindu-select:focus {
+    border-color: var(--admin-primary);
+  }
+  
+  .tharindu-settings-form {
+    background: var(--admin-bg);
+    border-radius: 12px;
+    padding: 1.5rem;
+    border: 1px dashed var(--admin-border);
+  }
+  
+  .tharindu-form-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: 1.5rem;
+    margin-bottom: 2rem;
+  }
+  
+  .tharindu-form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 0.4rem;
+  }
+  .tharindu-form-group label {
+    font-size: var(--fs-xs);
+    font-weight: 700;
+    color: var(--admin-text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .tharindu-form-group input {
+    width: 100%;
+    padding: 0.65rem 0.85rem;
+    border-radius: 8px;
+    border: 1px solid var(--admin-border);
+    background: var(--admin-card-bg);
+    color: var(--admin-text);
+    font-size: var(--fs-base);
+    font-weight: 600;
+    transition: all 0.2s;
+  }
+  .tharindu-form-group input:focus {
+    border-color: var(--admin-primary);
+    box-shadow: 0 0 0 3px rgba(var(--admin-primary-rgb), 0.1);
+    outline: none;
+  }
+  .tharindu-form-group small {
+    font-size: 0.7rem;
+    color: var(--admin-text-muted);
+  }
+  
+  .tharindu-form-toggles {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    margin-bottom: 2rem;
+    padding-top: 1.5rem;
+    border-top: 1px solid var(--admin-border);
+  }
+  
+  .tharindu-toggle-row {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    cursor: pointer;
+    user-select: none;
+  }
+  .tharindu-toggle-row input[type="checkbox"] {
+    appearance: none;
+    width: 44px;
+    height: 24px;
+    background: var(--admin-border);
+    border-radius: 20px;
+    position: relative;
+    cursor: pointer;
+    transition: background 0.3s;
+  }
+  .tharindu-toggle-row input[type="checkbox"]::after {
+    content: '';
+    position: absolute;
+    top: 2px;
+    left: 2px;
+    width: 20px;
+    height: 20px;
+    background: #fff;
+    border-radius: 50%;
+    transition: transform 0.3s cubic-bezier(0.4, 0.0, 0.2, 1);
+  }
+  .tharindu-toggle-row input[type="checkbox"]:checked {
+    background: var(--admin-primary);
+  }
+  .tharindu-toggle-row input[type="checkbox"]:checked::after {
+    transform: translateX(20px);
+  }
+  
+  .tharindu-toggle-text {
+    font-size: var(--fs-sm);
+    font-weight: 600;
+    color: var(--admin-text);
+  }
+  
+  .tharindu-form-actions {
+    display: flex;
+    justify-content: flex-end;
+  }
+  
+  /* ─── RESPONSIVE ─── */
+  @media (max-width: 768px) {
+    .tharindu-tabs {
+      flex-direction: column;
+      gap: 0;
+    }
+    .tharindu-tab {
+      width: 100%;
+      justify-content: center;
+      border-bottom: 1px solid var(--admin-border);
+    }
+    .tharindu-tab:last-child {
+      border-bottom: none;
+    }
+    .tharindu-tab.active {
+      border-bottom: none;
+      background: rgba(var(--admin-primary-rgb), 0.05);
+    }
+    .tharindu-form-grid {
+      grid-template-columns: 1fr;
+    }
+  }
