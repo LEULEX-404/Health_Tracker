@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Mail } from 'lucide-react';
 import { toast } from 'react-hot-toast';
@@ -56,7 +56,7 @@ export default function LoginPage() {
     }, [navigate, oauthLogin]);
 
     /* Real-time validation on change */
-    function handleChange(e) {
+    const handleChange = useCallback((e) => {
         const { name, value } = e.target;
         setForm((prev) => ({ ...prev, [name]: value }));
         if (touched[name]) {
@@ -65,18 +65,18 @@ export default function LoginPage() {
                 [name]: name === 'email' ? validateEmail(value) : validatePassword(value),
             }));
         }
-    }
+    }, [touched]);
 
-    function handleBlur(e) {
+    const handleBlur = useCallback((e) => {
         const { name, value } = e.target;
         setTouched((prev) => ({ ...prev, [name]: true }));
         setErrors((prev) => ({
             ...prev,
             [name]: name === 'email' ? validateEmail(value) : validatePassword(value),
         }));
-    }
+    }, []);
 
-    async function handleSubmit(e) {
+    const handleSubmit = useCallback(async (e) => {
         e.preventDefault();
         const emailErr = validateEmail(form.email);
         const passErr = validatePassword(form.password);
@@ -93,11 +93,11 @@ export default function LoginPage() {
         } finally {
             setLoading(false);
         }
-    }
+    }, [form, login]);
 
-    const handleGoogleLogin = () => {
+    const handleGoogleLogin = useCallback(() => {
         window.location.href = 'http://localhost:5000/api/auth/google';
-    };
+    }, []);
 
     return (
         <AuthLayout>

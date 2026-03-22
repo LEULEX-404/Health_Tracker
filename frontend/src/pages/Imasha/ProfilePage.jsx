@@ -1,3 +1,4 @@
+/* eslint-disable no-unused-vars */
 import {
     useState, useRef, useEffect, useCallback, useMemo, memo
 } from 'react';
@@ -16,6 +17,7 @@ import Footer from '../../components/Tharuka/Footer/Footer';
 import BackgroundEffect from '../../components/Tharuka/Common/BackgroundEffect';
 import toast from 'react-hot-toast';
 import PatientAlertsTab from '../Tharindu/PatientAlertsTab';
+import ModernDatePicker from '../../components/Imasha/ModernDatePicker';
 import './ProfilePage.css';
 
 /* ── Static data ────────────────────────────────────────── */
@@ -52,7 +54,11 @@ const ProfileField = memo(({
     placeholder, type = 'text', fullWidth = false,
     disabled = false, options = []
 }) => (
-    <motion.div variants={FADE_UP} className={`ims-profile__input-container${fullWidth ? ' full' : ''}`}>
+    <motion.div
+        variants={FADE_UP}
+        className={`ims-profile__input-container${fullWidth ? ' full' : ''}`}
+        style={{ position: 'relative', zIndex: type === 'date' ? 50 : 1 }}
+    >
         <label><Icon size={13} />{label}</label>
         <div className="ims-profile__input-wrapper">
             <Icon size={15} className="ims-profile__input-icon" />
@@ -60,6 +66,26 @@ const ProfileField = memo(({
                 <select name={name} value={value} onChange={onChange} disabled={disabled}>
                     {options.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
                 </select>
+            ) : type === 'date' ? (
+                <ModernDatePicker
+                    name={name}
+                    value={value}
+                    onChange={onChange}
+                    placement="top"
+                    customTrigger={({ displayValue, isOpen, setIsOpen }) => (
+                        <input
+                            type="text"
+                            name={name}
+                            value={displayValue}
+                            onChange={() => {}}
+                            placeholder={placeholder || 'mm/dd/yyyy'}
+                            readOnly
+                            onClick={() => !disabled && setIsOpen(!isOpen)}
+                            style={{ cursor: disabled ? 'not-allowed' : 'pointer' }}
+                            disabled={disabled}
+                        />
+                    )}
+                />
             ) : (
                 <input
                     type={type} name={name} value={value}

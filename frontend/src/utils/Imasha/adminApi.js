@@ -97,19 +97,22 @@ export const downloadReport = async (token, reportId) => {
 // --- Dashboard Stats ---
 export const getAdminDashboardStats = async (token) => {
     // We can fetch data counts securely using the pagination stats of limit=1
+    const allUsersReq = axios.get(`${API_URL}/users?limit=1`, getAuthHeader(token)).catch(() => ({ data: { pagination: { total: 0 } } }));
     const patientReq = axios.get(`${API_URL}/users?role=patient&limit=1`, getAuthHeader(token)).catch(() => ({ data: { pagination: { total: 0 } } }));
     const doctorReq = axios.get(`${API_URL}/admin/doctors?limit=1`, getAuthHeader(token)).catch(() => ({ data: { pagination: { total: 0 } } }));
     const caregiverReq = axios.get(`${API_URL}/admin/caregivers?limit=1`, getAuthHeader(token)).catch(() => ({ data: { pagination: { total: 0 } } }));
     const activeReq = axios.get(`${API_URL}/users?isActive=true&limit=1`, getAuthHeader(token)).catch(() => ({ data: { pagination: { total: 0 } } }));
 
-    const [patients, doctors, caregivers, active] = await Promise.all([patientReq, doctorReq, caregiverReq, activeReq]);
+    const [allUsers, patients, doctors, caregivers, active] = await Promise.all([
+        allUsersReq, patientReq, doctorReq, caregiverReq, activeReq
+    ]);
 
     return {
         totalPatients: patients.data?.pagination?.total || 0,
         totalDoctors: doctors.data?.pagination?.total || 0,
         totalCaregivers: caregivers.data?.pagination?.total || 0,
         totalActive: active.data?.pagination?.total || 0,
-        totalUsers: (patients.data?.pagination?.total || 0) + (doctors.data?.pagination?.total || 0) + (caregivers.data?.pagination?.total || 0)
+        totalUsers: allUsers.data?.pagination?.total || 0
     };
 };
 
