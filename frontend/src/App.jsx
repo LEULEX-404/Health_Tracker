@@ -21,6 +21,7 @@ const ContactPage = lazy(() => import('./pages/Tharuka/ContactPage'));
 const FaqPage = lazy(() => import('./pages/Tharuka/FaqPage'));
 const HealthDataPage = lazy(() => import('./pages/Tharuka/HealthDataPage'));
 const ServicesPage = lazy(() => import('./pages/Tharuka/ServicesPage'));
+const NutritionPage = lazy(() => import('./pages/Tharuka/NutritionPage'));
 
 // Pages — Imasha (Auth) (Lazy Loaded)
 const LoginPage = lazy(() => import('./pages/Imasha/LoginPage'));
@@ -32,9 +33,12 @@ const OnboardingPage = lazy(() => import('./pages/Imasha/OnboardingPage'));
 const ProfilePage = lazy(() => import('./pages/Imasha/ProfilePage'));
 const AdminDashboard = lazy(() => import('./pages/Imasha/Admin/AdminDashboard'));
 
-// Pages — Priya
-import ExercisePage from './pages/Priya/Exercise';
-import FindSpecialistPage from './pages/Priya/FindSpecialist';
+// Pages — Priya (Lazy Loaded)
+const ExercisePage = lazy(() => import('./pages/Priya/Exercise'));
+const FindSpecialistPage = lazy(() => import('./pages/Priya/FindSpecialist'));
+
+// Pages — Tharindu (Lazy Loaded)
+const CaregiverDashboard = lazy(() => import('./pages/Tharindu/careGiverDashboard'));
 
 import ProtectedRoute from './components/Imasha/ProtectedRoute';
 
@@ -111,7 +115,13 @@ function App() {
 
               {/* Protected Nutrition Routes */}
               <Route path="/health-data" element={<ProtectedRoute><HealthDataPage /></ProtectedRoute>} />
+              <Route path="/nutrition" element={<ProtectedRoute><NutritionPage /></ProtectedRoute>} />
               <Route path="/meal-plan" element={<ProtectedRoute><ServicesPage /></ProtectedRoute>} />
+              {/* Protected Tharindu Routes */}
+              <Route path="/caregiver-dashboard" element={<ProtectedRoute><CaregiverDashboard /></ProtectedRoute>} />
+
+              {/* Catch-all Redirect */}
+              <Route path="*" element={<Navigate to="/" replace />} />
             </>
           )}
         </Routes>

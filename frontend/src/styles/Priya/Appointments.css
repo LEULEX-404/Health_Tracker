@@ -1,0 +1,71 @@
+.pr-appointments-page {
+  min-height: 100vh;
+  background: var(--bg-primary);
+  padding: 7.5rem 0 4rem;
+}
+
+.pr-appointments-shell {
+  max-width: var(--max-width);
+}
+
+.pr-appointments-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 1.2rem;
+}
+
+.pr-appointments-head h1 {
+  margin: 0;
+  color: var(--text-primary);
+  font-family: 'Space Grotesk', sans-serif;
+}
+
+.pr-appointments-back {
+  text-decoration: none;
+  color: var(--text-primary);
+  border: 1px solid var(--border-color-strong);
+  border-radius: var(--radius-md);
+  padding: 0.5rem 0.8rem;
+  background: var(--bg-card);
+}
+
+.pr-appointments-empty {
+  margin: 2rem 0;
+  padding: 1.5rem;
+  text-align: center;
+  color: var(--text-muted);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-lg);
+  background: var(--bg-card);
+}
+
+.pr-appointments-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 1rem;
+}
+
+.pr-appointments-card {
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-lg);
+  background: var(--bg-card);
+  padding: 1rem;
+}
+
+.pr-appointments-card h3 {
+  margin: 0 0 0.5rem;
+  color: var(--text-primary);
+}
+
+.pr-appointments-card p {
+  margin: 0.3rem 0;
+  color: var(--text-secondary);
+}
+
+@media (max-width: 768px) {
+  .pr-appointments-page {
+    padding-top: 6.5rem;
+  }
+}

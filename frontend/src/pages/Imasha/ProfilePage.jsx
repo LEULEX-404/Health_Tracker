@@ -383,6 +383,21 @@ export default function ProfilePage() {
             );
         }
 
+        if (activeTab === 'alerts') {
+            return (
+                <motion.div
+                    key="alerts"
+                    initial={{ opacity: 0, scale: 0.97 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    exit={{ opacity: 0 }}
+                    transition={{ duration: 0.22 }}
+                    className="ims-profile__settings"
+                >
+                    <PatientAlertsTab />
+                </motion.div>
+            );
+        }
+
         return (
             <motion.div
                 key={activeTab}
