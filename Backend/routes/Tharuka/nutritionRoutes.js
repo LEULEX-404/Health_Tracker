@@ -18,6 +18,7 @@ router.get("/analysis/:userId", authenticate, controller.getNutritionAnalysis);
 router.get("/:userId", authenticate, controller.getUserNutrition);
 
 // Write (audit logged)
+router.post("/check", authenticate, controller.checkNutrition);
 router.post("/", authenticate, auditLogger, controller.addMeal);
 router.put("/:id", authenticate, auditLogger, controller.updateMeal);
 router.delete("/:id", authenticate, auditLogger, controller.deleteMeal);

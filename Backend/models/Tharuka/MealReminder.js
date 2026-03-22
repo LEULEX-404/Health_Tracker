@@ -78,7 +78,7 @@ const mealReminderSchema = new mongoose.Schema(
 );
 
 mealReminderSchema.pre("validate", function () {
-  if (this.scheduledDate) {
+  if (this.scheduledDate && this.isModified("scheduledDate")) {
     const normalized = new Date(this.scheduledDate);
     normalized.setHours(0, 0, 0, 0);
     this.scheduledDate = normalized;

@@ -21,6 +21,7 @@ const ContactPage = lazy(() => import('./pages/Tharuka/ContactPage'));
 const FaqPage = lazy(() => import('./pages/Tharuka/FaqPage'));
 const HealthDataPage = lazy(() => import('./pages/Tharuka/HealthDataPage'));
 const ServicesPage = lazy(() => import('./pages/Tharuka/ServicesPage'));
+const NutritionPage = lazy(() => import('./pages/Tharuka/NutritionPage'));
 
 // Pages — Imasha (Auth) (Lazy Loaded)
 const LoginPage = lazy(() => import('./pages/Imasha/LoginPage'));
@@ -109,7 +110,7 @@ function App() {
 
               {/* Protected Nutrition Routes */}
               <Route path="/health-data" element={<ProtectedRoute><HealthDataPage /></ProtectedRoute>} />
-              <Route path="/meal-plan" element={<ProtectedRoute><ServicesPage /></ProtectedRoute>} />
+              <Route path="/nutrition" element={<ProtectedRoute><NutritionPage /></ProtectedRoute>} />
             </>
           )}
         </Routes>

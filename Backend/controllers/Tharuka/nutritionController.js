@@ -113,6 +113,18 @@ export const getNutritionAnalysis = async (req, res) => {
   }
 };
 
+export const checkNutrition = async (req, res) => {
+  try {
+    const { items } = req.body;
+    if (!items || !Array.isArray(items)) return badRequest(res, "items array is required");
+    const data = await nutritionService.checkNutrition(items);
+    return ok(res, data);
+  } catch (err) {
+    console.error("checkNutrition:", err.message);
+    return serverError(res, err.message);
+  }
+};
+
 export default {
   addMeal,
   getUserNutrition,
@@ -120,4 +132,5 @@ export default {
   deleteMeal,
   addDoctorRecommendation,
   getNutritionAnalysis,
+  checkNutrition,
 };

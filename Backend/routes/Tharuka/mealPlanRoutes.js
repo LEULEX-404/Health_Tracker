@@ -6,7 +6,7 @@ import { authenticate } from "../../middleware/Imasha/authMiddleware.js";
 const router = express.Router();
 
 // Read routes (no audit) — more specific routes first
-router.get("/suggest/:userId", authenticate, controller.suggestMealPlans);
+router.post("/suggest/:userId", authenticate, controller.suggestMealPlans);
 router.get("/health-condition/:userId/:healthCondition", authenticate, controller.getMealPlansByHealthCondition);
 router.get("/detail/:id", authenticate, controller.getMealPlanById);
 router.get("/:userId", authenticate, controller.getUserMealPlans);
