@@ -131,7 +131,7 @@ export default function RegisterPage() {
     }, [form, register, navigate]);
 
     const handleGoogleLogin = useCallback(() => {
-        window.location.href = 'http://localhost:5000/api/auth/google';
+        window.location.href = `${import.meta.env.VITE_API_URL}/auth/google`;
     }, []);
 
     const progress = useMemo(() => step === 1 ? 50 : 100, [step]);

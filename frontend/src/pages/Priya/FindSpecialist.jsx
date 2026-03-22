@@ -8,8 +8,8 @@ import ScrollToTop from '../../components/Tharuka/Common/ScrollToTop';
 import { useAuth } from '../../context/Imasha/AuthContext';
 import '../../styles/Priya/FindSpecialist.css';
 
-const API_BASE = 'http://localhost:5000/api/users/doctors';
-const APPOINTMENTS_API = 'http://localhost:5000/api/appointments';
+const API_BASE = `${import.meta.env.VITE_API_URL}/users/doctors`;
+const APPOINTMENTS_API = `${import.meta.env.VITE_API_URL}/appointments`;
 
 const HEALTH_CATEGORIES = [
   'all',

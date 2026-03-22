@@ -17,7 +17,7 @@ import AddVitalsBG from '../../assets/health_nature_bg.jpg';
 import './HealthDataPage.css';
 
 // ─── API base ─────────────────────────────────────────────────
-const API = 'http://localhost:5000/api/health-data';
+const API = `${import.meta.env.VITE_API_URL}/health-data`;
 
 // ─── Thresholds (mirrors backend alertService.js) ─────────────
 const THRESHOLDS = {

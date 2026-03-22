@@ -2,7 +2,7 @@ import axios from 'axios';
 
 // We map nutrition endpoints similar to how existing Tharuka routes are set up.
 // Assume base API path is '/api' and routes are defined in backend.
-const API_URL = 'http://localhost:5000/api/nutrition';
+const API_URL = `${import.meta.env.VITE_API_URL}/nutrition`;
 
 // Attach authorization headers dynamically for authenticated requests
 const getAuthHeaders = () => {

@@ -972,10 +972,17 @@
   overflow: hidden;
 }
 
+.Imasha-btn-primary:hover,
+.Imasha-btn-primary:active,
 .Imasha-btn-primary:hover:not(:disabled) {
   transform: translateY(-2px);
   box-shadow: 0 10px 28px rgba(0, 200, 151, 0.5);
   color: #fff !important; /* Force text to remain white despite global anchor hover overlaps */
+}
+
+.Imasha-btn-primary:hover *,
+.Imasha-btn-primary:active * {
+  color: #fff !important; /* Force icons and nested text to stay white */
 }
 
 .Imasha-btn-primary:active:not(:disabled) {
@@ -1110,10 +1117,16 @@
   transition: all 0.3s;
 }
 
-.Imasha-btn-secondary:hover {
+.Imasha-btn-secondary:hover,
+.Imasha-btn-secondary:active {
   background: var(--auth-divider);
   border-color: var(--auth-primary);
   color: var(--auth-text-main) !important; /* Protect text color from global anchor hover rules */
+}
+
+.Imasha-btn-secondary:hover *,
+.Imasha-btn-secondary:active * {
+  color: var(--auth-text-main) !important;
 }
 
 /* ── Info Box ───────────────────────────────────────────────────── */

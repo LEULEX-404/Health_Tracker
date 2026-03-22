@@ -1,4 +1,5 @@
-const BASE = 'http://localhost:5000/api';
+/* eslint-disable no-unused-vars */
+const BASE = import.meta.env.VITE_API_URL;
 
 const authHeaders = () => ({
   headers: { Authorization: `Bearer ${localStorage.getItem('pn_token')}` },
