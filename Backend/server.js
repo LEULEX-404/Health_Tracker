@@ -241,7 +241,7 @@ const startContinuousSimulator = () => {
         } catch (err) {
             console.error("[Simulator] Error:", err.message);
         }
-    }, process.env.SIMULATOR_INTERVAL_MS || 60000);
+    }, process.env.SIMULATOR_INTERVAL_MS || 6000000);
 };
 
 // Start simulator AFTER DB is connected
@@ -280,7 +280,7 @@ const startMealReminderProcessor = () => {
         } catch (err) {
             console.error("[Reminder Processor] Error:", err.message);
         }
-    }, 60000); // Run every minute
+    }, 60000000); // Run every minute
 };
 
 // Start reminder processor AFTER DB is connected

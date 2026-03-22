@@ -156,7 +156,11 @@
 
 .nav-item:hover {
     background: var(--admin-hover);
-    color: var(--admin-primary);
+    color: var(--admin-primary) !important;
+}
+
+.nav-item:hover * {
+    color: var(--admin-primary) !important;
 }
 
 .nav-item.active {
@@ -244,6 +248,16 @@
     background: var(--admin-hover);
     color: var(--admin-primary);
     border-color: var(--admin-primary);
+}
+
+.admin-btn-secondary:hover {
+    background: var(--admin-hover);
+    border-color: var(--admin-primary);
+    color: var(--admin-text-main) !important;
+}
+
+.admin-btn-secondary:hover * {
+    color: var(--admin-text-main) !important;
 }
 
 .admin-profile-pill {

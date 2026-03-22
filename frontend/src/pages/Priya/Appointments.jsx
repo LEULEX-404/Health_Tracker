@@ -7,7 +7,7 @@ import ScrollToTop from '../../components/Tharuka/Common/ScrollToTop';
 import { useAuth } from '../../context/Imasha/AuthContext';
 import '../../styles/Priya/Appointments.css';
 
-const APPOINTMENTS_API = 'http://localhost:5000/api/appointments';
+const APPOINTMENTS_API = `${import.meta.env.VITE_API_URL}/appointments`;
 
 export default function AppointmentsPage() {
   const { token, user } = useAuth();

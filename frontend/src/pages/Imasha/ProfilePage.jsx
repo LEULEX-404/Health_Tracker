@@ -148,12 +148,12 @@ function useProfileStats(user, token) {
 
         Promise.all([
             // 1. All appointments — filter by this user's email client-side
-            fetch('http://localhost:5000/api/appointments', { headers })
+            fetch(`${import.meta.env.VITE_API_URL}/appointments`, { headers })
                 .then(r => r.ok ? r.json() : [])
                 .catch(() => []),
 
             // 2. Health records for this user
-            fetch(`http://localhost:5000/api/health-data/${userId}`, { headers })
+            fetch(`${import.meta.env.VITE_API_URL}/health-data/${userId}`, { headers })
                 .then(r => r.ok ? r.json() : { data: [] })
                 .catch(() => ({ data: [] })),
         ])
@@ -258,7 +258,7 @@ export default function ProfilePage() {
         setIsUpdating(true);
         try {
             const userId = user?.id || user?._id;
-            const res  = await fetch(`http://localhost:5000/api/users/${userId}`, {
+            const res  = await fetch(`${import.meta.env.VITE_API_URL}/users/${userId}`, {
                 method: 'PUT',
                 headers: {
                     'Content-Type': 'application/json',
@@ -285,7 +285,7 @@ export default function ProfilePage() {
         body.append('profileImage', file);
         try {
             const userId = user?.id || user?._id;
-            const res = await fetch(`http://localhost:5000/api/users/${userId}/profile-image`, {
+            const res = await fetch(`${import.meta.env.VITE_API_URL}/users/${userId}/profile-image`, {
                 method: 'PUT',
                 headers: { Authorization: `Bearer ${token}` },
                 body,
