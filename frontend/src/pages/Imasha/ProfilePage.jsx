@@ -1,6 +1,7 @@
 import {
     useState, useRef, useEffect, useCallback, useMemo, memo
 } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
     User, Mail, Phone, MapPin, Calendar,
@@ -134,11 +135,15 @@ function useProfileStats(user, token) {
             if (cancelled) return;
 
             // Filter appointments to this user by email
+            const userId = user?.id || user?._id;
+            const fullName = [user?.firstName, user?.lastName].filter(Boolean).join(' ').trim().toLowerCase();
             const myAppts = Array.isArray(appts)
-                ? appts.filter(a =>
-                    a.patientEmail &&
-                    a.patientEmail.toLowerCase() === (userEmail || '').toLowerCase()
-                  )
+                ? appts.filter((a) => {
+                    const byUserId = userId && (a.patientUserId === userId || a.patientUserId?._id === userId);
+                    const byEmail = a.patientEmail && a.patientEmail.toLowerCase() === (userEmail || '').toLowerCase();
+                    const byName = a.patientName && a.patientName.toLowerCase() === fullName;
+                    return byUserId || byEmail || byName;
+                  })
                 : [];
 
             // Health records
@@ -173,6 +178,7 @@ function useProfileStats(user, token) {
 /* ── Main Component ─────────────────────────────────────── */
 export default function ProfilePage() {
     const { user, token, logout } = useAuth();
+    const navigate = useNavigate();
     const { isDark } = useTheme();
     const [activeTab, setActiveTab]     = useState('settings');
     const [isUpdating, setIsUpdating]   = useState(false);
@@ -185,8 +191,39 @@ export default function ProfilePage() {
         firstName: '', lastName: '', phone: '',
         address: '', dateOfBirth: '', gender: '',
     });
+    const [recentAppointments, setRecentAppointments] = useState([]);
+    const [appointmentsLoading, setAppointmentsLoading] = useState(false);
 
     const fileInputRef = useRef(null);
+
+    const loadRecentAppointments = useCallback(async () => {
+        if (!token || !user?.email) return;
+        setAppointmentsLoading(true);
+        try {
+            const res = await fetch('http://localhost:5000/api/appointments', {
+                headers: { Authorization: `Bearer ${token}` }
+            });
+            const data = await res.json();
+            if (!res.ok) throw new Error(data?.message || 'Failed to fetch appointments');
+
+            const list = Array.isArray(data) ? data : [];
+            const userId = user?.id || user?._id;
+            const fullName = [user?.firstName, user?.lastName].filter(Boolean).join(' ').trim().toLowerCase();
+            const mine = list
+                .filter((a) => {
+                    const byUserId = userId && (a.patientUserId === userId || a.patientUserId?._id === userId);
+                    const byEmail = (a.patientEmail || '').toLowerCase() === user.email.toLowerCase();
+                    const byName = (a.patientName || '').toLowerCase() === fullName;
+                    return byUserId || byEmail || byName;
+                })
+                .sort((a, b) => new Date(b.createdAt || 0) - new Date(a.createdAt || 0));
+            setRecentAppointments(mine);
+        } catch {
+            setRecentAppointments([]);
+        } finally {
+            setAppointmentsLoading(false);
+        }
+    }, [token, user?.email]);
 
     // Sync user → form once
     useEffect(() => {
@@ -202,6 +239,12 @@ export default function ProfilePage() {
             gender:      user.gender      || '',
         });
     }, [user]);
+
+    useEffect(() => {
+        if (activeTab === 'appointments') {
+            loadRecentAppointments();
+        }
+    }, [activeTab, loadRecentAppointments]);
 
     // profile completeness score
     const profileScore = useMemo(() => {
@@ -267,6 +310,24 @@ export default function ProfilePage() {
             else { const d = await res.json(); toast.error(d.message || 'Upload failed'); }
         } catch { toast.error('Upload failed'); }
         finally { setImageLoading(false); }
+    };
+
+    const handleDeleteAppointment = async (appointmentId) => {
+        const ok = window.confirm('Do you want to delete this appointment?');
+        if (!ok) return;
+
+        try {
+            const res = await fetch(`http://localhost:5000/api/appointments/${appointmentId}`, {
+                method: 'DELETE',
+                headers: { Authorization: `Bearer ${token}` },
+            });
+            const data = await res.json();
+            if (!res.ok) throw new Error(data?.message || 'Failed to delete appointment');
+            toast.success('Appointment deleted');
+            loadRecentAppointments();
+        } catch (error) {
+            toast.error(error.message || 'Failed to delete appointment');
+        }
     };
 
     const displayName = [user?.firstName, user?.lastName].filter(Boolean).join(' ') || 'User';
@@ -352,6 +413,62 @@ export default function ProfilePage() {
                             </div>
                         </form>
                     </div>
+                </motion.div>
+            );
+        }
+
+        if (activeTab === 'appointments') {
+            return (
+                <motion.div
+                    key="appointments"
+                    variants={STAGGER}
+                    initial="hidden"
+                    animate="visible"
+                    exit={{ opacity: 0, y: -10 }}
+                    className="ims-profile__settings"
+                >
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
+                        <h3 className="ims-profile__form-section-title">
+                            <ClipboardList size={12} />Appointments
+                        </h3>
+                        <Link to="/Appointment" className="ims-profile__save-btn" style={{ textDecoration: 'none', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', width: 'auto', padding: '0 14px', height: 36 }}>
+                            Manage Appointments
+                        </Link>
+                    </div>
+
+                    {appointmentsLoading ? (
+                        <div className="ims-profile__placeholder-content">
+                            <p>Loading appointments...</p>
+                        </div>
+                    ) : recentAppointments.length === 0 ? (
+                        <div className="ims-profile__placeholder-content">
+                            <p>No appointments found yet.</p>
+                        </div>
+                    ) : (
+                        <div className="ims-profile__form-grid">
+                            {recentAppointments.slice(0, 6).map((apt) => (
+                                <div key={apt._id} className="ims-profile__appointment-card full">
+                                    <div className="ims-profile__appointment-left">
+                                        <img
+                                            src={apt.avatar || '/images/Priya/doctor-01.png'}
+                                            alt={apt.doctor || 'Doctor'}
+                                            className="ims-profile__appointment-avatar"
+                                        />
+                                        <div>
+                                            <label>{apt.doctor || 'Doctor'}</label>
+                                            <div style={{ color: 'var(--text-secondary)', fontSize: 13 }}>Date: {apt.date || '-'}</div>
+                                            <div style={{ color: 'var(--text-secondary)', fontSize: 13 }}>Time: {apt.time || '-'}</div>
+                                            <div style={{ color: 'var(--text-secondary)', fontSize: 13 }}>Status: {apt.status || 'Pending'}</div>
+                                        </div>
+                                    </div>
+                                    <div className="ims-profile__appointment-actions">
+                                        <button type="button" onClick={() => navigate('/Appointment')}>Edit</button>
+                                        <button type="button" onClick={() => handleDeleteAppointment(apt._id)}>Cancel</button>
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                    )}
                 </motion.div>
             );
         }

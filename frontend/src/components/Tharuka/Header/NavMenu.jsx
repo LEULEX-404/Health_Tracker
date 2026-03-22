@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect } from 'react';
 import { NavLink } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { X, ChevronDown, DatabaseZap, UtensilsCrossed, Activity } from 'lucide-react';
+import { X, ChevronDown, DatabaseZap, UtensilsCrossed, Activity, ClipboardList } from 'lucide-react';
 import { useAuth } from '../../../context/Imasha/AuthContext';
 import './NavMenu.css';
 
@@ -19,6 +19,7 @@ const NUTRITION_LINKS = [
   { key: 'nav_nutrition',   to: '/nutrition',   icon: Activity },
   { key: 'nav_health_data', to: '/health-data', icon: DatabaseZap },
   { key: 'nav_meal_plan',   to: '/meal-plan',   icon: UtensilsCrossed },
+  { to: '/Appointment', icon: ClipboardList, label: 'Appointments' },
 ];
 
 export default function NavMenu({ isOpen, onClose }) {
@@ -92,7 +93,7 @@ export default function NavMenu({ isOpen, onClose }) {
                       onClick={() => handleLinkClick(link.to)}
                     >
                       <span className="pn-nav__dd-icon"><Icon size={15} /></span>
-                      <span>{t(link.key)}</span>
+                      <span>{link.label || t(link.key)}</span>
                     </NavLink>
                   );
                 })}
@@ -138,7 +139,7 @@ export default function NavMenu({ isOpen, onClose }) {
                       onClick={() => handleLinkClick(link.to)}
                     >
                       <span className="pn-nav__dd-icon"><Icon size={14} /></span>
-                      {t(link.key)}
+                      {link.label || t(link.key)}
                     </NavLink>
                   );
                 })}

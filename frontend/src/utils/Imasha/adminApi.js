@@ -121,3 +121,27 @@ export const getAuditLogs = async (token, params = {}) => {
     });
     return response.data;
 };
+
+// --- Admin Appointments ---
+export const getAdminAppointments = async (token, params = {}) => {
+    const response = await axios.get(`${API_URL}/admin/appointments`, {
+        ...getAuthHeader(token),
+        params
+    });
+    return response.data;
+};
+
+export const getPendingAppointments = async (token) => {
+    const response = await axios.get(`${API_URL}/admin/appointments/pending`, getAuthHeader(token));
+    return response.data;
+};
+
+export const approveAppointment = async (token, appointmentId) => {
+    const response = await axios.put(`${API_URL}/admin/appointments/${appointmentId}/approve`, {}, getAuthHeader(token));
+    return response.data;
+};
+
+export const rejectAppointment = async (token, appointmentId) => {
+    const response = await axios.put(`${API_URL}/admin/appointments/${appointmentId}/reject`, {}, getAuthHeader(token));
+    return response.data;
+};

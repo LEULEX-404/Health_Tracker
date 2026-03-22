@@ -35,6 +35,7 @@ const AdminDashboard = lazy(() => import('./pages/Imasha/Admin/AdminDashboard'))
 // Pages — Priya
 import ExercisePage from './pages/Priya/Exercise';
 import FindSpecialistPage from './pages/Priya/FindSpecialist';
+import AppointmentPage from './pages/Priya/Appointment';
 
 import ProtectedRoute from './components/Imasha/ProtectedRoute';
 
@@ -108,6 +109,8 @@ function App() {
               {/* Protected Priya Routes */}
               <Route path="/exercise" element={<ProtectedRoute><ExercisePage /></ProtectedRoute>} />
               <Route path="/find-specialist" element={<ProtectedRoute><FindSpecialistPage /></ProtectedRoute>} />
+              <Route path="/Appointment" element={<ProtectedRoute><AppointmentPage /></ProtectedRoute>} />
+              <Route path="/appointment" element={<ProtectedRoute><AppointmentPage /></ProtectedRoute>} />
 
               {/* Protected Nutrition Routes */}
               <Route path="/health-data" element={<ProtectedRoute><HealthDataPage /></ProtectedRoute>} />
