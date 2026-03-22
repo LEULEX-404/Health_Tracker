@@ -2,6 +2,7 @@ import mongoose from "mongoose";
 
 const appointmentSchema = new mongoose.Schema(
     {
+        doctorId: { type: mongoose.Schema.Types.ObjectId, ref: 'Doctor', index: true },
         doctor: { type: String, required: true, trim: true },
         specialty: { type: String, default: '', trim: true },
         status: { type: String, default: 'Pending', trim: true },

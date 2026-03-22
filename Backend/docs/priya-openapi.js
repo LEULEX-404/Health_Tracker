@@ -24,9 +24,10 @@ export default {
             AppointmentRequest: {
                 type: 'object',
                 properties: {
+                    doctorId: { type: 'string', example: '67d123abc456def789012345', description: 'Doctor document _id (preferred)' },
                     patientName: { type: 'string', example: 'John Doe' },
                     patientEmail: { type: 'string', format: 'email', example: 'john@example.com' },
-                    doctorName: { type: 'string', example: 'Dr. Silva' },
+                    doctor: { type: 'string', example: 'Dr. Silva', description: 'Optional fallback name; doctorId is preferred' },
                     date: { type: 'string', format: 'date', example: '2026-03-15' },
                     time: { type: 'string', example: '10:30 AM' },
                     reason: { type: 'string', example: 'Routine checkup' },

@@ -1,6 +1,7 @@
 import express from 'express';
 import {
   getAllUsers,
+  getSpecialists,
   getUserById,
   updateUser,
   updateProfileImage,
@@ -31,6 +32,13 @@ const router = express.Router();
  * @access  Private/Admin
  */
 router.get('/', authenticate, isAdmin, getAllUsers);
+
+/**
+ * @route   GET /api/users/doctors
+ * @desc    Get all active doctor specialists (for authenticated users)
+ * @access  Private
+ */
+router.get('/doctors', authenticate, getSpecialists);
 
 /**
  * @route   GET /api/users/:id

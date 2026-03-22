@@ -1,14 +1,139 @@
 import Appointment from "../../models/Priya/Appointment.js";
 import { sendBookingReceivedToPatient } from "./bookingEmailController.js";
+import Doctor from "../../models/Imasha/Doctor.js";
 
 const DEFAULT_AVATAR = 'https://i.pravatar.cc/150?img=12';
+const DOCTOR_POPULATE = {
+    path: "doctorId",
+    populate: {
+        path: "user",
+        match: { isDeleted: false, role: "doctor" },
+        select: "firstName lastName email phone profileImage",
+    },
+};
+
+function normalizeDoctorName(name) {
+    return (name || "").toLowerCase().replace(/^dr\.\s*/i, "").trim();
+}
+
+function getBookingDateBounds() {
+    const now = new Date();
+    const day = now.getDay();
+    const toMonday = day === 0 ? -6 : 1 - day;
+    const startCurrentWeek = new Date(now);
+    startCurrentWeek.setDate(now.getDate() + toMonday);
+    startCurrentWeek.setHours(0, 0, 0, 0);
+
+    const endNextWeek = new Date(startCurrentWeek);
+    endNextWeek.setDate(startCurrentWeek.getDate() + 13);
+    endNextWeek.setHours(23, 59, 59, 999);
+
+    return { startCurrentWeek, endNextWeek };
+}
+
+function isDateWithinBookingWindow(dateStr) {
+    if (!dateStr) return false;
+    const date = new Date(`${dateStr}T00:00:00`);
+    if (Number.isNaN(date.getTime())) return false;
+
+    const { startCurrentWeek, endNextWeek } = getBookingDateBounds();
+    return date >= startCurrentWeek && date <= endNextWeek;
+}
+
+function getResolvedDoctorFromPopulated(populatedDoctor) {
+    const user = populatedDoctor?.user;
+    if (!populatedDoctor || !user) return null;
+
+    return {
+        doctorId: populatedDoctor._id,
+        doctor: `Dr. ${user.firstName} ${user.lastName}`,
+        specialty: populatedDoctor.specialization || "",
+        avatar: user.profileImage || DEFAULT_AVATAR,
+        doctorDetails: {
+            doctorId: populatedDoctor._id,
+            userId: user._id,
+            email: user.email,
+            phone: user.phone || "",
+        },
+    };
+}
+
+function enrichAppointmentObject(appointmentObj, fallbackDoctorDoc = null) {
+    const populatedResolved = getResolvedDoctorFromPopulated(appointmentObj.doctorId);
+    if (populatedResolved) {
+        return {
+            ...appointmentObj,
+            doctorId: populatedResolved.doctorId,
+            doctor: populatedResolved.doctor,
+            specialty: appointmentObj.specialty || populatedResolved.specialty,
+            avatar: appointmentObj.avatar && appointmentObj.avatar.trim()
+                ? appointmentObj.avatar
+                : populatedResolved.avatar,
+            doctorDetails: populatedResolved.doctorDetails,
+        };
+    }
+
+    const fallbackResolved = getResolvedDoctorFromPopulated(fallbackDoctorDoc);
+    if (fallbackResolved) {
+        return {
+            ...appointmentObj,
+            doctorId: fallbackResolved.doctorId,
+            doctor: fallbackResolved.doctor,
+            specialty: appointmentObj.specialty || fallbackResolved.specialty,
+            avatar: appointmentObj.avatar && appointmentObj.avatar.trim()
+                ? appointmentObj.avatar
+                : fallbackResolved.avatar,
+            doctorDetails: fallbackResolved.doctorDetails,
+        };
+    }
+
+    return {
+        ...appointmentObj,
+        avatar: appointmentObj.avatar && appointmentObj.avatar.trim() ? appointmentObj.avatar : DEFAULT_AVATAR,
+        doctorDetails: null,
+    };
+}
+
+async function findDoctorByAppointmentInput({ doctorId, doctorName }) {
+    if (doctorId) {
+        const byId = await Doctor.findOne({ _id: doctorId, isDeleted: false }).populate(DOCTOR_POPULATE.populate);
+
+        if (byId?.user) return byId;
+    }
+
+    if (doctorName) {
+        const doctors = await Doctor.find({ isDeleted: false }).populate(DOCTOR_POPULATE.populate);
+
+        const normalizedTarget = normalizeDoctorName(doctorName);
+        return (
+            doctors.find((doc) => {
+                const fullName = normalizeDoctorName(`${doc.user?.firstName || ""} ${doc.user?.lastName || ""}`);
+                return fullName === normalizedTarget;
+            }) || null
+        );
+    }
+
+    return null;
+}
 
 const getAppointments = async (req, res) => {
     try {
-        const list = await Appointment.find().sort({ createdAt: -1 });
+        const list = await Appointment.find().populate(DOCTOR_POPULATE).sort({ createdAt: -1 });
+        const doctorDocs = await Doctor.find({ isDeleted: false }).populate(DOCTOR_POPULATE.populate);
+
+        const doctorsByName = new Map();
+        doctorDocs.forEach((doc) => {
+            if (!doc.user) return;
+            const fullName = normalizeDoctorName(`${doc.user.firstName || ""} ${doc.user.lastName || ""}`);
+            if (!fullName) return;
+            doctorsByName.set(fullName, doc);
+        });
+
         const appointments = list.map((doc) => {
             const o = doc.toObject ? doc.toObject() : doc;
-            return { ...o, avatar: o.avatar && o.avatar.trim() ? o.avatar : DEFAULT_AVATAR };
+            const normalizedDoctorName = normalizeDoctorName(o.doctor || "");
+            const matchedDoctor = doctorsByName.get(normalizedDoctorName);
+            return enrichAppointmentObject(o, matchedDoctor);
         });
         res.json(appointments);
     } catch (error) {
@@ -18,11 +143,18 @@ const getAppointments = async (req, res) => {
 
 const getAppointmentById = async (req, res) => {
     try {
-        const appointment = await Appointment.findById(req.params.id);
+        const appointment = await Appointment.findById(req.params.id).populate(DOCTOR_POPULATE);
         if (!appointment) {
             return res.status(404).json({ message: 'Appointment not found.' });
         }
-        return res.json(appointment);
+
+        const obj = appointment.toObject ? appointment.toObject() : appointment;
+        let fallbackDoctor = null;
+        if (!obj.doctorId && obj.doctor) {
+            fallbackDoctor = await findDoctorByAppointmentInput({ doctorName: obj.doctor });
+        }
+
+        return res.json(enrichAppointmentObject(obj, fallbackDoctor));
     } catch (error) {
         return res.status(400).json({ message: 'Invalid appointment id.' });
     }
@@ -30,32 +162,56 @@ const getAppointmentById = async (req, res) => {
 
 const createAppointment = async (req, res) => {
     try {
-        const { doctor, date, time, patientName, patientEmail, patientPhone } = req.body || {};
-        if (!doctor || !date || !time) {
-            return res.status(400).json({ message: 'doctor, date and time are required.' });
+        const { doctor, doctorId, date, time, patientName, patientEmail, patientPhone } = req.body || {};
+        if ((!doctor && !doctorId) || !date || !time) {
+            return res.status(400).json({ message: 'doctor (or doctorId), date and time are required.' });
         }
+        if (!isDateWithinBookingWindow(date)) {
+            return res.status(400).json({ message: 'Date must be within current week or next week.' });
+        }
+
+        const matchedDoctor = await findDoctorByAppointmentInput({ doctorId, doctorName: doctor });
+        if (!matchedDoctor?.user) {
+            return res.status(400).json({ message: 'Selected doctor not found.' });
+        }
+
+        const resolved = getResolvedDoctorFromPopulated(matchedDoctor);
 
         const appointment = await Appointment.create({
             ...req.body,
+            doctorId: matchedDoctor._id,
+            doctor: resolved.doctor,
+            specialty: req.body.specialty || resolved.specialty,
             status: req.body.status || 'Pending',
-            avatar: req.body.avatar || 'https://i.pravatar.cc/150?img=12',
+            avatar: req.body.avatar || resolved.avatar,
             patientName: patientName || req.body.fullName || '',
             patientEmail: patientEmail || req.body.email || '',
             patientPhone: patientPhone || req.body.phone || ''
         });
 
+        let emailSent = false;
+        let emailError = null;
         if (appointment.patientEmail && appointment.patientEmail.trim()) {
             try {
                 const result = await sendBookingReceivedToPatient(appointment);
+                emailSent = !!result?.sent;
                 if (!result.sent) {
                     console.warn('Booking email not sent:', result.error);
+                    emailError = result?.error || 'Failed to send booking email';
                 }
             } catch (emailErr) {
                 console.error('Booking email error:', emailErr);
+                emailError = emailErr?.message || 'Failed to send booking email';
             }
         }
 
-        return res.status(201).json(appointment);
+        const created = await Appointment.findById(appointment._id).populate(DOCTOR_POPULATE);
+        const createdObj = created.toObject ? created.toObject() : created;
+        return res.status(201).json({
+            ...enrichAppointmentObject(createdObj),
+            emailSent,
+            emailError,
+        });
     } catch (error) {
         return res.status(500).json({ message: 'Failed to create appointment.' });
     }
@@ -63,17 +219,39 @@ const createAppointment = async (req, res) => {
 
 const updateAppointment = async (req, res) => {
     try {
+        const updates = { ...req.body };
+        if (updates.date && !isDateWithinBookingWindow(updates.date)) {
+            return res.status(400).json({ message: 'Date must be within current week or next week.' });
+        }
+        if (updates.doctorId || updates.doctor) {
+            const matchedDoctor = await findDoctorByAppointmentInput({
+                doctorId: updates.doctorId,
+                doctorName: updates.doctor,
+            });
+
+            if (!matchedDoctor?.user) {
+                return res.status(400).json({ message: 'Selected doctor not found.' });
+            }
+
+            const resolved = getResolvedDoctorFromPopulated(matchedDoctor);
+            updates.doctorId = matchedDoctor._id;
+            updates.doctor = resolved.doctor;
+            updates.specialty = updates.specialty || resolved.specialty;
+            updates.avatar = updates.avatar || resolved.avatar;
+        }
+
         const appointment = await Appointment.findByIdAndUpdate(
             req.params.id,
-            req.body,
+            updates,
             { new: true, runValidators: true }
-        );
+        ).populate(DOCTOR_POPULATE);
 
         if (!appointment) {
             return res.status(404).json({ message: 'Appointment not found.' });
         }
 
-        return res.json(appointment);
+        const updatedObj = appointment.toObject ? appointment.toObject() : appointment;
+        return res.json(enrichAppointmentObject(updatedObj));
     } catch (error) {
         return res.status(400).json({ message: 'Failed to update appointment.' });
     }
@@ -98,13 +276,14 @@ const cancelAppointment = async (req, res) => {
             req.params.id,
             { status: 'Cancelled' },
             { new: true }
-        );
+        ).populate(DOCTOR_POPULATE);
 
         if (!appointment) {
             return res.status(404).json({ message: 'Appointment not found.' });
         }
 
-        return res.json(appointment);
+        const cancelledObj = appointment.toObject ? appointment.toObject() : appointment;
+        return res.json(enrichAppointmentObject(cancelledObj));
     } catch (error) {
         return res.status(400).json({ message: 'Invalid appointment id.' });
     }

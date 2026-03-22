@@ -30,11 +30,15 @@ const ForgotPasswordPage = lazy(() => import('./pages/Imasha/ForgotPasswordPage'
 const ResetPasswordPage = lazy(() => import('./pages/Imasha/ResetPasswordPage'));
 const VerifyEmailPage = lazy(() => import('./pages/Imasha/VerifyEmailPage'));
 const OnboardingPage = lazy(() => import('./pages/Imasha/OnboardingPage'));
+const ProfilePage = lazy(() => import('./pages/Imasha/ProfilePage'));
 const AdminDashboard = lazy(() => import('./pages/Imasha/Admin/AdminDashboard'));
 
-// Pages — Priya
-import ExercisePage from './pages/Priya/Exercise';
-import FindSpecialistPage from './pages/Priya/FindSpecialist';
+// Pages — Priya (Lazy Loaded)
+const ExercisePage = lazy(() => import('./pages/Priya/Exercise'));
+const FindSpecialistPage = lazy(() => import('./pages/Priya/FindSpecialist'));
+
+// Pages — Tharindu (Lazy Loaded)
+const CaregiverDashboard = lazy(() => import('./pages/Tharindu/careGiverDashboard'));
 
 import ProtectedRoute from './components/Imasha/ProtectedRoute';
 
@@ -68,7 +72,7 @@ function App() {
   return (
     <>
       <PageTransitionWave />
-      
+
       <AnimatePresence mode="wait">
         {initialLoading && <Preloader key="preloader" />}
       </AnimatePresence>
@@ -83,7 +87,7 @@ function App() {
           ) : (
             <>
               {/* Admin Routes */}
-              <Route path="/admin/dashboard" element={<ProtectedRoute><AdminDashboard /></ProtectedRoute>} />
+              <Route path="/admin/dashboard" element={<ProtectedRoute allowedRoles={['admin']}><AdminDashboard /></ProtectedRoute>} />
 
               {/* Public Routes */}
               <Route path="/" element={<HomePage />} />
@@ -100,7 +104,8 @@ function App() {
               <Route path="/forgot-password" element={<ForgotPasswordPage />} />
               <Route path="/reset-password" element={<ResetPasswordPage />} />
               <Route path="/verify-email" element={<VerifyEmailPage />} />
-              
+              <Route path="/profile" element={<ProtectedRoute><ProfilePage /></ProtectedRoute>} />
+
               {/* Optional Onboarding Route */}
               <Route path="/onboarding" element={<ProtectedRoute><OnboardingPage /></ProtectedRoute>} />
 
@@ -111,6 +116,12 @@ function App() {
               {/* Protected Nutrition Routes */}
               <Route path="/health-data" element={<ProtectedRoute><HealthDataPage /></ProtectedRoute>} />
               <Route path="/nutrition" element={<ProtectedRoute><NutritionPage /></ProtectedRoute>} />
+              <Route path="/meal-plan" element={<ProtectedRoute><ServicesPage /></ProtectedRoute>} />
+              {/* Protected Tharindu Routes */}
+              <Route path="/caregiver-dashboard" element={<ProtectedRoute><CaregiverDashboard /></ProtectedRoute>} />
+
+              {/* Catch-all Redirect */}
+              <Route path="*" element={<Navigate to="/" replace />} />
             </>
           )}
         </Routes>

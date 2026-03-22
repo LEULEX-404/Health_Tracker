@@ -181,3 +181,23 @@ export const completeOnboarding = async (req, res, next) => {
     next(error);
   }
 };
+
+// ==========================================
+// GET SPECIALISTS
+// ==========================================
+// GET /api/users/doctors
+export const getSpecillist = async (req, res, next) => {
+  try {
+    const specialists = await userService.getSpecillist();
+
+    res.status(200).json({
+      success: true,
+      message: 'Specialists fetched successfully.',
+      data: specialists,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const getSpecialists = getSpecillist;

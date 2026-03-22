@@ -132,7 +132,11 @@ export default function HeaderControls() {
           </button>
           
           <div className="pn-hctrl__profile-wrap">
-            <button className="pn-hctrl__profile" aria-label="Profile">
+            <button 
+              className="pn-hctrl__profile" 
+              aria-label="Profile"
+              onClick={() => navigate('/profile')}
+            >
               <User size={20} />
             </button>
           </div>

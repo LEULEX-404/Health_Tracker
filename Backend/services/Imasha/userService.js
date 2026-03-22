@@ -1,4 +1,5 @@
 import User from '../../models/Imasha/User.js';
+import Doctor from '../../models/Imasha/Doctor.js';
 import cloudinary from '../../utils/Imasha/cloudinary.js';
 import { NotFoundError, BadRequestError, ForbiddenError } from '../../utils/Imasha/errors.js';
 
@@ -243,3 +244,60 @@ export const completeOnboarding = async (userId) => {
     hasCompletedOnboarding: user.hasCompletedOnboarding
   };
 };
+
+// ==========================================
+// GET SPECIALISTS (AUTHENTICATED USERS)
+// ==========================================
+export const getSpecillist = async () => {
+  const doctors = await Doctor.find({ isDeleted: false })
+    .populate({
+      path: 'user',
+      match: { isDeleted: false, isActive: true, role: 'doctor' },
+      select: 'firstName lastName email phone profileImage address healthConditions',
+    })
+    .sort({ createdAt: -1 });
+
+  const fallbackImages = [
+    '/images/Priya/doctor-01.png',
+    '/images/Priya/doctor-02.png',
+    '/images/Priya/doctor-03.png',
+    '/images/Priya/doctor-04.png',
+    '/images/Priya/doctor-05.png',
+    '/images/Priya/doctor-06.png',
+    '/images/Priya/doctor-07.png',
+    '/images/Priya/doctor-08.png',
+    '/images/Priya/doctor-09.png',
+    '/images/Priya/doctor-10.png',
+    '/images/Priya/doctor-11.png',
+    '/images/Priya/doctor-12.png',
+    '/images/Priya/doctor-13.png',
+    '/images/Priya/doctor-14.png',
+    '/images/Priya/doctor-15.png',
+  ];
+
+  return doctors
+    .filter((doctor) => doctor.user)
+    .map((doctor, index) => {
+      const user = doctor.user;
+      const fullName = [user.firstName, user.lastName].filter(Boolean).join(' ').trim();
+
+      return {
+        id: doctor._id,
+        userId: user._id,
+        name: fullName ? `Dr. ${fullName}` : 'Doctor',
+        specialization: doctor.specialization || 'General Physician',
+        experience: 0,
+        location: doctor.hospitalOrClinic || user.address || 'Location not specified',
+        rating: 4.8,
+        availableToday: true,
+        conditions: Array.isArray(user.healthConditions) ? user.healthConditions : [],
+        image: user.profileImage || fallbackImages[index % fallbackImages.length],
+        slots: ['09:00 AM', '11:00 AM', '03:00 PM'],
+        qualifications: doctor.qualifications || '',
+        email: user.email || '',
+        phone: user.phone || '',
+      };
+    });
+};
+
+export const getSpecialists = getSpecillist;
