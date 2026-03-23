@@ -3,7 +3,8 @@ import {
     requestBooking,
     getMyBookings,
     updateBookingStatus,
-    deleteBooking
+    deleteBooking,
+    getAllBookingsAdmin
 } from "../../controllers/Tharindu/caregiverController.js";
 import { authenticate, isPatient, isCaregiver } from "../../middleware/Imasha/authMiddleware.js";
 
@@ -16,5 +17,6 @@ router.post("/request", isPatient, requestBooking);
 router.get("/my-bookings", getMyBookings);
 router.patch("/status/:bookingId", isCaregiver, updateBookingStatus);
 router.delete("/:bookingId", deleteBooking);
+router.get("/admin/all", getAllBookingsAdmin);
 
 export default router;

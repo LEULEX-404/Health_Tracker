@@ -7,6 +7,7 @@ import CaregiversTab from './CaregiversTab';
 import ReportsTab from './ReportsTab';
 import AppointmentsTab from './AppointmentsTab';
 import AdminAlertsTab from '../../Tharindu/AdminAlertsTab';
+import AdminAppointmentsTab from '../../Tharindu/AdminAppointmentsTab';
 import { Users, UserCheck, UserPlus, Activity, ShieldAlert, LogOut, Sun, Moon, Menu, Clock, FileText, CheckCircle, X } from 'lucide-react';
 import { toast } from 'react-hot-toast';
 
@@ -88,7 +89,7 @@ const AdminDashboard = () => {
             case 'doctors': return <DoctorsTab />;
             case 'caregivers': return <CaregiversTab />;
             case 'reports': return <ReportsTab />;
-            case 'appointments': return <AppointmentsTab />;
+            case 'appointments': return <AdminAppointmentsTab />;
             case 'alerts': return <AdminAlertsTab />;
             default: return (
                 <div className="admin-overview">

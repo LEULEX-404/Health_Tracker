@@ -120,10 +120,27 @@ export const deleteBooking = async (req, res) => {
 
         await CaregiverBooking.findByIdAndDelete(bookingId);
 
+// existing line
         res.status(200).json({
             success: true,
             message: "Booking deleted successfully"
         });
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+};
+
+/**
+ * Get all caregiver bookings (Admin access)
+ */
+export const getAllBookingsAdmin = async (req, res) => {
+    try {
+        const bookings = await CaregiverBooking.find()
+            .populate("patientId", "firstName lastName email phone")
+            .populate("caregiverId", "firstName lastName email phone")
+            .sort({ createdAt: -1 });
+
+        res.status(200).json(bookings);
     } catch (error) {
         res.status(500).json({ message: error.message });
     }
