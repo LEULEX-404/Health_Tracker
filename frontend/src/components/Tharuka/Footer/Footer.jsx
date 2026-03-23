@@ -11,7 +11,7 @@ export default function Footer() {
   const quickLinks = [
     { label: t('nav_home'), to: '/' },
     { label: t('nav_about'), to: '/about' },
-    { label: t('nav_services'), to: '/#services' },
+    { label: t('nav_services'), to: '/services' },
     { label: t('nav_specialist'), to: '/find-specialist' },
     { label: 'FAQ', to: '/faq' },
   ];
