@@ -1,10 +1,10 @@
-import { useId } from 'react';
+import { useId, memo } from 'react';
 
 /**
  * Reusable labelled form input with icon and inline error support.
  * Props: label, icon, type, value, onChange, placeholder, name, required, error, ...rest
  */
-export default function AuthFormInput({
+const AuthFormInput = memo(function AuthFormInput({
     label,
     icon,
     type = 'text',
@@ -67,4 +67,6 @@ export default function AuthFormInput({
             )}
         </div>
     );
-}
+});
+
+export default AuthFormInput;

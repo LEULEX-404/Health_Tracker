@@ -1,10 +1,10 @@
-import { useState, useId } from 'react';
-import { Eye, EyeOff } from 'lucide-react';
+import { useState, useId, memo } from 'react';
+import { Eye, EyeOff, Lock } from 'lucide-react';
 
 /**
  * Password input with show/hide toggle and optional inline error.
  */
-export default function PasswordInput({
+const PasswordInput = memo(function PasswordInput({
     value,
     onChange,
     onPasswordFocusChange,
@@ -34,11 +34,7 @@ export default function PasswordInput({
             )}
             <div className={`Imasha-input-wrap${hasError ? ' has-error' : ''}`}>
                 <span className="Imasha-input-icon">
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none"
-                        stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                        <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
-                        <path d="M7 11V7a5 5 0 0 1 10 0v4" />
-                    </svg>
+                    <Lock size={16} />
                 </span>
                 <input
                     id={inputId}
@@ -70,4 +66,6 @@ export default function PasswordInput({
             )}
         </div>
     );
-}
+});
+
+export default PasswordInput;

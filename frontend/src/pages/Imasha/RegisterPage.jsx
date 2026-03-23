@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useCallback, useMemo } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import {
     Mail, User, Phone, MapPin, Calendar,
@@ -10,6 +10,7 @@ import AuthLayout from '../../components/Imasha/AuthLayout';
 import DoctorCat from '../../components/Imasha/DoctorCat';
 import PasswordInput from '../../components/Imasha/PasswordInput';
 import AuthFormInput from '../../components/Imasha/AuthFormInput';
+import ModernDatePicker from '../../components/Imasha/ModernDatePicker';
 import { useAuth } from '../../context/Imasha/AuthContext';
 
 import '../../styles/Imasha/AuthCommon.css';
@@ -70,33 +71,37 @@ export default function RegisterPage() {
     const [loading, setLoading] = useState(false);
 
     /* field change + live revalidation */
-    function handleChange(e) {
+    const handleChange = useCallback((e) => {
         const { name, value } = e.target;
-        const updated = { ...form, [name]: value };
-        setForm(updated);
-        if (touched[name]) {
-            const errs = validateStep1(updated);
-            setErrors((prev) => ({ ...prev, [name]: errs[name] || '' }));
-        }
-    }
+        setForm((prev) => {
+            const updated = { ...prev, [name]: value };
+            if (touched[name]) {
+                const errs = validateStep1(updated);
+                setErrors((prevErrs) => ({ ...prevErrs, [name]: errs[name] || '' }));
+            }
+            return updated;
+        });
+    }, [touched]);
 
-    function handleBlur(e) {
+    const handleBlur = useCallback((e) => {
         const { name } = e.target;
         setTouched((prev) => ({ ...prev, [name]: true }));
-        const errs = validateStep1(form);
-        setErrors((prev) => ({ ...prev, [name]: errs[name] || '' }));
-    }
+        setErrors((prev) => {
+            const errs = validateStep1(form);
+            return { ...prev, [name]: errs[name] || '' };
+        });
+    }, [form]);
 
-    function handleConditionToggle(cond) {
+    const handleConditionToggle = useCallback((cond) => {
         setForm((prev) => ({
             ...prev,
             healthConditions: prev.healthConditions.includes(cond)
                 ? prev.healthConditions.filter((c) => c !== cond)
                 : [...prev.healthConditions, cond],
         }));
-    }
+    }, []);
 
-    function handleNext() {
+    const handleNext = useCallback(() => {
         const errs = validateStep1(form);
         // mark all step1 fields as touched
         setTouched({ firstName: true, lastName: true, email: true, password: true, confirmPassword: true });
@@ -106,9 +111,9 @@ export default function RegisterPage() {
             return;
         }
         setStep(2);
-    }
+    }, [form]);
 
-    async function handleSubmit(e) {
+    const handleSubmit = useCallback(async (e) => {
         e.preventDefault();
         setLoading(true);
         try {
@@ -123,13 +128,13 @@ export default function RegisterPage() {
         } finally {
             setLoading(false);
         }
-    }
+    }, [form, register, navigate]);
 
-    const handleGoogleLogin = () => {
-        window.location.href = 'http://localhost:5000/api/auth/google';
-    };
+    const handleGoogleLogin = useCallback(() => {
+        window.location.href = `${import.meta.env.VITE_API_URL}/auth/google`;
+    }, []);
 
-    const progress = step === 1 ? 50 : 100;
+    const progress = useMemo(() => step === 1 ? 50 : 100, [step]);
 
     return (
         <AuthLayout>
@@ -250,10 +255,11 @@ export default function RegisterPage() {
                                 onChange={handleChange} placeholder="+94 7XX XXX XXX"
                                 icon={<Phone size={16} />}
                             />
-                            <AuthFormInput
-                                label="Date of Birth" name="dateOfBirth" type="date" value={form.dateOfBirth}
+                            <ModernDatePicker
+                                label="Date of Birth"
+                                name="dateOfBirth"
+                                value={form.dateOfBirth}
                                 onChange={handleChange}
-                                icon={<Calendar size={16} />}
                             />
                         </div>
 

@@ -69,7 +69,7 @@ const SERVICES = [
       'Share plans with doctor/nutritionist',
       'Integrated with meal reminders',
     ],
-    apiEndpoint: 'GET /api/meal-plan/:userId',
+    apiEndpoint: 'GET /api/meal-plans/:userId',
     badge: 'New',
   },
   {

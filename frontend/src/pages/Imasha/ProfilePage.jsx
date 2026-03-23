@@ -1,3 +1,4 @@
+/* eslint-disable no-unused-vars */
 import {
     useState, useRef, useEffect, useCallback, useMemo, memo
 } from 'react';
@@ -16,6 +17,8 @@ import Header from '../../components/Tharuka/Header/Header';
 import Footer from '../../components/Tharuka/Footer/Footer';
 import BackgroundEffect from '../../components/Tharuka/Common/BackgroundEffect';
 import toast from 'react-hot-toast';
+import PatientAlertsTab from '../Tharindu/PatientAlertsTab';
+import ModernDatePicker from '../../components/Imasha/ModernDatePicker';
 import './ProfilePage.css';
 
 /* ── Static data ────────────────────────────────────────── */
@@ -52,7 +55,11 @@ const ProfileField = memo(({
     placeholder, type = 'text', fullWidth = false,
     disabled = false, options = []
 }) => (
-    <motion.div variants={FADE_UP} className={`ims-profile__input-container${fullWidth ? ' full' : ''}`}>
+    <motion.div
+        variants={FADE_UP}
+        className={`ims-profile__input-container${fullWidth ? ' full' : ''}`}
+        style={{ position: 'relative', zIndex: type === 'date' ? 50 : 1 }}
+    >
         <label><Icon size={13} />{label}</label>
         <div className="ims-profile__input-wrapper">
             <Icon size={15} className="ims-profile__input-icon" />
@@ -60,6 +67,26 @@ const ProfileField = memo(({
                 <select name={name} value={value} onChange={onChange} disabled={disabled}>
                     {options.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
                 </select>
+            ) : type === 'date' ? (
+                <ModernDatePicker
+                    name={name}
+                    value={value}
+                    onChange={onChange}
+                    placement="top"
+                    customTrigger={({ displayValue, isOpen, setIsOpen }) => (
+                        <input
+                            type="text"
+                            name={name}
+                            value={displayValue}
+                            onChange={() => {}}
+                            placeholder={placeholder || 'mm/dd/yyyy'}
+                            readOnly
+                            onClick={() => !disabled && setIsOpen(!isOpen)}
+                            style={{ cursor: disabled ? 'not-allowed' : 'pointer' }}
+                            disabled={disabled}
+                        />
+                    )}
+                />
             ) : (
                 <input
                     type={type} name={name} value={value}
@@ -122,12 +149,12 @@ function useProfileStats(user, token) {
 
         Promise.all([
             // 1. All appointments — filter by this user's email client-side
-            fetch('http://localhost:5000/api/appointments', { headers })
+            fetch(`${import.meta.env.VITE_API_URL}/appointments`, { headers })
                 .then(r => r.ok ? r.json() : [])
                 .catch(() => []),
 
             // 2. Health records for this user
-            fetch(`http://localhost:5000/api/health-data/${userId}`, { headers })
+            fetch(`${import.meta.env.VITE_API_URL}/health-data/${userId}`, { headers })
                 .then(r => r.ok ? r.json() : { data: [] })
                 .catch(() => ({ data: [] })),
         ])
@@ -274,7 +301,7 @@ export default function ProfilePage() {
         setIsUpdating(true);
         try {
             const userId = user?.id || user?._id;
-            const res  = await fetch(`http://localhost:5000/api/users/${userId}`, {
+            const res  = await fetch(`${import.meta.env.VITE_API_URL}/users/${userId}`, {
                 method: 'PUT',
                 headers: {
                     'Content-Type': 'application/json',
@@ -301,7 +328,7 @@ export default function ProfilePage() {
         body.append('profileImage', file);
         try {
             const userId = user?.id || user?._id;
-            const res = await fetch(`http://localhost:5000/api/users/${userId}/profile-image`, {
+            const res = await fetch(`${import.meta.env.VITE_API_URL}/users/${userId}/profile-image`, {
                 method: 'PUT',
                 headers: { Authorization: `Bearer ${token}` },
                 body,
@@ -469,6 +496,17 @@ export default function ProfilePage() {
                             ))}
                         </div>
                     )}
+        if (activeTab === 'alerts') {
+            return (
+                <motion.div
+                    key="alerts"
+                    initial={{ opacity: 0, scale: 0.97 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    exit={{ opacity: 0 }}
+                    transition={{ duration: 0.22 }}
+                    className="ims-profile__settings"
+                >
+                    <PatientAlertsTab />
                 </motion.div>
             );
         }
