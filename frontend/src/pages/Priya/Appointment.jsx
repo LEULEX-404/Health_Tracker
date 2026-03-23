@@ -7,8 +7,8 @@ import ScrollToTop from '../../components/Tharuka/Common/ScrollToTop';
 import { useAuth } from '../../context/Imasha/AuthContext';
 import '../../styles/Priya/Appointment.css';
 
-const APPOINTMENTS_API = 'http://localhost:5000/api/appointments';
-const BACKEND_ORIGIN = 'http://localhost:5000';
+const APPOINTMENTS_API = `${import.meta.env.VITE_API_URL}/appointments`;
+const BACKEND_ORIGIN = import.meta.env.VITE_API_URL.replace('/api', '');
 const FALLBACK_DOCTOR_IMAGE = '/images/Priya/doctor-01.png';
 
 function resolveAvatarSrc(src) {
