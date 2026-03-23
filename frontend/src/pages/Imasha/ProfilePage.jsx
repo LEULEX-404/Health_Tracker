@@ -273,12 +273,6 @@ export default function ProfilePage() {
         }
     }, [activeTab, loadRecentAppointments]);
 
-    useEffect(() => {
-        if (activeTab === 'appointments') {
-            loadRecentAppointments();
-        }
-    }, [activeTab, loadRecentAppointments]);
-
     // profile completeness score
     const profileScore = useMemo(() => {
         const fields = [
