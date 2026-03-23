@@ -43,7 +43,7 @@ export default function HeroSection() {
             Because Every Pulse Matters
           </span>
 
-          <h1 className="pn-hero__title">
+          <h1 className="pn-hero__title text-shiny">
             {t('hero_title')}<br />
             <span className="text-gradient"><TypedText texts={['Reimagined.', 'Personalized.', 'Empowering.', 'Intelligent.']} /></span>
             <span className="pn-hero__cursor">|</span>
@@ -55,7 +55,7 @@ export default function HeroSection() {
 
           <motion.div className="pn-hero__ctas" {...fadeUp(0.5)}>
             <MagneticWrapper strength={0.4} range={100} display="inline-block">
-              <Link to="/register" className="btn-primary pn-hero__cta-main">
+              <Link to="/register" className="btn-primary pn-hero__cta-main btn-shine-effect">
                 {t('hero_cta_start')} <ArrowRight size={16} />
               </Link>
             </MagneticWrapper>
