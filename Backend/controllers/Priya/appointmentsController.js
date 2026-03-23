@@ -40,6 +40,23 @@ function isDateWithinBookingWindow(dateStr) {
     return date >= startCurrentWeek && date <= endNextWeek;
 }
 
+function isValidSriLankaMobile(phone) {
+    const digits = String(phone || '').replace(/\D/g, '');
+    return /^(070|071|072|074|076|077|078)\d{7}$/.test(digits);
+}
+
+function shouldUseStoredAvatar(avatar) {
+    const value = String(avatar || '').trim();
+    if (!value) return false;
+    if (value === DEFAULT_AVATAR) return false;
+    if (/i\.pravatar\.cc\/150\?img=\d+/i.test(value)) return false;
+    return true;
+}
+
+function normalizeMobile(phone) {
+    return String(phone || '').replace(/\D/g, '').slice(0, 10);
+}
+
 function getResolvedDoctorFromPopulated(populatedDoctor) {
     const user = populatedDoctor?.user;
     if (!populatedDoctor || !user) return null;
@@ -66,7 +83,7 @@ function enrichAppointmentObject(appointmentObj, fallbackDoctorDoc = null) {
             doctorId: populatedResolved.doctorId,
             doctor: populatedResolved.doctor,
             specialty: appointmentObj.specialty || populatedResolved.specialty,
-            avatar: appointmentObj.avatar && appointmentObj.avatar.trim()
+            avatar: shouldUseStoredAvatar(appointmentObj.avatar)
                 ? appointmentObj.avatar
                 : populatedResolved.avatar,
             doctorDetails: populatedResolved.doctorDetails,
@@ -80,7 +97,7 @@ function enrichAppointmentObject(appointmentObj, fallbackDoctorDoc = null) {
             doctorId: fallbackResolved.doctorId,
             doctor: fallbackResolved.doctor,
             specialty: appointmentObj.specialty || fallbackResolved.specialty,
-            avatar: appointmentObj.avatar && appointmentObj.avatar.trim()
+            avatar: shouldUseStoredAvatar(appointmentObj.avatar)
                 ? appointmentObj.avatar
                 : fallbackResolved.avatar,
             doctorDetails: fallbackResolved.doctorDetails,
@@ -89,7 +106,7 @@ function enrichAppointmentObject(appointmentObj, fallbackDoctorDoc = null) {
 
     return {
         ...appointmentObj,
-        avatar: appointmentObj.avatar && appointmentObj.avatar.trim() ? appointmentObj.avatar : DEFAULT_AVATAR,
+        avatar: shouldUseStoredAvatar(appointmentObj.avatar) ? appointmentObj.avatar : '',
         doctorDetails: null,
     };
 }
@@ -166,6 +183,10 @@ const createAppointment = async (req, res) => {
         if ((!doctor && !doctorId) || !date || !time) {
             return res.status(400).json({ message: 'doctor (or doctorId), date and time are required.' });
         }
+        const normalizedPatientPhone = normalizeMobile(patientPhone || req.body.phone || '');
+        if (!isValidSriLankaMobile(normalizedPatientPhone)) {
+            return res.status(400).json({ message: 'patientPhone must be 10 digits and start with 070, 071, 072, 074, 076, 077, or 078.' });
+        }
         if (!isDateWithinBookingWindow(date)) {
             return res.status(400).json({ message: 'Date must be within current week or next week.' });
         }
@@ -179,6 +200,7 @@ const createAppointment = async (req, res) => {
 
         const appointment = await Appointment.create({
             ...req.body,
+            patientUserId: req.user?._id || req.user?.id || null,
             doctorId: matchedDoctor._id,
             doctor: resolved.doctor,
             specialty: req.body.specialty || resolved.specialty,
@@ -186,7 +208,7 @@ const createAppointment = async (req, res) => {
             avatar: req.body.avatar || resolved.avatar,
             patientName: patientName || req.body.fullName || '',
             patientEmail: patientEmail || req.body.email || '',
-            patientPhone: patientPhone || req.body.phone || ''
+            patientPhone: normalizedPatientPhone
         });
 
         let emailSent = false;
@@ -220,6 +242,15 @@ const createAppointment = async (req, res) => {
 const updateAppointment = async (req, res) => {
     try {
         const updates = { ...req.body };
+        if (updates.phone !== undefined && updates.patientPhone === undefined) {
+            updates.patientPhone = updates.phone;
+        }
+        if (updates.patientPhone !== undefined) {
+            updates.patientPhone = normalizeMobile(updates.patientPhone);
+        }
+        if (updates.patientPhone !== undefined && !isValidSriLankaMobile(updates.patientPhone)) {
+            return res.status(400).json({ message: 'patientPhone must be 10 digits and start with 070, 071, 072, 074, 076, 077, or 078.' });
+        }
         if (updates.date && !isDateWithinBookingWindow(updates.date)) {
             return res.status(400).json({ message: 'Date must be within current week or next week.' });
         }
@@ -253,7 +284,7 @@ const updateAppointment = async (req, res) => {
         const updatedObj = appointment.toObject ? appointment.toObject() : appointment;
         return res.json(enrichAppointmentObject(updatedObj));
     } catch (error) {
-        return res.status(400).json({ message: 'Failed to update appointment.' });
+        return res.status(400).json({ message: error?.message || 'Failed to update appointment.' });
     }
 };
 

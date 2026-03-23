@@ -398,6 +398,13 @@
   box-shadow: 0 0 0 3px var(--color-primary-glow);
 }
 
+.pr-field-error {
+  margin: 0.35rem 0 0;
+  color: #ef4444;
+  font-size: 0.78rem;
+  line-height: 1.3;
+}
+
 .pr-booking-row {
   display: grid;
   gap: 0.9rem;
@@ -487,6 +494,7 @@
   display: flex;
   gap: 0.6rem;
   align-items: stretch;
+  flex-wrap: nowrap;
 }
 
 .pr-booking-success-actions .pr-booking-submit,
@@ -532,6 +540,6 @@
   }
 
   .pr-booking-success-actions {
-    flex-direction: column;
+    gap: 0.5rem;
   }
 }
