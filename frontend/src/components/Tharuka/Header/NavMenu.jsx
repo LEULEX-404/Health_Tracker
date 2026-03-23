@@ -101,17 +101,20 @@ export default function NavMenu({ isOpen, onClose }) {
 
               {appointmentsOpen && (
                 <div className="pn-nav__dropdown-menu glass">
-                  {APPOINTMENT_LINKS.map(link => (
-                    <NavLink
-                      key={link.key}
-                      to={link.to}
-                      className={({ isActive }) => `pn-nav__dropdown-item ${isActive ? 'active' : ''}`}
-                      onClick={() => handleLinkClick(link.to)}
-                    >
-                      <span className="pn-nav__dd-icon"><Icon size={15} /></span>
-                      <span>{link.label || t(link.key)}</span>
-                    </NavLink>
-                  ))}
+                  {APPOINTMENT_LINKS.map(link => {
+                    const Icon = link.icon || ClipboardList;
+                    return (
+                      <NavLink
+                        key={link.key}
+                        to={link.to}
+                        className={({ isActive }) => `pn-nav__dropdown-item ${isActive ? 'active' : ''}`}
+                        onClick={() => handleLinkClick(link.to)}
+                      >
+                        <span className="pn-nav__dd-icon"><Icon size={15} /></span>
+                        <span>{link.label || t(link.key)}</span>
+                      </NavLink>
+                    );
+                  })}
                 </div>
               )}
             </div>
@@ -182,17 +185,20 @@ export default function NavMenu({ isOpen, onClose }) {
                   <ChevronDown size={14} className={`pn-nav__dd-chevron ${mobileAppointmentsOpen ? 'open' : ''}`} />
                 </button>
                 <div className={`pn-nav__mobile-acc-content ${mobileAppointmentsOpen ? 'open' : ''}`}>
-                  {APPOINTMENT_LINKS.map(link => (
-                    <NavLink
-                      key={link.key}
-                      to={link.to}
-                      className={({ isActive }) => `pn-nav__mobile-sub-link ${isActive ? 'active' : ''}`}
-                      onClick={() => handleLinkClick(link.to)}
-                    >
-                      <span className="pn-nav__dd-icon"><Icon size={14} /></span>
-                      {link.label || t(link.key)}
-                    </NavLink>
-                  ))}
+                  {APPOINTMENT_LINKS.map(link => {
+                    const Icon = link.icon || ClipboardList;
+                    return (
+                      <NavLink
+                        key={link.key}
+                        to={link.to}
+                        className={({ isActive }) => `pn-nav__mobile-sub-link ${isActive ? 'active' : ''}`}
+                        onClick={() => handleLinkClick(link.to)}
+                      >
+                        <span className="pn-nav__dd-icon"><Icon size={14} /></span>
+                        {link.label || t(link.key)}
+                      </NavLink>
+                    );
+                  })}
                 </div>
               </div>
 

@@ -7,10 +7,10 @@ import './SearchBar.css';
 const SEARCH_INDEX = [
   { title: 'Home', path: '/', desc: 'PulseNova health tracker home page' },
   { title: 'About', path: '/about', desc: 'About PulseNova health app mission vision team' },
-  { title: 'Nutrition Tracking', path: '/services', desc: 'Log meals calories dietary insights nutrition' },
-  { title: 'Exercise Logging', path: '/services', desc: 'Track workouts fitness exercise performance' },
+  { title: 'Nutrition Tracking', path: '/nutrition', desc: 'Log meals calories dietary insights nutrition' },
+  { title: 'Exercise Logging', path: '/exercise', desc: 'Track workouts fitness exercise performance' },
   { title: 'Health Reports', path: '/services', desc: 'Analytics reports health data trends' },
-  { title: 'Meal Reminders', path: '/services', desc: 'Smart reminders nutrition meals' },
+  { title: 'Meal Reminders', path: '/nutrition', desc: 'Smart reminders nutrition meals' },
   { title: 'Find Specialist', path: '/find-specialist', desc: 'Health professionals doctors specialists' },
   { title: 'Services', path: '/services', desc: 'Smart nutrition fitness analytics caregiver' },
   { title: 'FAQ', path: '/faq', desc: 'Frequently asked questions help support' },
