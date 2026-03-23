@@ -48,6 +48,13 @@ export async function deleteAlert(token, id) {
   });
 }
 
+export async function deleteAllAlerts(token) {
+  return request(`${API_BASE}/alerts/all`, {
+    method: 'DELETE',
+    headers: headers(token),
+  });
+}
+
 /* ═══════════════════════════════════════════
    ALERT SETTINGS (Admin operations)
    ═══════════════════════════════════════════ */
