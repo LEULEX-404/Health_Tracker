@@ -83,6 +83,13 @@ export function AuthProvider({ children }) {
         return result;
     }, [user, token]);
 
+    const updateUser = useCallback((newData) => {
+        setUser(prev => {
+            if (!prev) return newData;
+            return { ...prev, ...newData };
+        });
+    }, []);
+
     const oauthLogin = useCallback(({ token: newToken, user: newUser }) => {
         localStorage.setItem('pn_token', newToken);
         setToken(newToken);
@@ -93,7 +100,7 @@ export function AuthProvider({ children }) {
         <AuthContext.Provider value={{
             user, token, loading, login, register, logout,
             requestPasswordReset, completePasswordReset, confirmEmail,
-            markOnboardingComplete, oauthLogin
+            markOnboardingComplete, updateUser, oauthLogin
         }}>
             {children}
         </AuthContext.Provider>
