@@ -175,7 +175,7 @@
   transition: max-height 0.3s ease;
 }
 .pn-nav__mobile-acc-content.open {
-  max-height: 150px;
+  max-height: 220px;
 }
 .pn-nav__mobile-sub-link {
   display: flex;

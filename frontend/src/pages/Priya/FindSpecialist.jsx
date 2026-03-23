@@ -8,8 +8,8 @@ import ScrollToTop from '../../components/Tharuka/Common/ScrollToTop';
 import { useAuth } from '../../context/Imasha/AuthContext';
 import '../../styles/Priya/FindSpecialist.css';
 
-const API_BASE = 'http://localhost:5000/api/users/doctors';
-const APPOINTMENTS_API = 'http://localhost:5000/api/appointments';
+const API_BASE = `${import.meta.env.VITE_API_URL}/users/doctors`;
+const APPOINTMENTS_API = `${import.meta.env.VITE_API_URL}/appointments`;
 
 const HEALTH_CATEGORIES = [
   'all',
@@ -70,7 +70,26 @@ function isValidEmail(email) {
 
 function isValidPhone(phone) {
   const digits = (phone || '').replace(/\D/g, '');
-  return digits.length >= 7 && digits.length <= 15;
+  return /^(070|071|072|074|076|077|078)\d{7}$/.test(digits);
+}
+
+function normalizePhone(phone) {
+  return (phone || '').replace(/\D/g, '').slice(0, 10);
+}
+
+function getPhoneValidationMessage(phone) {
+  const digits = normalizePhone(phone);
+  if (!digits) return '';
+  if (digits.length >= 3 && !/^(070|071|072|074|076|077|078)/.test(digits)) {
+    return 'Phone must start with 070, 071, 072, 074, 076, 077, or 078.';
+  }
+  if (digits.length < 10) {
+    return 'Phone must contain exactly 10 digits.';
+  }
+  if (!isValidPhone(digits)) {
+    return 'Enter a valid mobile number.';
+  }
+  return '';
 }
 
 export default function FindSpecialistPage() {
@@ -86,6 +105,7 @@ export default function FindSpecialistPage() {
   const [bookingLoading, setBookingLoading] = useState(false);
   const [bookingConfirmed, setBookingConfirmed] = useState(false);
   const [lastBooking, setLastBooking] = useState(null);
+  const [phoneError, setPhoneError] = useState('');
   const [dateBounds] = useState(() => getAppointmentDateBounds());
   const [form, setForm] = useState({
     patientName: '',
@@ -152,6 +172,7 @@ export default function FindSpecialistPage() {
       time: '',
       date: '',
     });
+    setPhoneError('');
     setBookingOpen(true);
   }
 
@@ -160,6 +181,7 @@ export default function FindSpecialistPage() {
     setSelectedDoctor(null);
     setBookingConfirmed(false);
     setLastBooking(null);
+    setPhoneError('');
     setForm({
       patientName: '',
       patientEmail: '',
@@ -171,6 +193,12 @@ export default function FindSpecialistPage() {
 
   function onFormChange(e) {
     const { name, value } = e.target;
+    if (name === 'patientPhone') {
+      const nextPhone = normalizePhone(value);
+      setForm((prev) => ({ ...prev, patientPhone: nextPhone }));
+      setPhoneError(getPhoneValidationMessage(nextPhone));
+      return;
+    }
     setForm((prev) => ({ ...prev, [name]: value }));
   }
 
@@ -199,8 +227,10 @@ export default function FindSpecialistPage() {
       return;
     }
 
-    if (!isValidPhone(form.patientPhone)) {
-      toast.error('Enter a valid patient phone number.');
+    const phoneValidationMessage = getPhoneValidationMessage(form.patientPhone);
+    if (phoneValidationMessage) {
+      setPhoneError(phoneValidationMessage);
+      toast.error(phoneValidationMessage);
       return;
     }
 
@@ -398,7 +428,7 @@ export default function FindSpecialistPage() {
                     className="pr-booking-submit"
                     onClick={() => {
                       closeBookingForm();
-                      navigate('/appointments');
+                      navigate('/Appointment');
                     }}
                   >
                     View Appointments
@@ -454,9 +484,13 @@ export default function FindSpecialistPage() {
                         name="patientPhone"
                         value={form.patientPhone}
                         onChange={onFormChange}
-                        placeholder="+94 77 000 0000"
+                        placeholder="0771234567"
+                        inputMode="numeric"
+                        maxLength={10}
+                        aria-invalid={phoneError ? 'true' : 'false'}
                         required
                       />
+                      {phoneError ? <p className="pr-field-error">{phoneError}</p> : null}
                     </div>
                   </div>
 

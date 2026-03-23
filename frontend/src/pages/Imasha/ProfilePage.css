@@ -1224,3 +1224,46 @@
   .ims-profile__form-footer { justify-content: stretch; padding-top: 0.75rem; }
   .ims-profile__save-btn { width: 100%; justify-content: center; border-radius: 11px; }
 }
+
+.ims-profile__appointment-card {
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    padding: 12px;
+    background: var(--bg-card);
+}
+
+.ims-profile__appointment-left {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.ims-profile__appointment-avatar {
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 1px solid var(--border-color-strong);
+}
+
+.ims-profile__appointment-actions {
+    display: flex;
+    gap: 8px;
+}
+
+.ims-profile__appointment-actions button {
+    height: 34px;
+    padding: 0 12px;
+    border-radius: 8px;
+    border: 1px solid var(--border-color-strong);
+    background: var(--bg-secondary);
+    color: var(--text-primary);
+    cursor: pointer;
+    font-size: 12px;
+    font-weight: 600;
+}

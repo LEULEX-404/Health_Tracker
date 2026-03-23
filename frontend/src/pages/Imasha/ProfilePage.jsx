@@ -1,6 +1,8 @@
+/* eslint-disable no-unused-vars */
 import {
     useState, useRef, useEffect, useCallback, useMemo, memo
 } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
     User, Mail, Phone, MapPin, Calendar,
@@ -16,6 +18,7 @@ import Footer from '../../components/Tharuka/Footer/Footer';
 import BackgroundEffect from '../../components/Tharuka/Common/BackgroundEffect';
 import toast from 'react-hot-toast';
 import PatientAlertsTab from '../Tharindu/PatientAlertsTab';
+import ModernDatePicker from '../../components/Imasha/ModernDatePicker';
 import './ProfilePage.css';
 
 /* ── Static data ────────────────────────────────────────── */
@@ -52,7 +55,11 @@ const ProfileField = memo(({
     placeholder, type = 'text', fullWidth = false,
     disabled = false, options = []
 }) => (
-    <motion.div variants={FADE_UP} className={`ims-profile__input-container${fullWidth ? ' full' : ''}`}>
+    <motion.div
+        variants={FADE_UP}
+        className={`ims-profile__input-container${fullWidth ? ' full' : ''}`}
+        style={{ position: 'relative', zIndex: type === 'date' ? 50 : 1 }}
+    >
         <label><Icon size={13} />{label}</label>
         <div className="ims-profile__input-wrapper">
             <Icon size={15} className="ims-profile__input-icon" />
@@ -60,6 +67,26 @@ const ProfileField = memo(({
                 <select name={name} value={value} onChange={onChange} disabled={disabled}>
                     {options.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
                 </select>
+            ) : type === 'date' ? (
+                <ModernDatePicker
+                    name={name}
+                    value={value}
+                    onChange={onChange}
+                    placement="top"
+                    customTrigger={({ displayValue, isOpen, setIsOpen }) => (
+                        <input
+                            type="text"
+                            name={name}
+                            value={displayValue}
+                            onChange={() => {}}
+                            placeholder={placeholder || 'mm/dd/yyyy'}
+                            readOnly
+                            onClick={() => !disabled && setIsOpen(!isOpen)}
+                            style={{ cursor: disabled ? 'not-allowed' : 'pointer' }}
+                            disabled={disabled}
+                        />
+                    )}
+                />
             ) : (
                 <input
                     type={type} name={name} value={value}
@@ -122,12 +149,12 @@ function useProfileStats(user, token) {
 
         Promise.all([
             // 1. All appointments — filter by this user's email client-side
-            fetch('http://localhost:5000/api/appointments', { headers })
+            fetch(`${import.meta.env.VITE_API_URL}/appointments`, { headers })
                 .then(r => r.ok ? r.json() : [])
                 .catch(() => []),
 
             // 2. Health records for this user
-            fetch(`http://localhost:5000/api/health-data/${userId}`, { headers })
+            fetch(`${import.meta.env.VITE_API_URL}/health-data/${userId}`, { headers })
                 .then(r => r.ok ? r.json() : { data: [] })
                 .catch(() => ({ data: [] })),
         ])
@@ -135,11 +162,15 @@ function useProfileStats(user, token) {
             if (cancelled) return;
 
             // Filter appointments to this user by email
+            const userId = user?.id || user?._id;
+            const fullName = [user?.firstName, user?.lastName].filter(Boolean).join(' ').trim().toLowerCase();
             const myAppts = Array.isArray(appts)
-                ? appts.filter(a =>
-                    a.patientEmail &&
-                    a.patientEmail.toLowerCase() === (userEmail || '').toLowerCase()
-                  )
+                ? appts.filter((a) => {
+                    const byUserId = userId && (a.patientUserId === userId || a.patientUserId?._id === userId);
+                    const byEmail = a.patientEmail && a.patientEmail.toLowerCase() === (userEmail || '').toLowerCase();
+                    const byName = a.patientName && a.patientName.toLowerCase() === fullName;
+                    return byUserId || byEmail || byName;
+                  })
                 : [];
 
             // Health records
@@ -173,7 +204,8 @@ function useProfileStats(user, token) {
 
 /* ── Main Component ─────────────────────────────────────── */
 export default function ProfilePage() {
-    const { user, token, logout } = useAuth();
+    const { user, token, logout, updateUser } = useAuth();
+    const navigate = useNavigate();
     const { isDark } = useTheme();
     const [activeTab, setActiveTab]     = useState('settings');
     const [isUpdating, setIsUpdating]   = useState(false);
@@ -186,8 +218,39 @@ export default function ProfilePage() {
         firstName: '', lastName: '', phone: '',
         address: '', dateOfBirth: '', gender: '',
     });
+    const [recentAppointments, setRecentAppointments] = useState([]);
+    const [appointmentsLoading, setAppointmentsLoading] = useState(false);
 
     const fileInputRef = useRef(null);
+
+    const loadRecentAppointments = useCallback(async () => {
+        if (!token || !user?.email) return;
+        setAppointmentsLoading(true);
+        try {
+            const res = await fetch(`${import.meta.env.VITE_API_URL}/appointments`, {
+                headers: { Authorization: `Bearer ${token}` }
+            });
+            const data = await res.json();
+            if (!res.ok) throw new Error(data?.message || 'Failed to fetch appointments');
+
+            const list = Array.isArray(data) ? data : [];
+            const userId = user?.id || user?._id;
+            const fullName = [user?.firstName, user?.lastName].filter(Boolean).join(' ').trim().toLowerCase();
+            const mine = list
+                .filter((a) => {
+                    const byUserId = userId && (a.patientUserId === userId || a.patientUserId?._id === userId);
+                    const byEmail = (a.patientEmail || '').toLowerCase() === user.email.toLowerCase();
+                    const byName = (a.patientName || '').toLowerCase() === fullName;
+                    return byUserId || byEmail || byName;
+                })
+                .sort((a, b) => new Date(b.createdAt || 0) - new Date(a.createdAt || 0));
+            setRecentAppointments(mine);
+        } catch {
+            setRecentAppointments([]);
+        } finally {
+            setAppointmentsLoading(false);
+        }
+    }, [token, user?.email]);
 
     // Sync user → form once
     useEffect(() => {
@@ -203,6 +266,12 @@ export default function ProfilePage() {
             gender:      user.gender      || '',
         });
     }, [user]);
+ 
+    useEffect(() => {
+        if (activeTab === 'appointments') {
+            loadRecentAppointments();
+        }
+    }, [activeTab, loadRecentAppointments]);
 
     // profile completeness score
     const profileScore = useMemo(() => {
@@ -232,7 +301,7 @@ export default function ProfilePage() {
         setIsUpdating(true);
         try {
             const userId = user?.id || user?._id;
-            const res  = await fetch(`http://localhost:5000/api/users/${userId}`, {
+            const res  = await fetch(`${import.meta.env.VITE_API_URL}/users/${userId}`, {
                 method: 'PUT',
                 headers: {
                     'Content-Type': 'application/json',
@@ -241,8 +310,12 @@ export default function ProfilePage() {
                 body: JSON.stringify(formData),
             });
             const data = await res.json();
-            if (res.ok) toast.success('Profile updated!');
-            else toast.error(data.message || 'Update failed');
+            if (res.ok) {
+                toast.success('Profile updated!');
+                if (updateUser) updateUser(formData);
+            } else {
+                toast.error(data.message || 'Update failed');
+            }
         } catch {
             toast.error('Network error — try again.');
         } finally {
@@ -259,15 +332,40 @@ export default function ProfilePage() {
         body.append('profileImage', file);
         try {
             const userId = user?.id || user?._id;
-            const res = await fetch(`http://localhost:5000/api/users/${userId}/profile-image`, {
+            const res = await fetch(`${import.meta.env.VITE_API_URL}/users/${userId}/profile-image`, {
                 method: 'PUT',
                 headers: { Authorization: `Bearer ${token}` },
                 body,
             });
-            if (res.ok) { toast.success('Photo updated!'); window.location.reload(); }
-            else { const d = await res.json(); toast.error(d.message || 'Upload failed'); }
+            if (res.ok) {
+                const d = await res.json();
+                toast.success('Photo updated!');
+                if (updateUser && d.user) updateUser(d.user);
+                else if (updateUser && d.profileImage) updateUser({ profileImage: d.profileImage });
+            } else {
+                const d = await res.json();
+                toast.error(d.message || 'Upload failed');
+            }
         } catch { toast.error('Upload failed'); }
         finally { setImageLoading(false); }
+    };
+
+    const handleDeleteAppointment = async (appointmentId) => {
+        const ok = window.confirm('Do you want to delete this appointment?');
+        if (!ok) return;
+
+        try {
+            const res = await fetch(`${import.meta.env.VITE_API_URL}/appointments/${appointmentId}`, {
+                method: 'DELETE',
+                headers: { Authorization: `Bearer ${token}` },
+            });
+            const data = await res.json();
+            if (!res.ok) throw new Error(data?.message || 'Failed to delete appointment');
+            toast.success('Appointment deleted');
+            loadRecentAppointments();
+        } catch (error) {
+            toast.error(error.message || 'Failed to delete appointment');
+        }
     };
 
     const displayName = [user?.firstName, user?.lastName].filter(Boolean).join(' ') || 'User';
@@ -353,6 +451,62 @@ export default function ProfilePage() {
                             </div>
                         </form>
                     </div>
+                </motion.div>
+            );
+        }
+
+        if (activeTab === 'appointments') {
+            return (
+                <motion.div
+                    key="appointments"
+                    variants={STAGGER}
+                    initial="hidden"
+                    animate="visible"
+                    exit={{ opacity: 0, y: -10 }}
+                    className="ims-profile__settings"
+                >
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
+                        <h3 className="ims-profile__form-section-title">
+                            <ClipboardList size={12} />Appointments
+                        </h3>
+                        <Link to="/Appointment" className="ims-profile__save-btn" style={{ textDecoration: 'none', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', width: 'auto', padding: '0 14px', height: 36 }}>
+                            Manage Appointments
+                        </Link>
+                    </div>
+
+                    {appointmentsLoading ? (
+                        <div className="ims-profile__placeholder-content">
+                            <p>Loading appointments...</p>
+                        </div>
+                    ) : recentAppointments.length === 0 ? (
+                        <div className="ims-profile__placeholder-content">
+                            <p>No appointments found yet.</p>
+                        </div>
+                    ) : (
+                        <div className="ims-profile__form-grid">
+                            {recentAppointments.slice(0, 6).map((apt) => (
+                                <div key={apt._id} className="ims-profile__appointment-card full">
+                                    <div className="ims-profile__appointment-left">
+                                        <img
+                                            src={apt.avatar || '/images/Priya/doctor-01.png'}
+                                            alt={apt.doctor || 'Doctor'}
+                                            className="ims-profile__appointment-avatar"
+                                        />
+                                        <div>
+                                            <label>{apt.doctor || 'Doctor'}</label>
+                                            <div style={{ color: 'var(--text-secondary)', fontSize: 13 }}>Date: {apt.date || '-'}</div>
+                                            <div style={{ color: 'var(--text-secondary)', fontSize: 13 }}>Time: {apt.time || '-'}</div>
+                                            <div style={{ color: 'var(--text-secondary)', fontSize: 13 }}>Status: {apt.status || 'Pending'}</div>
+                                        </div>
+                                    </div>
+                                    <div className="ims-profile__appointment-actions">
+                                        <button type="button" onClick={() => navigate('/Appointment')}>Edit</button>
+                                        <button type="button" onClick={() => handleDeleteAppointment(apt._id)}>Cancel</button>
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                    )}
                 </motion.div>
             );
         }

@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-const API_URL = 'http://localhost:5000/api';
+const API_URL = import.meta.env.VITE_API_URL;
 
 const getAuthHeader = (token) => ({
     headers: { Authorization: `Bearer ${token}` }
@@ -97,19 +97,22 @@ export const downloadReport = async (token, reportId) => {
 // --- Dashboard Stats ---
 export const getAdminDashboardStats = async (token) => {
     // We can fetch data counts securely using the pagination stats of limit=1
+    const allUsersReq = axios.get(`${API_URL}/users?limit=1`, getAuthHeader(token)).catch(() => ({ data: { pagination: { total: 0 } } }));
     const patientReq = axios.get(`${API_URL}/users?role=patient&limit=1`, getAuthHeader(token)).catch(() => ({ data: { pagination: { total: 0 } } }));
     const doctorReq = axios.get(`${API_URL}/admin/doctors?limit=1`, getAuthHeader(token)).catch(() => ({ data: { pagination: { total: 0 } } }));
     const caregiverReq = axios.get(`${API_URL}/admin/caregivers?limit=1`, getAuthHeader(token)).catch(() => ({ data: { pagination: { total: 0 } } }));
     const activeReq = axios.get(`${API_URL}/users?isActive=true&limit=1`, getAuthHeader(token)).catch(() => ({ data: { pagination: { total: 0 } } }));
 
-    const [patients, doctors, caregivers, active] = await Promise.all([patientReq, doctorReq, caregiverReq, activeReq]);
+    const [allUsers, patients, doctors, caregivers, active] = await Promise.all([
+        allUsersReq, patientReq, doctorReq, caregiverReq, activeReq
+    ]);
 
     return {
         totalPatients: patients.data?.pagination?.total || 0,
         totalDoctors: doctors.data?.pagination?.total || 0,
         totalCaregivers: caregivers.data?.pagination?.total || 0,
         totalActive: active.data?.pagination?.total || 0,
-        totalUsers: (patients.data?.pagination?.total || 0) + (doctors.data?.pagination?.total || 0) + (caregivers.data?.pagination?.total || 0)
+        totalUsers: allUsers.data?.pagination?.total || 0
     };
 };
 
@@ -119,5 +122,29 @@ export const getAuditLogs = async (token, params = {}) => {
         ...getAuthHeader(token),
         params
     });
+    return response.data;
+};
+
+// --- Admin Appointments ---
+export const getAdminAppointments = async (token, params = {}) => {
+    const response = await axios.get(`${API_URL}/admin/appointments`, {
+        ...getAuthHeader(token),
+        params
+    });
+    return response.data;
+};
+
+export const getPendingAppointments = async (token) => {
+    const response = await axios.get(`${API_URL}/admin/appointments/pending`, getAuthHeader(token));
+    return response.data;
+};
+
+export const approveAppointment = async (token, appointmentId) => {
+    const response = await axios.put(`${API_URL}/admin/appointments/${appointmentId}/approve`, {}, getAuthHeader(token));
+    return response.data;
+};
+
+export const rejectAppointment = async (token, appointmentId) => {
+    const response = await axios.put(`${API_URL}/admin/appointments/${appointmentId}/reject`, {}, getAuthHeader(token));
     return response.data;
 };

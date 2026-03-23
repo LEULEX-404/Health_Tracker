@@ -22,6 +22,23 @@ export const getPendingAppointments = async (req, res) => {
     }
 };
 
+export const getAdminAppointments = async (req, res) => {
+    try {
+        const { status } = req.query || {};
+        const query = {};
+        if (status && ['Pending', 'Confirmed', 'Cancelled'].includes(status)) {
+            query.status = status;
+        }
+
+        const list = await Appointment.find(query)
+            .populate(DOCTOR_POPULATE)
+            .sort({ createdAt: -1 });
+        res.json(list);
+    } catch (error) {
+        res.status(500).json({ message: 'Failed to fetch appointments.' });
+    }
+};
+
 export const confirmAppointment = async (req, res) => {
     try {
         const appointment = await Appointment.findByIdAndUpdate(
@@ -111,6 +128,7 @@ export const cancelAppointmentByBody = async (req, res) => {
 };
 
 export default {
+    getAdminAppointments,
     getPendingAppointments,
     confirmAppointment,
     confirmAppointmentByBody,

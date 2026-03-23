@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect } from 'react';
 import { NavLink } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { X, ChevronDown, DatabaseZap, UtensilsCrossed, Activity,ClipboardList } from 'lucide-react';
+import { X, ChevronDown, DatabaseZap, UtensilsCrossed, Activity, ClipboardList } from 'lucide-react';
 import { useAuth } from '../../../context/Imasha/AuthContext';
 import './NavMenu.css';
 
