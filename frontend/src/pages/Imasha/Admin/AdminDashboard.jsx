@@ -5,7 +5,9 @@ import PatientsTable from './PatientsTable';
 import DoctorsTab from './DoctorsTab';
 import CaregiversTab from './CaregiversTab';
 import ReportsTab from './ReportsTab';
+import AppointmentsTab from './AppointmentsTab';
 import AdminAlertsTab from '../../Tharindu/AdminAlertsTab';
+import AdminAppointmentsTab from '../../Tharindu/AdminAppointmentsTab';
 import { Users, UserCheck, UserPlus, Activity, ShieldAlert, LogOut, Sun, Moon, Menu, Clock, FileText, CheckCircle, X } from 'lucide-react';
 import { toast } from 'react-hot-toast';
 
@@ -74,7 +76,7 @@ const AdminDashboard = () => {
             const { getAuditLogs } = await import('../../../utils/Imasha/adminApi');
             const logsData = await getAuditLogs(token, { limit: 100 });
             setFullAuditLogs(logsData.data || []);
-        } catch (error) {
+        } catch {
             toast.error("Failed to load audit logs");
         } finally {
             setFullLogsLoading(false);
@@ -87,7 +89,7 @@ const AdminDashboard = () => {
             case 'doctors': return <DoctorsTab />;
             case 'caregivers': return <CaregiversTab />;
             case 'reports': return <ReportsTab />;
-            case 'appointments': return <div className="admin-placeholder">Appointments Management (Coming Soon)</div>;
+            case 'appointments': return <AdminAppointmentsTab />;
             case 'alerts': return <AdminAlertsTab />;
             default: return (
                 <div className="admin-overview">

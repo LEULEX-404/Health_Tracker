@@ -162,11 +162,15 @@ function useProfileStats(user, token) {
             if (cancelled) return;
 
             // Filter appointments to this user by email
+            const userId = user?.id || user?._id;
+            const fullName = [user?.firstName, user?.lastName].filter(Boolean).join(' ').trim().toLowerCase();
             const myAppts = Array.isArray(appts)
-                ? appts.filter(a =>
-                    a.patientEmail &&
-                    a.patientEmail.toLowerCase() === (userEmail || '').toLowerCase()
-                  )
+                ? appts.filter((a) => {
+                    const byUserId = userId && (a.patientUserId === userId || a.patientUserId?._id === userId);
+                    const byEmail = a.patientEmail && a.patientEmail.toLowerCase() === (userEmail || '').toLowerCase();
+                    const byName = a.patientName && a.patientName.toLowerCase() === fullName;
+                    return byUserId || byEmail || byName;
+                  })
                 : [];
 
             // Health records
@@ -263,6 +267,12 @@ export default function ProfilePage() {
         });
     }, [user]);
  
+    useEffect(() => {
+        if (activeTab === 'appointments') {
+            loadRecentAppointments();
+        }
+    }, [activeTab, loadRecentAppointments]);
+
     useEffect(() => {
         if (activeTab === 'appointments') {
             loadRecentAppointments();

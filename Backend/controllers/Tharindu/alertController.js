@@ -137,3 +137,13 @@ export const deleteAlert = async (req, res) => {
   }
 };
 
+// DELETE ALL alerts
+export const deleteAllAlerts = async (req, res) => {
+  try {
+    await Alert.deleteMany({});
+    return res.status(200).json({ message: "All alerts deleted successfully" });
+  } catch (err) {
+    return res.status(500).json({ error: err.message });
+  }
+};
+
