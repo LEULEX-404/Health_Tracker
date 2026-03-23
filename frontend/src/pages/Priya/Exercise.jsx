@@ -1,7 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
-import { Link } from 'react-router-dom';
 import toast from 'react-hot-toast';
-import { Dumbbell, Timer, Flame, Heart, CalendarDays, Bike, Activity, BadgeCheck, LogIn, UserPlus } from 'lucide-react';
+import { Dumbbell, Timer, Flame, Heart, CalendarDays, Bike, Activity, BadgeCheck } from 'lucide-react';
 import Header from '../../components/Tharuka/Header/Header';
 import Footer from '../../components/Tharuka/Footer/Footer';
 import ScrollToTop from '../../components/Tharuka/Common/ScrollToTop';
@@ -57,6 +56,7 @@ export default function ExercisePage() {
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
   const [dateBounds, setDateBounds] = useState(() => getExerciseDateBounds());
+  const guestDateBounds = getExerciseDateBounds(2);
 
   const fetchData = useCallback(async () => {
     if (!token) return;
@@ -83,6 +83,11 @@ export default function ExercisePage() {
   useEffect(() => {
     setDateBounds(getExerciseDateBounds());
   }, []);
+
+  const handleGuestSubmit = (e) => {
+    e.preventDefault();
+    toast.error('Please log in or sign up to save your exercise.');
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -150,19 +155,59 @@ export default function ExercisePage() {
               </h2>
 
               {!isLoggedIn ? (
-                <div className="pr-exercise-gate">
-                  <p>Log in or sign up to log your exercises and see your recent history.</p>
-                  <div className="pr-exercise-gate-actions">
-                    <Link to="/login" className="pr-primary-btn pr-btn-login">
-                      <LogIn size={18} />
-                      Log in
-                    </Link>
-                    <Link to="/register" className="pr-primary-btn pr-btn-signup">
-                      <UserPlus size={18} />
-                      Sign up
-                    </Link>
+                <form className="pr-guest-form" onSubmit={handleGuestSubmit}>
+                  <label htmlFor="activityType">Exercise Type</label>
+                  <select id="activityType" defaultValue="">
+                    <option value="" disabled>
+                      Select activity (e.g. Running, Cycling)
+                    </option>
+                    <option>Running</option>
+                    <option>Cycling</option>
+                    <option>Yoga</option>
+                    <option>Walking</option>
+                    <option>Strength Training</option>
+                  </select>
+
+                  <div className="pr-form-row">
+                    <div>
+                      <label htmlFor="duration">Duration (min)</label>
+                      <div className="pr-input-wrap">
+                        <input id="duration" type="number" min={1} placeholder="45" />
+                        <span>MIN</span>
+                      </div>
+                    </div>
+                    <div>
+                      <label htmlFor="calories">Calories Burned (kcal)</label>
+                      <div className="pr-input-wrap">
+                        <input id="calories" type="number" min={0} placeholder="320" />
+                        <span>KCAL</span>
+                      </div>
+                    </div>
                   </div>
-                </div>
+
+                  <label htmlFor="heartRate">Average Heart Rate (BPM)</label>
+                  <div className="pr-input-wrap">
+                    <Heart size={16} />
+                    <input id="heartRate" type="number" defaultValue="" min={0} placeholder="135" />
+                    <span>BPM</span>
+                  </div>
+
+                  <label htmlFor="activityDate">Date of Activity (current + next 2 weeks)</label>
+                  <div className="pr-input-wrap">
+                    <input
+                      id="activityDate"
+                      type="date"
+                      min={guestDateBounds.min}
+                      max={guestDateBounds.max}
+                    />
+                    <CalendarDays size={16} />
+                  </div>
+
+                  <button type="submit" className="pr-primary-btn">
+                    <BadgeCheck size={18} />
+                    Save Activity
+                  </button>
+                </form>
               ) : (
                 <form onSubmit={handleSubmit}>
                   <label htmlFor="activityType">Exercise Type</label>
@@ -222,22 +267,20 @@ export default function ExercisePage() {
             </article>
 
             <aside className="pr-side-column">
-              {isLoggedIn && (
-                <div className="pr-stats-row">
-                  <article className="pr-card pr-stat pr-stat-blue">
-                    <p>Total Active</p>
-                    <h3>
-                      {loading ? '…' : (stats.activeMinutes ?? 0)} <span>min</span>
-                    </h3>
-                  </article>
-                  <article className="pr-card pr-stat pr-stat-green">
-                    <p>Calories</p>
-                    <h3>
-                      {loading ? '…' : (stats.caloriesBurned ?? 0)} <span>kcal</span>
-                    </h3>
-                  </article>
-                </div>
-              )}
+              <div className="pr-stats-row">
+                <article className="pr-card pr-stat pr-stat-blue">
+                  <p>Total Active</p>
+                  <h3>
+                    {loading && isLoggedIn ? '…' : (isLoggedIn ? (stats.activeMinutes ?? 0) : '—')} <span>min</span>
+                  </h3>
+                </article>
+                <article className="pr-card pr-stat pr-stat-green">
+                  <p>Calories</p>
+                  <h3>
+                    {loading && isLoggedIn ? '…' : (isLoggedIn ? (stats.caloriesBurned ?? 0) : '—')} <span>kcal</span>
+                  </h3>
+                </article>
+              </div>
 
               <article className="pr-card pr-history-card">
                 <div className="pr-history-head">
@@ -250,19 +293,7 @@ export default function ExercisePage() {
                 </div>
 
                 {!isLoggedIn ? (
-                  <div className="pr-exercise-gate pr-history-gate">
-                    <p>Log in or sign up to see your exercise history.</p>
-                    <div className="pr-exercise-gate-actions">
-                      <Link to="/login" className="pr-primary-btn pr-btn-login">
-                        <LogIn size={18} />
-                        Log in
-                      </Link>
-                      <Link to="/register" className="pr-primary-btn pr-btn-signup">
-                        <UserPlus size={18} />
-                        Sign up
-                      </Link>
-                    </div>
-                  </div>
+                  <p className="pr-history-note">Log in or sign up to view your recent exercise history.</p>
                 ) : loading ? (
                   <p className="pr-history-note">Loading…</p>
                 ) : recentHistory.length === 0 ? (
@@ -300,12 +331,10 @@ export default function ExercisePage() {
                 )}
               </article>
 
-              {isLoggedIn && (
-                <article className="pr-card pr-motivation-card">
-                  <h3>Keep it up{user?.firstName ? `, ${user.firstName}` : ''}!</h3>
-                  <p>Consistency is the key to longevity. Log your workouts to track progress.</p>
-                </article>
-              )}
+              <article className="pr-card pr-motivation-card">
+                <h3>Keep it up{isLoggedIn && user?.firstName ? `, ${user.firstName}` : ''}!</h3>
+                <p>Consistency is the key to longevity. Log your workouts to track progress.</p>
+              </article>
             </aside>
           </div>
         </section>

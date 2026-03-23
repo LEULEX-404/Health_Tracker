@@ -1,10 +1,16 @@
 // Appointment reminder scheduler (Node Cron)
 
 import cron from "node-cron";
+import mongoose from "mongoose";
 import Reminder from "../../models/Tharindu/Reminder.js";
 import { sendNotification } from "./notificationService.js";
 
 const processDueReminders = async () => {
+  // Prevent Mongoose crashing when bufferCommands=false before connection finishes
+  if (mongoose.connection.readyState !== 1) {
+    return;
+  }
+
   const now = new Date();
 
   const reminders = await Reminder.find({

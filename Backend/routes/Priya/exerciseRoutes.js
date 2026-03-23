@@ -5,8 +5,8 @@ import { authenticate } from '../../middleware/Imasha/authMiddleware.js';
 
 router.get('/', authenticate, exerciseController.getExerciseLogs);
 router.post('/', authenticate, exerciseController.createExerciseLog);
+router.get('/stats', authenticate, exerciseController.getStats);
 router.put('/:id', authenticate, exerciseController.updateExerciseLog);
 router.delete('/:id', authenticate, exerciseController.deleteExerciseLog);
-router.get('/stats', authenticate, exerciseController.getStats);
 
 export default router;

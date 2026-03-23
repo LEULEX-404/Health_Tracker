@@ -174,20 +174,68 @@
     animation: fadeInSlide 0.4s ease forwards;
 }
 
-/* Date Input Polish */
-.light-theme input[type="date"]::-webkit-calendar-picker-indicator {
-    filter: invert(0) sepia(100%) saturate(500%) hue-rotate(90deg);
+/* ── Modern Date Input Polish ── */
+/* Hide default icon and create a custom click area */
+.Imasha-input[type="date"] {
+    cursor: text;
+    font-family: 'Inter', sans-serif;
+    color: var(--auth-text-main);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    font-size: 0.85rem;
+    position: relative;
 }
 
-input[type="date"]::-webkit-calendar-picker-indicator {
-    filter: invert(1) sepia(100%) saturate(500%) hue-rotate(90deg);
+/* Custom styling for date text fields */
+.Imasha-input[type="date"]::-webkit-datetime-edit {
+    padding-right: 2rem;
+}
+.Imasha-input[type="date"]::-webkit-datetime-edit-fields-wrapper {
+    display: flex;
+    gap: 2px;
+}
+.Imasha-input[type="date"]::-webkit-datetime-edit-text {
+    color: var(--auth-primary);
+    opacity: 0.8;
+}
+.Imasha-input[type="date"]::-webkit-datetime-edit-month-field,
+.Imasha-input[type="date"]::-webkit-datetime-edit-day-field,
+.Imasha-input[type="date"]::-webkit-datetime-edit-year-field {
+    color: var(--auth-text-main);
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 4px;
+    padding: 2px 4px;
+    transition: background 0.3s;
+}
+
+.Imasha-input[type="date"]::-webkit-datetime-edit-month-field:focus,
+.Imasha-input[type="date"]::-webkit-datetime-edit-day-field:focus,
+.Imasha-input[type="date"]::-webkit-datetime-edit-year-field:focus {
+    background: var(--auth-primary);
+    color: #fff;
+    outline: none;
+}
+
+/* Hide spin-button entirely */
+.Imasha-input[type="date"]::-webkit-inner-spin-button {
+    display: none;
+}
+
+/* Modernized native calendar icon styling */
+.light-theme .Imasha-input[type="date"]::-webkit-calendar-picker-indicator {
+    filter: invert(0.6) sepia(1) saturate(3) hue-rotate(110deg);
+}
+
+.Imasha-input[type="date"]::-webkit-calendar-picker-indicator {
+    position: absolute;
+    right: 12px;
+    color: transparent;
+    background: transparent;
+    z-index: 10;
     cursor: pointer;
-    opacity: 0.6;
-    transition: opacity 0.2s;
-}
-
-input[type="date"]::-webkit-calendar-picker-indicator:hover {
-    opacity: 1;
+    width: 20px;
+    height: 20px;
+    opacity: 0; /* Fully transparent so our Lucide icon shows */
 }
 
 @keyframes fadeInSlide {

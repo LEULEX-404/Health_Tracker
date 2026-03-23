@@ -278,6 +278,12 @@ async function getNutritionAnalysis(userId, type = "weekly") {
   };
 }
 
+async function checkNutrition(items) {
+  if (!items || items.length === 0) return [];
+  // Bypass DB completely and just fetch from the API locator
+  return await nutritionApiService.getMultipleFoodNutrition(items);
+}
+
 export default {
   addMeal,
   getUserNutrition,
@@ -285,4 +291,5 @@ export default {
   deleteMeal,
   addDoctorRecommendation,
   getNutritionAnalysis,
+  checkNutrition,
 };

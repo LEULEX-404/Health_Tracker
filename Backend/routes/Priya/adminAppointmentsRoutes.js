@@ -4,6 +4,7 @@ import adminAppointmentsController from "../../controllers/Priya/adminAppointmen
 import { authenticate, isAdmin } from '../../middleware/Imasha/authMiddleware.js';
 
 router.get('/pending', authenticate, isAdmin, adminAppointmentsController.getPendingAppointments);
+router.get('/', authenticate, isAdmin, adminAppointmentsController.getAdminAppointments);
 router.put('/:id/approve', authenticate, isAdmin, adminAppointmentsController.confirmAppointment);
 router.put('/:id/reject', authenticate, isAdmin, adminAppointmentsController.cancelAppointmentByAdmin);
 

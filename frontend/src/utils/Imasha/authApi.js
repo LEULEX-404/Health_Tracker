@@ -1,4 +1,4 @@
-const BASE_URL = 'http://localhost:5000/api/auth';
+const BASE_URL = 'https://health-tracker-y6v2.onrender.com/api/auth';
 
 /**
  * Login user (all roles)

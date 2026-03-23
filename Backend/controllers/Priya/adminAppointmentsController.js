@@ -2,12 +2,40 @@ import Appointment from "../../models/Priya/Appointment.js";
 import { sendBookingStatusToPatient } from "./bookingEmailController.js";
 import AdminActionLog from "../../models/Priya/AdminActionLog.js";
 
+const DOCTOR_POPULATE = {
+    path: "doctorId",
+    populate: {
+        path: "user",
+        match: { isDeleted: false, role: "doctor" },
+        select: "firstName lastName email phone profileImage",
+    },
+};
+
 export const getPendingAppointments = async (req, res) => {
     try {
-        const pending = await Appointment.find({ status: 'Pending' }).sort({ createdAt: -1 });
+        const pending = await Appointment.find({ status: 'Pending' })
+            .populate(DOCTOR_POPULATE)
+            .sort({ createdAt: -1 });
         res.json(pending);
     } catch (error) {
         res.status(500).json({ message: 'Failed to fetch pending appointments.' });
+    }
+};
+
+export const getAdminAppointments = async (req, res) => {
+    try {
+        const { status } = req.query || {};
+        const query = {};
+        if (status && ['Pending', 'Confirmed', 'Cancelled'].includes(status)) {
+            query.status = status;
+        }
+
+        const list = await Appointment.find(query)
+            .populate(DOCTOR_POPULATE)
+            .sort({ createdAt: -1 });
+        res.json(list);
+    } catch (error) {
+        res.status(500).json({ message: 'Failed to fetch appointments.' });
     }
 };
 
@@ -17,7 +45,7 @@ export const confirmAppointment = async (req, res) => {
             req.params.id,
             { status: 'Confirmed' },
             { new: true }
-        );
+        ).populate(DOCTOR_POPULATE);
         if (!appointment) {
             return res.status(404).json({ message: 'Appointment not found.' });
         }
@@ -28,6 +56,7 @@ export const confirmAppointment = async (req, res) => {
             status: appointment.status,
             actor: req.user?.email || 'admin',
             meta: {
+                doctorId: appointment.doctorId?._id || appointment.doctorId || null,
                 doctor: appointment.doctor,
                 date: appointment.date,
                 time: appointment.time,
@@ -60,7 +89,7 @@ export const cancelAppointmentByAdmin = async (req, res) => {
             req.params.id,
             { status: 'Cancelled' },
             { new: true }
-        );
+        ).populate(DOCTOR_POPULATE);
         if (!appointment) {
             return res.status(404).json({ message: 'Appointment not found.' });
         }
@@ -71,6 +100,7 @@ export const cancelAppointmentByAdmin = async (req, res) => {
             status: appointment.status,
             actor: req.user?.email || 'admin',
             meta: {
+                doctorId: appointment.doctorId?._id || appointment.doctorId || null,
                 doctor: appointment.doctor,
                 date: appointment.date,
                 time: appointment.time,
@@ -98,6 +128,7 @@ export const cancelAppointmentByBody = async (req, res) => {
 };
 
 export default {
+    getAdminAppointments,
     getPendingAppointments,
     confirmAppointment,
     confirmAppointmentByBody,

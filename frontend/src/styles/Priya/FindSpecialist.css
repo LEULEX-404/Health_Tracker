@@ -309,6 +309,210 @@
   box-shadow: var(--shadow-glow);
 }
 
+.pr-booking-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 1200;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+  background: color-mix(in srgb, var(--bg-primary) 70%, #000 30%);
+  backdrop-filter: blur(6px);
+}
+
+.pr-booking-modal {
+  width: min(760px, 100%);
+  border-radius: 1rem;
+  background: linear-gradient(
+    180deg,
+    color-mix(in srgb, var(--bg-card) 92%, var(--color-primary) 8%),
+    color-mix(in srgb, var(--bg-card) 96%, #000 4%)
+  );
+  border: 1px solid color-mix(in srgb, var(--color-primary) 35%, var(--border-color-strong) 65%);
+  box-shadow: 0 20px 50px color-mix(in srgb, #000 30%, transparent 70%);
+  padding: 1.5rem;
+  position: relative;
+}
+
+.pr-booking-close {
+  position: absolute;
+  right: 0.8rem;
+  top: 0.7rem;
+  border: 0;
+  background: transparent;
+  color: var(--text-primary);
+  font-size: 1.2rem;
+  cursor: pointer;
+}
+
+.pr-booking-overview {
+  margin: 0;
+  color: var(--color-primary);
+  font-size: 0.85rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.pr-booking-modal h2 {
+  margin: 0.4rem 0 0;
+  color: var(--text-primary);
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: clamp(1.3rem, 3vw, 2rem);
+  line-height: 1.2;
+}
+
+.pr-booking-subtitle {
+  margin: 0.5rem 0 1.2rem;
+  color: var(--text-secondary);
+  font-size: 0.95rem;
+}
+
+.pr-booking-form label {
+  display: block;
+  margin: 0.8rem 0 0.35rem;
+  color: var(--text-muted);
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.pr-booking-form input,
+.pr-booking-form select {
+  width: 100%;
+  height: 46px;
+  border: 1px solid var(--border-color-strong);
+  border-radius: 0.65rem;
+  background: var(--bg-primary);
+  color: var(--text-primary);
+  padding: 0 0.85rem;
+  font-size: 0.95rem;
+}
+
+.pr-booking-form input:focus,
+.pr-booking-form select:focus {
+  outline: none;
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 3px var(--color-primary-glow);
+}
+
+.pr-field-error {
+  margin: 0.35rem 0 0;
+  color: #ef4444;
+  font-size: 0.78rem;
+  line-height: 1.3;
+}
+
+.pr-booking-row {
+  display: grid;
+  gap: 0.9rem;
+  grid-template-columns: 1fr 1fr;
+}
+
+.pr-booking-note {
+  margin: 0.9rem 0 0;
+  color: var(--text-muted);
+  font-size: 0.8rem;
+}
+
+.pr-booking-slots {
+  margin-top: 0.65rem;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.pr-booking-slot {
+  border: 1px solid var(--border-color-strong);
+  border-radius: 0.6rem;
+  background: var(--bg-secondary);
+  color: var(--text-primary);
+  padding: 0.45rem 0.7rem;
+  cursor: pointer;
+  font-size: 0.82rem;
+}
+
+.pr-booking-slot.active,
+.pr-booking-slot:hover {
+  border-color: var(--color-primary);
+  background: var(--bg-card-hover);
+}
+
+.pr-booking-submit {
+  margin-top: 1rem;
+  width: 100%;
+  height: 48px;
+  border: 0;
+  border-radius: 0.7rem;
+  font-size: 1rem;
+  font-weight: 700;
+  color: #fff;
+  background: linear-gradient(135deg, var(--color-primary), var(--color-primary-dark));
+  cursor: pointer;
+}
+
+.pr-booking-submit:disabled {
+  opacity: 0.65;
+  cursor: not-allowed;
+}
+
+.pr-booking-success {
+  text-align: center;
+}
+
+.pr-booking-success-icon {
+  width: 54px;
+  height: 54px;
+  border-radius: 50%;
+  margin: 0 auto 0.8rem;
+  display: grid;
+  place-items: center;
+  font-size: 1.5rem;
+  font-weight: 800;
+  color: #fff;
+  background: linear-gradient(135deg, var(--color-primary), var(--color-primary-dark));
+}
+
+.pr-booking-success-card {
+  margin-top: 0.8rem;
+  text-align: left;
+  border: 1px solid var(--border-color-strong);
+  border-radius: 0.8rem;
+  padding: 0.9rem;
+  background: var(--bg-secondary);
+}
+
+.pr-booking-success-card p {
+  margin: 0.35rem 0;
+  color: var(--text-secondary);
+}
+
+.pr-booking-success-actions {
+  margin-top: 1rem;
+  display: flex;
+  gap: 0.6rem;
+  align-items: stretch;
+  flex-wrap: nowrap;
+}
+
+.pr-booking-success-actions .pr-booking-submit,
+.pr-booking-success-actions .pr-booking-secondary {
+  flex: 1;
+}
+
+.pr-booking-secondary {
+  height: 48px;
+  border: 1px solid var(--border-color-strong);
+  border-radius: 0.7rem;
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  background: var(--bg-card);
+  cursor: pointer;
+}
+
 @media (max-width: 768px) {
   .pr-specialist-page {
     padding-top: 6.5rem;
@@ -325,5 +529,17 @@
 
   .pr-specialist-grid {
     grid-template-columns: 1fr;
+  }
+
+  .pr-booking-row {
+    grid-template-columns: 1fr;
+  }
+
+  .pr-booking-modal {
+    padding: 1.1rem;
+  }
+
+  .pr-booking-success-actions {
+    gap: 0.5rem;
   }
 }

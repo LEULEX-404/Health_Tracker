@@ -7,10 +7,11 @@ import { initReactI18next } from 'react-i18next';
 const resources = {
   en: {
     translation: {
-      nav_home: 'Home', nav_dashboard: 'Dashboard', nav_nutrition: 'Nutrition',
+      nav_home: 'Home', nav_dashboard: 'Dashboard', nav_nutrition: 'Nutrition & Meal Plans',
       nav_exercise: 'Exercise', nav_services: 'Services', nav_specialist: 'Find Specialist',
       nav_about: 'About', nav_contact: 'Contact', nav_search_placeholder: 'Search PulseNova...',
       nav_health_hub: 'Health Hub', nav_health_data: 'Health Data', nav_meal_plan: 'Meal Plan',
+      nav_appointments: 'Appointments', nav_doctor_appointment: 'Doctor Appointment', nav_caregiver_appointment: 'Caregiver Appointment',
       btn_login: 'Login', btn_signup: 'Sign Up',
       ctrl_dark_mode: 'Dark Mode', ctrl_light_mode: 'Light Mode',
       ctrl_font_small: 'A-', ctrl_font_medium: 'A', ctrl_font_large: 'A+', ctrl_language: 'Language',
@@ -58,8 +59,10 @@ const resources = {
       privacy_title: 'Privacy Policy', privacy_updated: 'Last updated: January 2025',
       // ── Health Data Page ──
       hd_label: 'Health Data', hd_title: 'Your Health Vitals', hd_subtitle: 'Monitor your current vitals, log new readings manually or via PDF, and get personalized health guidance.',
+      hd_label_monitoring: 'Real-time Tracking', hd_label_input: 'Data Acquisition', hd_label_history: 'Temporal Records',
       hd_current_vitals: 'Current Vitals', hd_refresh: 'Refresh', hd_no_data: 'No vitals recorded yet. Add your first entry below.',
-      hd_last_updated: 'Last updated', hd_history: 'Entry History', hd_no_history: 'No entries found. Log your first vitals below.',
+      hd_stats_trend: 'Vital Trends', hd_stats_pulse: 'Pulse Analysis', hd_stats_ai: 'AI Insights',
+      hd_last_updated: 'Last updated', hd_history: 'Entry History', hd_history_sub: 'Historical records of your vital measurements', hd_no_history: 'No entries found. Log your first vitals below.',
       hd_add_label: 'Add Vitals', hd_add_title: 'Log New Vitals', hd_add_subtitle: 'Enter readings manually or extract them automatically from a medical PDF report.',
       hd_tab_manual: 'Manual Entry', hd_tab_pdf: 'Upload PDF',
       hd_vital_heart: 'Heart Rate', hd_vital_bp: 'Blood Pressure', hd_vital_o2: 'Oxygen Level', hd_vital_temp: 'Temperature', hd_vital_glucose: 'Glucose Level',
@@ -90,10 +93,11 @@ const resources = {
   },
   si: {
     translation: {
-      nav_home: 'මුල් පිටුව', nav_dashboard: 'ප්‍රධාන පැනලය', nav_nutrition: 'පෝෂණය',
+      nav_home: 'මුල් පිටුව', nav_dashboard: 'ප්‍රධාන පැනලය', nav_nutrition: 'පෝෂණය හා ආහාර සැලසුම්',
       nav_exercise: 'ව්‍යායාම', nav_services: 'සේවාවන්', nav_specialist: 'විශේෂඥයා සොයන්න',
       nav_about: 'අප ගැන', nav_contact: 'සම්බන්ධ වන්න', nav_search_placeholder: 'PulseNova සොයන්න...',
       nav_health_hub: 'සෞඛ්‍ය කේන්ද්‍රය', nav_health_data: 'සෞඛ්‍ය දත්ත', nav_meal_plan: 'ආහාර සැලැස්ම',
+      nav_appointments: 'හමුවීම්', nav_doctor_appointment: 'වෛද්‍යවරයා හමුවීම', nav_caregiver_appointment: 'සෝදිසිකරු හමුවීම',
       btn_login: 'ප්‍රවේශ වන්න', btn_signup: 'ලියාපදිංචි වන්න',
       ctrl_dark_mode: 'අඳුරු', ctrl_light_mode: 'ආලෝක',
       ctrl_font_small: 'A-', ctrl_font_medium: 'A', ctrl_font_large: 'A+', ctrl_language: 'භාෂාව',
@@ -141,8 +145,10 @@ const resources = {
       privacy_title: 'රහස්‍යතා ප්‍රතිපත්තිය', privacy_updated: 'ජනවාරි 2025',
       // ── Health Data Page ──
       hd_label: 'සෞඛ්‍ය දත්ත', hd_title: 'ඔබේ සෞඛ්‍ය සංඥා', hd_subtitle: 'ඔබේ වත්මන් සෞඛ්‍ය දත්ත නිරීක්ෂණය කර, අතින් හෝ PDF මගින් නව රීඩිං ලොග් කරන්න.',
+      hd_label_monitoring: 'තත්‍ය කාලීන ලුහුබැඳීම', hd_label_input: 'දත්ත ලබා ගැනීම', hd_label_history: 'කාලීන වාර්තා',
       hd_current_vitals: 'වත්මන් සෞඛ්‍ය සංඥා', hd_refresh: 'යළි පූරණය', hd_no_data: 'තවම කිසිදු සෞඛ්‍ය දත්තයක් නොමැත.',
-      hd_last_updated: 'අවසන් යාවත්කාලීන', hd_history: 'ඇතුළත් කිරීමේ ඉතිහාසය', hd_no_history: 'ඇතුළත් කිරීම් නොමැත.',
+      hd_stats_trend: 'සෞඛ්‍ය ප්‍රවණතා', hd_stats_pulse: 'ස්පන්දන විශ්ලේෂණය', hd_stats_ai: 'AI තීක්ෂ්ණ බුද්ධිය',
+      hd_last_updated: 'අවසන් යාවත්කාලීන', hd_history: 'ඇතුළත් කිරීමේ ඉතිහාසය', hd_history_sub: 'ඔබේ සෞඛ්‍ය සංඥාවල ඓතිහාසික වාර්තා', hd_no_history: 'ඇතුළත් කිරීම් නොමැත.',
       hd_add_label: 'සෞඛ්‍ය දත්ත එකතු කරන්න', hd_add_title: 'නව සෞඛ්‍ය දත්ත ලොග් කරන්න', hd_add_subtitle: 'රීඩිං අතින් ඇතුළත් කරන්න හෝ PDF වාර්තාවෙන් ස්වයංක්‍රීයව උපුටන්න.',
       hd_tab_manual: 'අතින් ඇතුළත් කිරීම', hd_tab_pdf: 'PDF උඩුගත කිරීම',
       hd_vital_heart: 'හෘද ස්පන්දනය', hd_vital_bp: 'රුධිර පීඩනය', hd_vital_o2: 'ඔක්සිජන් මට්ටම', hd_vital_temp: 'ශරීර උෂ්ණත්වය', hd_vital_glucose: 'ග්ලූකෝස් මට්ටම',
@@ -173,10 +179,11 @@ const resources = {
   },
   ta: {
     translation: {
-      nav_home: 'முகப்பு', nav_dashboard: 'டாஷ்போர்டு', nav_nutrition: 'ஊட்டச்சத்து',
+      nav_home: 'முகப்பு', nav_dashboard: 'டாஷ்போர்டு', nav_nutrition: 'ஊட்டச்சத்து & உணவுத் திட்டங்கள்',
       nav_exercise: 'உடற்பயிற்சி', nav_services: 'சேவைகள்', nav_specialist: 'நிபுணரைக் கண்டுபிடி',
       nav_about: 'எங்களை பற்றி', nav_contact: 'தொடர்பு', nav_search_placeholder: 'PulseNova தேடு...',
       nav_health_hub: 'சுகாதார மையம்', nav_health_data: 'உடல்நல தரவு', nav_meal_plan: 'உணவு திட்டம்',
+      nav_appointments: 'சந்திப்புகள்', nav_doctor_appointment: 'மருத்துவர் சந்திப்பு', nav_caregiver_appointment: 'பராமரிப்பாளர் சந்திப்பு',
       btn_login: 'உள்நுழை', btn_signup: 'பதிவு செய்',
       ctrl_dark_mode: 'இருண்ட', ctrl_light_mode: 'ஒளி',
       ctrl_font_small: 'A-', ctrl_font_medium: 'A', ctrl_font_large: 'A+', ctrl_language: 'மொழி',
@@ -226,8 +233,10 @@ const resources = {
       privacy_title: 'தனியுரிமை கொள்கை', privacy_updated: 'ஜனவரி 2025',
       // ── Health Data Page ──
       hd_label: 'சுகாதாரத் தரவு', hd_title: 'உங்கள் சுகாதாரத் தனிமங்கள்', hd_subtitle: 'உங்கள் தற்போதைய தனிமங்களைக் கண்காணிக்கவும், புதிய பதிவுகளைச் சேர்க்கவும்.',
+      hd_label_monitoring: 'நிகழ்நேර கண்காணிப்பு', hd_label_input: 'தரவு கையகப்படுத்தல்', hd_label_history: 'காலவரிசைப் பதிவுகள்',
       hd_current_vitals: 'தற்போதைய நிலைகள்', hd_refresh: 'புதுப்பிக்கவும்', hd_no_data: 'இதுவரை எந்தத் தரவும் சேமிக்கப்படவில்லை.',
-      hd_last_updated: 'கடைசியாக புதுப்பிக்கப்பட்டது', hd_history: 'பதிவு வரலாறு', hd_no_history: 'வரலாறு இல்லை. முதலில் பதிவு செய்யவும்.',
+      hd_stats_trend: 'முக்கிய போக்குகள்', hd_stats_pulse: 'நாடி பகுப்பாய்வு', hd_stats_ai: 'AI நுண்ணறிவு',
+      hd_last_updated: 'கடைசியாக புதுப்பிக்கப்பட்டது', hd_history: 'பதிவு வரலாறு', hd_history_sub: 'உங்கள் முக்கிய அளவீடுகளின் வரலாற்றுப் பதிவுகள்', hd_no_history: 'வரலாறு இல்லை. முதலில் பதிவு செய்யவும்.',
       hd_add_label: 'மதிப்பீடுகளைச் சேர்க்கவும்', hd_add_title: 'புதிய மதிப்புகளைப் பதிவு செய்க', hd_add_subtitle: 'தகவல்களைக் கையால் உள்ளிடவும் அல்லது PDF இலிருந்து எடுக்கவும்.',
       hd_tab_manual: 'கையால் பதிவு', hd_tab_pdf: 'PDF பதிவேற்றம்',
       hd_vital_heart: 'இதய துடிப்பு', hd_vital_bp: 'இரத்த அழுத்தம்', hd_vital_o2: 'ஆக்ஸிஜன் அளவு', hd_vital_temp: 'உடல் வெப்பநிலை', hd_vital_glucose: 'குளுக்கோஸ் அளவு',

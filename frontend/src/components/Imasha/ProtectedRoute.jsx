@@ -10,8 +10,8 @@ import '../../styles/Imasha/AuthCommon.css';
  * If authenticated, it renders the children.
  * If not, it shows a premium "Access Denied" view.
  */
-export default function ProtectedRoute({ children }) {
-    const { token, loading } = useAuth();
+export default function ProtectedRoute({ children, allowedRoles }) {
+    const { token, loading, user } = useAuth();
 
     if (loading) {
         // You could return a spinner here if the app doesn't already have a global loader
@@ -71,6 +71,43 @@ export default function ProtectedRoute({ children }) {
                     </div>
 
                     <p className="Imasha-auth-link-text" style={{ marginTop: '2rem' }}>
+                        <Link to="/" className="Imasha-auth-link" style={{ fontSize: '0.9rem', display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
+                            Return to Home <ArrowRight size={14} />
+                        </Link>
+                    </p>
+                </div>
+            </AuthLayout>
+        );
+    }
+
+    if (allowedRoles && user && !allowedRoles.includes(user.role)) {
+        return (
+            <AuthLayout>
+                <div className="Imasha-form-card" style={{ textAlign: 'center', padding: '2rem 1rem' }}>
+                    <div className="Imasha-mascot-wrap" style={{ marginBottom: '1.5rem' }}>
+                        <div style={{
+                            width: '80px',
+                            height: '80px',
+                            background: 'rgba(245, 158, 11, 0.1)',
+                            borderRadius: '50%',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            margin: '0 auto',
+                            border: '1px solid rgba(245, 158, 11, 0.2)'
+                        }}>
+                            <ShieldAlert size={40} color="#f59e0b" />
+                        </div>
+                    </div>
+
+                    <div className="Imasha-form-header">
+                        <h1 className="Imasha-form-title">Access Restricted</h1>
+                        <p className="Imasha-form-subtitle" style={{ textTransform: 'capitalize' }}>
+                            Your {user.role} account does not have permission to view this dashboard.
+                        </p>
+                    </div>
+
+                    <p className="Imasha-auth-link-text" style={{ marginTop: '2.5rem' }}>
                         <Link to="/" className="Imasha-auth-link" style={{ fontSize: '0.9rem', display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
                             Return to Home <ArrowRight size={14} />
                         </Link>

@@ -5,6 +5,7 @@ import PatientsTable from './PatientsTable';
 import DoctorsTab from './DoctorsTab';
 import CaregiversTab from './CaregiversTab';
 import ReportsTab from './ReportsTab';
+import AppointmentsTab from './AppointmentsTab';
 import AdminAlertsTab from '../../Tharindu/AdminAlertsTab';
 import AdminAppointmentsTab from '../../Tharindu/AdminAppointmentsTab';
 import { Users, UserCheck, UserPlus, Activity, ShieldAlert, LogOut, Sun, Moon, Menu, Clock, FileText, CheckCircle, X } from 'lucide-react';
@@ -75,7 +76,7 @@ const AdminDashboard = () => {
             const { getAuditLogs } = await import('../../../utils/Imasha/adminApi');
             const logsData = await getAuditLogs(token, { limit: 100 });
             setFullAuditLogs(logsData.data || []);
-        } catch (error) {
+        } catch {
             toast.error("Failed to load audit logs");
         } finally {
             setFullLogsLoading(false);
@@ -93,37 +94,49 @@ const AdminDashboard = () => {
             default: return (
                 <div className="admin-overview">
                     <div className="admin-stats-grid">
-                        <div className="admin-stat-card unique">
-                            <div className="stat-icon"><Users size={24} /></div>
-                            <div className="stat-details">
-                                <h3>Total Users</h3>
+                        <div className="admin-stat-card stat-card-green">
+                            <div className="stat-header">
+                                <div className="stat-icon-wrap"><Users size={20} /></div>
+                                <span className="stat-trend trend-up">↑ 12%</span>
+                            </div>
+                            <div className="stat-body">
                                 <p className="stat-value">{dashboardStats.loading ? '...' : dashboardStats.totalUsers}</p>
-                                <span className="stat-change">+12% this month</span>
+                                <h3 className="stat-label">Total Users</h3>
                             </div>
+                            <div className="stat-bar" />
                         </div>
-                        <div className="admin-stat-card unique">
-                            <div className="stat-icon"><UserCheck size={24} /></div>
-                            <div className="stat-details">
-                                <h3>Active Users</h3>
+                        <div className="admin-stat-card stat-card-cyan">
+                            <div className="stat-header">
+                                <div className="stat-icon-wrap"><UserCheck size={20} /></div>
+                                <span className="stat-trend trend-stable">↑ 5.2%</span>
+                            </div>
+                            <div className="stat-body">
                                 <p className="stat-value">{dashboardStats.loading ? '...' : dashboardStats.totalActive}</p>
-                                <span className="stat-change">+5.2%</span>
+                                <h3 className="stat-label">Active Users</h3>
                             </div>
+                            <div className="stat-bar" />
                         </div>
-                        <div className="admin-stat-card unique">
-                            <div className="stat-icon"><Activity size={24} /></div>
-                            <div className="stat-details">
-                                <h3>Active Patients</h3>
+                        <div className="admin-stat-card stat-card-amber">
+                            <div className="stat-header">
+                                <div className="stat-icon-wrap"><Activity size={20} /></div>
+                                <span className="stat-trend trend-up">Optimal</span>
+                            </div>
+                            <div className="stat-body">
                                 <p className="stat-value">{dashboardStats.loading ? '...' : dashboardStats.totalPatients}</p>
-                                <span className="stat-change status-good">Optimal Growth</span>
+                                <h3 className="stat-label">Active Patients</h3>
                             </div>
+                            <div className="stat-bar" />
                         </div>
-                        <div className="admin-stat-card unique">
-                            <div className="stat-icon"><ShieldAlert size={24} /></div>
-                            <div className="stat-details">
-                                <h3>System Health</h3>
-                                <p className="stat-value">99.8%</p>
-                                <span className="stat-change status-good">All Services Online</span>
+                        <div className="admin-stat-card stat-card-purple">
+                            <div className="stat-header">
+                                <div className="stat-icon-wrap"><ShieldAlert size={20} /></div>
+                                <span className="stat-trend trend-stable">Online</span>
                             </div>
+                            <div className="stat-body">
+                                <p className="stat-value">99.8%</p>
+                                <h3 className="stat-label">System Health</h3>
+                            </div>
+                            <div className="stat-bar" />
                         </div>
                     </div>
 

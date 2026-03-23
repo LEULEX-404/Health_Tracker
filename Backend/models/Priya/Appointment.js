@@ -2,6 +2,8 @@ import mongoose from "mongoose";
 
 const appointmentSchema = new mongoose.Schema(
     {
+        patientUserId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', index: true },
+        doctorId: { type: mongoose.Schema.Types.ObjectId, ref: 'Doctor', index: true },
         doctor: { type: String, required: true, trim: true },
         specialty: { type: String, default: '', trim: true },
         status: { type: String, default: 'Pending', trim: true },
@@ -10,7 +12,7 @@ const appointmentSchema = new mongoose.Schema(
         duration: { type: String, default: '', trim: true },
         type: { type: String, default: 'In Person', trim: true },
         location: { type: String, default: '', trim: true },
-        avatar: { type: String, default: 'https://i.pravatar.cc/150?img=12', trim: true },
+        avatar: { type: String, default: '', trim: true },
         patientName: { type: String, default: '', trim: true },
         patientEmail: { type: String, default: '', trim: true },
         patientPhone: { type: String, default: '', trim: true }

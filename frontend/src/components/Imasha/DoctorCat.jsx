@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, memo } from 'react';
 import { useRive, Layout, Fit, Alignment, useStateMachineInput } from '@rive-app/react-canvas';
 
 /**
@@ -9,7 +9,7 @@ import { useRive, Layout, Fit, Alignment, useStateMachineInput } from '@rive-app
  *   isWatching - mapped to 'isChecking' or 'isLooking'
  *   isHappy    - success state / 'check' trigger
  */
-export default function DoctorCat({
+const DoctorCat = memo(function DoctorCat({
   isHiding = false,
   isWatching = false,
   isHappy = false,
@@ -75,4 +75,6 @@ export default function DoctorCat({
       `}</style>
     </div>
   );
-}
+});
+
+export default DoctorCat;

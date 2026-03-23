@@ -12,10 +12,12 @@ import Header from '../../components/Tharuka/Header/Header';
 import Footer from '../../components/Tharuka/Footer/Footer';
 import ScrollToTop from '../../components/Tharuka/Common/ScrollToTop';
 import BackgroundEffect from '../../components/Tharuka/Common/BackgroundEffect';
+import HeroBanner from '../../assets/health_hero_banner.png';
+import AddVitalsBG from '../../assets/health_nature_bg.jpg';
 import './HealthDataPage.css';
 
 // ─── API base ─────────────────────────────────────────────────
-const API = 'http://localhost:5000/api/health-data';
+const API = `${import.meta.env.VITE_API_URL}/health-data`;
 
 // ─── Thresholds (mirrors backend alertService.js) ─────────────
 const THRESHOLDS = {
@@ -147,6 +149,15 @@ export default function HealthDataPage() {
     glucoseLevel: '',
   });
 
+  const containerVariants = {
+    hidden: { opacity: 0 },
+    visible: { opacity: 1, transition: { staggerChildren: 0.05 } }
+  };
+  const itemVariants = {
+    hidden: { opacity: 0, y: 10 },
+    visible: { opacity: 1, y: 0 }
+  };
+
   // ─── Fetch records ─────────────────────────────────────────
   const fetchRecords = useCallback(async () => {
     if (!userId) return;
@@ -254,30 +265,58 @@ export default function HealthDataPage() {
     <>
       <BackgroundEffect />
       <Header />
-      <main className="page-wrapper hd-page">
+      <main className="page-wrapper hd-page pn-page">
 
-        {/* ── Hero ── */}
-        <section className="hd-hero section-pad">
-          <div className="container">
-            <motion.div className="section-header"
-              initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.65 }}>
-              <span className="section-label">
-                <Activity size={13} /> {t('hd_label')}
-              </span>
-              <h1 className="section-title">{t('hd_title')}</h1>
-              <p className="section-subtitle">{t('hd_subtitle')}</p>
-            </motion.div>
+
+        {/* ── Hero Banner ─────────────────────────────────────── */}
+        <div className="pn-hero-banner">
+          <img
+            src={HeroBanner}
+            alt="Health analytics"
+            className="pn-hero-img"
+            loading="eager"
+            decoding="async"
+          />
+          <div className="pn-hero-overlay" />
+
+          <div className="pn-hero-text container">
+            <div className="pn-hero-badge">
+              <Activity size={13} /> {t('hd_label')}
+            </div>
+            <motion.h1
+              className="pn-hero-title"
+              initial={{ opacity: 0, y: 12 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.45 }}
+            >
+              {t('hd_title')}
+            </motion.h1>
+            <motion.p
+              className="pn-hero-sub"
+              initial={{ opacity: 0, y: 8 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.45, delay: 0.1 }}
+            >
+              {t('hd_subtitle')}
+            </motion.p>
+            <div className="pn-hero-stats">
+              <span className="pn-hstat"><TrendingUp size={14} /> {t('hd_stats_trend')}</span>
+              <span className="pn-hstat"><Heart size={14} /> {t('hd_stats_pulse')}</span>
+              <span className="pn-hstat"><Zap size={14} /> {t('hd_stats_ai')}</span>
+            </div>
           </div>
-        </section>
+        </div>
 
         {/* ── Current Vitals ── */}
-        <section className="hd-section section-pad" style={{ background: 'var(--bg-secondary)' }}>
+        <section className="hd-section section-pad hd-current-vitals-section">
           <div className="container">
             <div className="hd-section-head">
-              <h2 className="hd-section-title">
-                <TrendingUp size={20} /> {t('hd_current_vitals')}
-              </h2>
+              <div className="hd-head-content">
+                <span className="hd-badge-label">{t('hd_label_monitoring')}</span>
+                <h2 className="hd-section-title">
+                  <Activity size={22} /> {t('hd_current_vitals')}
+                </h2>
+              </div>
               <button className="hd-refresh-btn" onClick={fetchRecords} title={t('hd_refresh')}>
                 <RefreshCw size={15} />
                 {t('hd_refresh')}
@@ -372,46 +411,60 @@ export default function HealthDataPage() {
           </div>
         </section>
 
-        {/* ── Add Vitals ── */}
-        <section className="hd-section section-pad">
-          <div className="container" style={{ maxWidth: 780 }}>
-            <div className="section-header">
-              <span className="section-label"><Plus size={13} /> {t('hd_add_label')}</span>
-              <h2 className="section-title">{t('hd_add_title')}</h2>
-              <p className="section-subtitle">{t('hd_add_subtitle')}</p>
-            </div>
+        {/* ── Add New Vitals ─────────────────────────────────── */}
+        <section className="hd-add-section section-pad">
+          <div className="hd-add-bg-wrap">
+            <img 
+              src={AddVitalsBG} 
+              alt="" 
+              className="hd-add-bg-img" 
+              loading="lazy" 
+              decoding="async" 
+            />
+            <div className="hd-add-bg-overlay" />
+          </div>
+          <div className="container" style={{ position: 'relative', zIndex: 1, maxWidth: '900px' }}>
+            <div className="hd-nature-card">
+              <div className="hd-nature-head">
+                <span className="hd-nature-badge">{t('hd_label_input')}</span>
+                <h2 className="hd-nature-title">
+                  <Plus size={24} style={{ marginRight: '8px' }} /> {t('hd_add_title')}
+                </h2>
+                <p className="hd-nature-subtitle">{t('hd_add_subtitle')}</p>
+              </div>
 
-            {/* Tab switcher */}
-            <div className="hd-tabs" role="tablist">
-              <button
-                role="tab"
-                className={`hd-tab ${activeTab === 'manual' ? 'active' : ''}`}
-                onClick={() => setActiveTab('manual')}
-              >
-                <Plus size={15} /> {t('hd_tab_manual')}
-              </button>
-              <button
-                role="tab"
-                className={`hd-tab ${activeTab === 'pdf' ? 'active' : ''}`}
-                onClick={() => setActiveTab('pdf')}
-              >
-                <FileText size={15} /> {t('hd_tab_pdf')}
-              </button>
-            </div>
+              {/* Tab switcher */}
+              <div className="hd-tabs-wrap" style={{ display: 'flex', justifyContent: 'center', marginBottom: '1.5rem' }}>
+                <div className="hd-tabs" role="tablist" style={{ maxWidth: '400px', width: '100%', background: 'rgba(0,0,0,0.05)' }}>
+                  <button
+                    className={`hd-tab ${activeTab === 'manual' ? 'active' : ''}`}
+                    onClick={() => setActiveTab('manual')}
+                  >
+                    <Activity size={16} /> {t('hd_tab_manual')}
+                  </button>
+                  <button
+                    className={`hd-tab ${activeTab === 'pdf' ? 'active' : ''}`}
+                    onClick={() => setActiveTab('pdf')}
+                  >
+                    <Upload size={16} /> {t('hd_tab_pdf')}
+                  </button>
+                </div>
+              </div>
 
-            {/* Feedback */}
-            <AnimatePresence>
-              {feedback && (
-                <motion.div
-                  className={`hd-feedback hd-feedback--${feedback.type}`}
-                  initial={{ opacity: 0, y: -8 }} animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0 }}
-                >
-                  {feedback.type === 'success' ? <CheckCircle2 size={16} /> : <XCircle size={16} />}
-                  {feedback.msg}
-                </motion.div>
-              )}
-            </AnimatePresence>
+              {/* Feedback */}
+              <AnimatePresence>
+                {feedback && (
+                  <motion.div
+                    className={`hd-feedback hd-feedback--${feedback.type}`}
+                    initial={{ opacity: 0, y: -8 }} animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0 }}
+                    style={{ marginBottom: '1.5rem' }}
+                  >
+                    {feedback.type === 'success' ? <CheckCircle2 size={16} /> : <XCircle size={16} />}
+                    {feedback.msg}
+                  </motion.div>
+                )}
+              </AnimatePresence>
 
             {/* ── Manual Form ── */}
             {activeTab === 'manual' && (
@@ -585,87 +638,128 @@ export default function HealthDataPage() {
                 </button>
               </motion.form>
             )}
+            </div>
           </div>
         </section>
 
         {/* ── Recent History ── */}
-        <section className="hd-section section-pad" style={{ background: 'var(--bg-secondary)' }}>
+        <section className="hd-section section-pad">
           <div className="container">
-            <div className="hd-section-head">
-              <h2 className="hd-section-title">
-                <Clock size={20} /> {t('hd_history')}
-              </h2>
-            </div>
-
-            {loading ? (
-              <div className="hd-skeleton-grid">
-                {[...Array(3)].map((_, i) => <div key={i} className="hd-skeleton hd-skeleton--row" />)}
-              </div>
-            ) : records.length === 0 ? (
-              <div className="hd-empty">
-                <Info size={36} />
-                <p>{t('hd_no_history')}</p>
-              </div>
-            ) : (
-              <>
-                <div className="hd-history-table-wrap">
-                  <table className="hd-history-table">
-                    <thead>
-                      <tr>
-                        <th>{t('hd_col_date')}</th>
-                        <th><Heart size={13} /> {t('hd_vital_heart')}</th>
-                        <th><Activity size={13} /> {t('hd_vital_bp')}</th>
-                        <th><Droplets size={13} /> {t('hd_vital_o2')}</th>
-                        <th><Thermometer size={13} /> {t('hd_vital_temp')}</th>
-                        <th><Zap size={13} /> {t('hd_vital_glucose')}</th>
-                        <th>{t('hd_col_source')}</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {visibleHistory.map((rec, i) => (
-                        <motion.tr
-                          key={rec._id}
-                          initial={{ opacity: 0, x: -8 }}
-                          animate={{ opacity: 1, x: 0 }}
-                          transition={{ delay: i * 0.04 }}
-                          className={i === 0 ? 'hd-history-table__latest' : ''}
-                        >
-                          <td className="hd-history-table__date">{formatDate(rec.recordedAt)}</td>
-                          <td>{rec.heartRate ?? '—'} {rec.heartRate && <span className="hd-unit">bpm</span>}</td>
-                          <td>{formatBP(rec.bloodPressure)} {rec.bloodPressure?.systolic && <span className="hd-unit">mmHg</span>}</td>
-                          <td>{rec.oxygenLevel ?? '—'} {rec.oxygenLevel && <span className="hd-unit">%</span>}</td>
-                          <td>{rec.temperature ?? '—'} {rec.temperature && <span className="hd-unit">°C</span>}</td>
-                          <td>{rec.glucoseLevel ?? '—'} {rec.glucoseLevel && <span className="hd-unit">mg/dL</span>}</td>
-                          <td><span className="hd-source-badge">{rec.source}</span></td>
-                        </motion.tr>
-                      ))}
-                    </tbody>
-                  </table>
+            <div className="n-card n-log">
+              <div className="n-log-header hd-section-head" style={{ borderLeft: 'none', paddingLeft: 0, background: 'none', marginBottom: '1.5rem' }}>
+                <div className="hd-head-content">
+                  <span className="hd-badge-label">{t('hd_label_history')}</span>
+                  <h3 className="n-log-title">
+                    <Clock size={20} /> {t('hd_history')}
+                  </h3>
+                  <p className="n-log-sub">{t('hd_history_sub')}</p>
                 </div>
+                <div className="n-log-actions">
+                  <button className="hd-refresh-btn" onClick={fetchRecords} title={t('hd_refresh')}>
+                    <RefreshCw size={15} className={loading ? 'hd-spin' : ''} />
+                    {t('hd_refresh')}
+                  </button>
+                </div>
+              </div>
 
-                {(hasMore || visibleCount > 10) && (
-                  <div style={{ textAlign: 'center', marginTop: '1.5rem', display: 'flex', gap: '0.75rem', justifyContent: 'center', flexWrap: 'wrap' }}>
-                    {hasMore && (
-                      <button
-                        className="btn-outline"
-                        onClick={() => setVisibleCount(c => c + 10)}
+              {loading ? (
+                <div className="n-loader">
+                  <div className="n-spinner" />
+                  <span>{t('hd_loading_history') || 'Loading history...'}</span>
+                </div>
+              ) : records.length === 0 ? (
+                <div className="n-empty">
+                  <div className="n-empty-icon"><Clock size={52} /></div>
+                  <p>{t('hd_no_history')}</p>
+                </div>
+              ) : (
+                <>
+                  <div className="n-table-wrap">
+                    <table className="n-table">
+                      <thead>
+                        <tr>
+                          <th>{t('hd_col_date')}</th>
+                          <th><Heart size={13} /> {t('hd_vital_heart')}</th>
+                          <th><Activity size={13} /> {t('hd_vital_bp')}</th>
+                          <th><Droplets size={13} /> {t('hd_vital_o2')}</th>
+                          <th><Thermometer size={13} /> {t('hd_vital_temp')}</th>
+                          <th><Zap size={13} /> {t('hd_vital_glucose')}</th>
+                          <th style={{ textAlign: 'right' }}>{t('hd_col_source')}</th>
+                        </tr>
+                      </thead>
+                      <motion.tbody
+                        variants={containerVariants}
+                        initial="hidden"
+                        animate="visible"
                       >
-                        <ChevronDown size={15} />
-                        {t('hd_show_more', { count: Math.min(10, remaining) })}
-                      </button>
-                    )}
-                    {visibleCount > 10 && (
-                      <button
-                        className="btn-outline"
-                        onClick={() => setVisibleCount(10)}
-                      >
-                        <ChevronUp size={15} /> {t('hd_show_less')}
-                      </button>
-                    )}
+                        {visibleHistory.map((rec, i) => {
+                            const hrStatus  = getVitalStatus('heartRate',    rec.heartRate,    null);
+                            const o2Status  = getVitalStatus('oxygenLevel',  rec.oxygenLevel,  null);
+                            const tmpStatus = getVitalStatus('temperature',  rec.temperature,  null);
+                            const glcStatus = getVitalStatus('glucoseLevel', rec.glucoseLevel, null);
+                            const bpStatus  = getVitalStatus('bloodPressure', null, rec.bloodPressure);
+                            const cls = (s) => s === 'critical' ? 'hd-val-critical' : s === 'warning' ? 'hd-val-warning' : s === 'normal' ? 'hd-val-normal' : 'hd-val-nodata';
+                            return (
+                          <motion.tr
+                            key={rec._id}
+                            variants={itemVariants}
+                            className={i === 0 ? 'hd-history-table__latest' : ''}
+                          >
+                            <td className="hd-history-table__date">{formatDate(rec.recordedAt)}</td>
+                            <td>
+                              <span className={cls(hrStatus)}>{rec.heartRate ?? '—'}</span>
+                              {rec.heartRate && <span className="hd-unit">bpm</span>}
+                            </td>
+                            <td>
+                              <span className={cls(bpStatus)}>{formatBP(rec.bloodPressure)}</span>
+                              {rec.bloodPressure?.systolic && <span className="hd-unit">mmHg</span>}
+                            </td>
+                            <td>
+                              <span className={cls(o2Status)}>{rec.oxygenLevel ?? '—'}</span>
+                              {rec.oxygenLevel && <span className="hd-unit">%</span>}
+                            </td>
+                            <td>
+                              <span className={cls(tmpStatus)}>{rec.temperature ?? '—'}</span>
+                              {rec.temperature && <span className="hd-unit">°C</span>}
+                            </td>
+                            <td>
+                              <span className={cls(glcStatus)}>{rec.glucoseLevel ?? '—'}</span>
+                              {rec.glucoseLevel && <span className="hd-unit">mg/dL</span>}
+                            </td>
+                            <td style={{ textAlign: 'right' }}>
+                              <span className="hd-source-badge">{rec.source}</span>
+                            </td>
+                          </motion.tr>
+                            );
+                          })}
+                      </motion.tbody>
+                    </table>
                   </div>
-                )}
-              </>
-            )}
+
+                  {(hasMore || visibleCount > 10) && (
+                    <div style={{ textAlign: 'center', marginTop: '1.5rem', padding: '0 1.5rem 1.5rem', display: 'flex', gap: '0.75rem', justifyContent: 'center', flexWrap: 'wrap' }}>
+                      {hasMore && (
+                        <button
+                          className="n-btn n-btn-outline"
+                          onClick={() => setVisibleCount(c => c + 10)}
+                        >
+                          <ChevronDown size={15} />
+                          {t('hd_show_more', { count: Math.min(10, remaining) })}
+                        </button>
+                      )}
+                      {visibleCount > 10 && (
+                        <button
+                          className="n-btn n-btn-outline"
+                          onClick={() => setVisibleCount(10)}
+                        >
+                          <ChevronUp size={15} /> {t('hd_show_less')}
+                        </button>
+                      )}
+                    </div>
+                  )}
+                </>
+              )}
+            </div>
           </div>
         </section>
 

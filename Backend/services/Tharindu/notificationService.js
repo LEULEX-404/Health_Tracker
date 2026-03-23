@@ -144,6 +144,11 @@ const sendEmail = async (notification) => {
 const sendSMS = async (notification) => {
   console.log(`[SMS] Attempting to send to: ${notification.meta?.userPhone || "N/A"}`);
 
+  if (!config.VONAGE_API_KEY || !config.VONAGE_API_SECRET) {
+    console.warn(`[SMS] ⚠️ Missing Vonage API Key/Secret. Skipping SMS sending to: ${notification.meta?.userPhone}`);
+    return { provider: "nexmo-simulated", status: "skipped" };
+  }
+
   const nexmo = new Nexmo({
     apiKey: config.VONAGE_API_KEY,
     apiSecret: config.VONAGE_API_SECRET
