@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
+import { motion, useReducedMotion } from 'framer-motion';
 import { Sun, Moon, Globe, User, LogIn, ChevronDown } from 'lucide-react';
 import { useTheme } from '../../../context/Tharuka/ThemeContext';
 import { useFontSize } from '../../../context/Tharuka/FontSizeContext';
@@ -15,6 +16,10 @@ const LANGS = [
   { code: 'ta', label: 'தமிழ்', short: 'தமி' },
 ];
 
+// Micro-interaction tap scale
+const tapScale = { scale: 0.95 };
+const hoverLift = { y: -1 };
+
 export default function HeaderControls() {
   const { t, i18n } = useTranslation();
   const navigate = useNavigate();
@@ -22,6 +27,7 @@ export default function HeaderControls() {
   const { fontSize, changeSize } = useFontSize();
   const { user, logout } = useAuth();
   const isLoggedIn = !!user;
+  const prefersReducedMotion = useReducedMotion();
   
   const [fontOpen, setFontOpen] = useState(false);
   const [langOpen, setLangOpen] = useState(false);
@@ -62,18 +68,23 @@ export default function HeaderControls() {
   const currentLang = LANGS.find(l => l.code === i18n.language) || LANGS[0];
   const fontLabels = { small: 'A-', medium: 'A', large: 'A+' };
 
+  // Motion props helper (respects reduced motion)
+  const mp = (props) => prefersReducedMotion ? {} : props;
+
   return (
     <div className="pn-hctrl">
       {/* Font Size Dropdown */}
-      <div className="pn-hctrl__dropdown-wrap" ref={fontRef}>
-        <button 
+      <div className="pn-hctrl__dropdown-wrap pn-hctrl__font-wrap" ref={fontRef}>
+        <motion.button
           className={`pn-hctrl__trigger ${fontOpen ? 'active' : ''}`}
           onClick={() => { setFontOpen(!fontOpen); setLangOpen(false); }}
           title="Change font size"
+          whileHover={mp(hoverLift)}
+          whileTap={mp(tapScale)}
         >
           <span className="pn-hctrl__trigger-text">{fontLabels[fontSize]}</span>
           <ChevronDown size={14} className={`pn-hctrl__chevron ${fontOpen ? 'open' : ''}`} />
-        </button>
+        </motion.button>
         
         {fontOpen && (
           <div className="pn-hctrl__menu glass">
@@ -92,16 +103,18 @@ export default function HeaderControls() {
       </div>
 
       {/* Language Dropdown */}
-      <div className="pn-hctrl__dropdown-wrap" ref={langRef}>
-        <button 
+      <div className="pn-hctrl__dropdown-wrap pn-hctrl__lang-wrap" ref={langRef}>
+        <motion.button
           className={`pn-hctrl__trigger ${langOpen ? 'active' : ''}`}
           onClick={() => { setLangOpen(!langOpen); setFontOpen(false); }}
           title="Change language"
+          whileHover={mp(hoverLift)}
+          whileTap={mp(tapScale)}
         >
           <Globe size={18} className="pn-hctrl__trigger-icon" />
           <span className="pn-hctrl__trigger-text">{currentLang.short}</span>
           <ChevronDown size={14} className={`pn-hctrl__chevron ${langOpen ? 'open' : ''}`} />
-        </button>
+        </motion.button>
         
         {langOpen && (
           <div className="pn-hctrl__menu glass">
@@ -119,10 +132,17 @@ export default function HeaderControls() {
         )}
       </div>
 
-      {/* Dark Mode */}
-      <button className="pn-hctrl__theme" onClick={toggleTheme} aria-label="Toggle dark mode" title={isDark ? t('ctrl_light_mode') : t('ctrl_dark_mode')}>
+      {/* Dark Mode Toggle */}
+      <motion.button
+        className="pn-hctrl__theme"
+        onClick={toggleTheme}
+        aria-label="Toggle dark mode"
+        title={isDark ? t('ctrl_light_mode') : t('ctrl_dark_mode')}
+        whileHover={mp(hoverLift)}
+        whileTap={mp(tapScale)}
+      >
         {isDark ? <Sun size={20} /> : <Moon size={20} />}
-      </button>
+      </motion.button>
 
       {/* Auth-dependent Controls */}
       {isLoggedIn ? (
@@ -130,30 +150,35 @@ export default function HeaderControls() {
           <NotificationBell />
           
           <div className="pn-hctrl__profile-wrap">
-            <button 
-              className="pn-hctrl__profile" 
+            <motion.button
+              className="pn-hctrl__profile"
               aria-label="Profile"
               onClick={() => navigate('/profile')}
+              whileTap={mp(tapScale)}
             >
               <User size={20} />
-            </button>
+            </motion.button>
           </div>
         </div>
       ) : (
         <div className="pn-hctrl__auth">
-          <button 
+          <motion.button
             className="btn-outline pn-hctrl__login"
             onClick={() => navigate('/login')}
+            whileHover={mp(hoverLift)}
+            whileTap={mp(tapScale)}
           >
             <LogIn size={16} />
             {t('btn_login')}
-          </button>
-          <button 
+          </motion.button>
+          <motion.button
             className="btn-primary pn-hctrl__signup"
             onClick={() => navigate('/register')}
+            whileHover={mp(hoverLift)}
+            whileTap={mp(tapScale)}
           >
             {t('btn_signup')}
-          </button>
+          </motion.button>
         </div>
       )}
     </div>

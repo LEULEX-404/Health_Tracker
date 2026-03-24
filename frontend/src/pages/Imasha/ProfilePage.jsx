@@ -213,7 +213,7 @@ function useProfileStats(user, token, refreshTrigger) {
 
 /* ── Main Component ─────────────────────────────────────── */
 export default function ProfilePage() {
-    const { user, token, logout } = useAuth();
+    const { user, token, logout, updateUser } = useAuth();
     const navigate = useNavigate();
     const { isDark } = useTheme();
     const [activeTab, setActiveTab] = useState('settings');
@@ -241,7 +241,7 @@ export default function ProfilePage() {
         if (!token || !user?.email) return;
         setAppointmentsLoading(true);
         try {
-            const res = await fetch('http://localhost:5000/api/appointments', {
+            const res = await fetch(`${import.meta.env.VITE_API_URL}/appointments`, {
                 headers: { Authorization: `Bearer ${token}` }
             });
             const data = await res.json();
@@ -280,7 +280,7 @@ export default function ProfilePage() {
             gender: user.gender || '',
         });
     }, [user]);
-
+ 
     useEffect(() => {
         if (activeTab === 'appointments') {
             loadRecentAppointments();
@@ -324,8 +324,12 @@ export default function ProfilePage() {
                 body: JSON.stringify(formData),
             });
             const data = await res.json();
-            if (res.ok) toast.success('Profile updated!');
-            else toast.error(data.message || 'Update failed');
+            if (res.ok) {
+                toast.success('Profile updated!');
+                if (updateUser) updateUser(formData);
+            } else {
+                toast.error(data.message || 'Update failed');
+            }
         } catch {
             toast.error('Network error — try again.');
         } finally {
@@ -347,8 +351,15 @@ export default function ProfilePage() {
                 headers: { Authorization: `Bearer ${token}` },
                 body,
             });
-            if (res.ok) { toast.success('Photo updated!'); window.location.reload(); }
-            else { const d = await res.json(); toast.error(d.message || 'Upload failed'); }
+            if (res.ok) {
+                const d = await res.json();
+                toast.success('Photo updated!');
+                if (updateUser && d.user) updateUser(d.user);
+                else if (updateUser && d.profileImage) updateUser({ profileImage: d.profileImage });
+            } else {
+                const d = await res.json();
+                toast.error(d.message || 'Upload failed');
+            }
         } catch { toast.error('Upload failed'); }
         finally { setImageLoading(false); }
     };
@@ -358,7 +369,7 @@ export default function ProfilePage() {
         if (!ok) return;
 
         try {
-            const res = await fetch(`http://localhost:5000/api/appointments/${appointmentId}`, {
+            const res = await fetch(`${import.meta.env.VITE_API_URL}/appointments/${appointmentId}`, {
                 method: 'DELETE',
                 headers: { Authorization: `Bearer ${token}` },
             });
@@ -526,7 +537,7 @@ export default function ProfilePage() {
                                 </div>
                             )}
                         </div>
-                    </div>
+                    )}
                 </motion.div>
             );
         }

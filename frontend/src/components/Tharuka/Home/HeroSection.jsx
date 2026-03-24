@@ -1,10 +1,21 @@
-import { useEffect, useRef } from 'react';
-import { motion } from 'framer-motion';
+import { useEffect, useRef, useState } from 'react';
+import { motion, AnimatePresence, useReducedMotion } from 'framer-motion';
 import { useTranslation } from 'react-i18next';
-import { PlayCircle, ArrowRight } from 'lucide-react';
+import { PlayCircle, ArrowRight, Activity, Utensils } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import MagneticWrapper from '../Common/MagneticWrapper';
 import './HeroSection.css';
+
+const poseImages = [
+  '/images/Tharuka/pose_1.png',
+  '/images/Tharuka/pose_2.png',
+  '/images/Tharuka/pose_3.png'
+];
+const docPoseImages = [
+  '/images/Tharuka/doc_pose_1.png',
+  '/images/Tharuka/doc_pose_2.png',
+  '/images/Tharuka/doc_pose_3.png'
+];
 
 function TypedText({ texts }) {
   const ref = useRef(null);
@@ -33,75 +44,168 @@ const fadeUp = (delay = 0) => ({
 
 export default function HeroSection() {
   const { t } = useTranslation();
+  const prefersReducedMotion = useReducedMotion();
+  const [activePose, setActivePose] = useState(0);
+
+  // Preload images and handle pose transitions
+  useEffect(() => {
+    poseImages.forEach(src => {
+      const img = new Image();
+      img.src = src;
+    });
+
+    if (prefersReducedMotion) return;
+
+    const interval = setInterval(() => {
+      setActivePose((prev) => (prev + 1) % poseImages.length);
+    }, 3500); // Transition every 3.5s
+
+    return () => clearInterval(interval);
+  }, [prefersReducedMotion]);
 
   return (
     <section className="pn-hero" id="hero">
       <div className="container pn-hero__inner">
+        
+        {/* LEFT SIDE CONTENT */}
         <div className="pn-hero__content">
-          <span className="section-label">
+          <motion.div className="section-label" {...fadeUp(0.1)}>
             <span className="pn-hero__dot" />
             Because Every Pulse Matters
-          </span>
+          </motion.div>
 
-          <h1 className="pn-hero__title">
-            {t('hero_title')}<br />
-            <span className="text-gradient"><TypedText texts={['Reimagined.', 'Personalized.', 'Empowering.', 'Intelligent.']} /></span>
+          <motion.h1 className="pn-hero__title text-shiny" {...fadeUp(0.2)}>
+            {t('hero_title') || 'Your Fitness'}<br />
+            <span className="text-gradient">
+              <TypedText texts={['Reimagined.', 'Personalized.', 'Empowering.', 'Intelligent.']} />
+            </span>
             <span className="pn-hero__cursor">|</span>
-          </h1>
+          </motion.h1>
 
-          <p className="pn-hero__desc">
-            {t('hero_desc')}
-          </p>
+          <motion.p className="pn-hero__desc" {...fadeUp(0.3)}>
+            {t('hero_desc') || 'Transform the way you track, plan, and achieve your health goals with intelligent insights and professional collaboration.'}
+          </motion.p>
 
-          <motion.div className="pn-hero__ctas" {...fadeUp(0.5)}>
+          <motion.div className="pn-hero__ctas" {...fadeUp(0.4)}>
             <MagneticWrapper strength={0.4} range={100} display="inline-block">
-              <Link to="/register" className="btn-primary pn-hero__cta-main">
-                {t('hero_cta_start')} <ArrowRight size={16} />
+              <Link to="/register" className="btn-primary pn-hero__cta-main btn-shine-effect">
+                {t('hero_cta_start') || 'Start Journey'} <ArrowRight size={16} />
               </Link>
             </MagneticWrapper>
             <MagneticWrapper strength={0.3} range={80} display="inline-block">
               <Link to="/about" className="btn-outline">
                 <PlayCircle size={16} />
-                {t('hero_cta_learn')}
+                {t('hero_cta_learn') || 'Learn More'}
               </Link>
             </MagneticWrapper>
           </motion.div>
 
-          <motion.div className="pn-hero__stats" {...fadeUp(0.65)}>
-            {[['50K+', 'Active Users'], ['1M+', 'Meals Tracked'], ['200+', 'Specialists']].map(([n, l]) => (
-              <div key={l} className="pn-hero__stat">
-                <strong>{n}</strong>
-                <span>{l}</span>
+          <motion.div className="pn-hero__stats-row" {...fadeUp(0.5)}>
+            <div className="pn-hero__stat-card">
+              <div className="pn-hero__stat-icon" style={{color: 'var(--color-primary)'}}>
+                <Activity size={22} />
               </div>
-            ))}
+              <div className="pn-hero__stat-info">
+                <strong>50K+</strong>
+                <span>Active Users</span>
+              </div>
+            </div>
+            
+            <div className="pn-hero__stat-card">
+              <div className="pn-hero__stat-icon" style={{color: '#39FF14'}}>
+                <Utensils size={22} />
+              </div>
+              <div className="pn-hero__stat-info">
+                <strong>1M+</strong>
+                <span>Meals Tracked</span>
+              </div>
+            </div>
+            
+            <div className="pn-hero__trust">
+              <div className="pn-hero__avatars">
+                <img src="/images/Tharuka/caregiver_real.png" alt="User" onError={(e) => { e.target.src = '/images/Tharuka/fitness_tracking.png'; }} />
+                <img src="/images/Tharuka/fitness_tracking.png" alt="User 2" />
+                <div className="pn-hero__avatar-more">200+</div>
+              </div>
+              <span>Trust built with Specialists</span>
+            </div>
           </motion.div>
         </div>
 
+        {/* RIGHT SIDE VISUAL (POSE TRANSITIONS) */}
         <motion.div
           className="pn-hero__visual"
-          initial={{ opacity: 0, x: 60, scale: 0.95 }}
-          animate={{ opacity: 1, x: 0, scale: 1 }}
-          transition={{ duration: 0.9, delay: 0.3, ease: [0.22, 1, 0.36, 1] }}
+          initial={{ opacity: 0, x: 40 }}
+          animate={{ opacity: 1, x: 0 }}
+          transition={{ duration: 1, delay: 0.3, ease: [0.22, 1, 0.36, 1] }}
         >
-          <div className="pn-hero__img-wrap">
-            <img src="/images/Tharuka/hero_collaboration.png" alt="PulseNova - Health Collaboration" className="pn-hero__img" onError={(e) => { e.target.src = '/images/Tharuka/hero_dashboard.png'; }} />
-            {/* Floating cards */}
-            <motion.div className="pn-hero__float-card pn-hero__float-card--1"
-              animate={{ y: [0,-10,0] }} transition={{ duration: 3, repeat: Infinity, ease: 'easeInOut' }}>
-              <div className="pn-hero__fc-dot" style={{background:'#00C897'}} />
-              <div><strong>Heart Rate</strong><span>72 bpm ↑</span></div>
-            </motion.div>
-            <motion.div className="pn-hero__float-card pn-hero__float-card--2"
-              animate={{ y: [0,10,0] }} transition={{ duration: 3.5, repeat: Infinity, ease: 'easeInOut', delay: 0.5 }}>
-              <div className="pn-hero__fc-dot" style={{background:'#39FF14'}} />
-              <div><strong>Calories</strong><span>1,840 kcal</span></div>
-            </motion.div>
-            <motion.div className="pn-hero__float-card pn-hero__float-card--3"
-              animate={{ y: [0,-8,0] }} transition={{ duration: 4, repeat: Infinity, ease: 'easeInOut', delay: 1 }}>
-              <div className="pn-hero__fc-dot" style={{background:'#00B4D8'}} />
-              <div><strong>Steps</strong><span>8,420 / 10K</span></div>
-            </motion.div>
+          {/* Depth / Glow / Orbits behind person */}
+          <div className="pn-hero__visual-bg">
+            <div className="pn-hero__glow-halo" />
+            <div className="pn-hero__orbit pn-hero__orbit--1" />
+            <div className="pn-hero__orbit pn-hero__orbit--2" />
+            <div className="pn-hero__orbit pn-hero__orbit--3" />
           </div>
+
+          {/* Pose Transition Container */}
+          <div className="pn-hero__pose-container">
+            <AnimatePresence mode="wait">
+              <motion.div 
+                key={activePose} 
+                className="pn-hero__pose-group"
+                initial={{ opacity: 0, scale: 1.05, filter: 'brightness(3) contrast(1.5) hue-rotate(90deg)' }}
+                animate={{ 
+                  opacity: 1, 
+                  scale: 1, 
+                  filter: 'brightness(1) contrast(1) hue-rotate(0deg)',
+                  y: prefersReducedMotion ? 0 : [0, -6, 0] // Subtle breathing
+                }}
+                exit={{ opacity: 0, scale: 0.95, filter: 'brightness(3) contrast(1.5) hue-rotate(-90deg)' }}
+                transition={{ 
+                  duration: 0.6, 
+                  type: 'spring', 
+                  bounce: 0.4,
+                  y: { duration: 4, repeat: Infinity, ease: 'easeInOut' }
+                }}
+              >
+                <img src={docPoseImages[activePose]} alt="Doctor" className="pn-hero__pose-img pn-hero__pose-img--doctor" />
+                <img src={poseImages[activePose]} alt="Health Professional" className="pn-hero__pose-img pn-hero__pose-img--main" />
+              </motion.div>
+            </AnimatePresence>
+          </div>
+
+          {/* Floating Premium Elements */}
+          <motion.div className="pn-hero__status-chip pn-hero__status-chip--1"
+            initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} transition={{ delay: 0.8 }}>
+            <span className="pn-status-dot" /> Live health insights
+          </motion.div>
+
+          <motion.div className="pn-hero__status-chip pn-hero__status-chip--2"
+            initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} transition={{ delay: 0.9 }}>
+            <span className="pn-status-dot" style={{background: '#00B4D8', boxShadow: '0 0 8px #00B4D8'}} /> AI-driven goals
+          </motion.div>
+
+          <motion.div className="pn-hero__status-chip pn-hero__status-chip--3"
+            initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} transition={{ delay: 1.0 }}>
+            <span className="pn-status-dot" style={{background: '#FFD700', boxShadow: '0 0 8px #FFD700'}} /> Real-time sync
+          </motion.div>
+
+          <motion.div className="pn-hero__premium-metric"
+            initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 1.1 }}
+          >
+            <div className="pn-metric-ring">
+              <svg viewBox="0 0 36 36">
+                <path d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" strokeDasharray="100, 100" />
+                <path className="pn-metric-progress" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" strokeDasharray="75, 100" />
+              </svg>
+              <Activity size={14} className="pn-metric-icon" />
+            </div>
+            <div className="pn-metric-info">
+              <strong>Heart Rate</strong>
+              <span>72 bpm</span>
+            </div>
+          </motion.div>
+
         </motion.div>
       </div>
 
@@ -110,6 +214,7 @@ export default function HeroSection() {
         animate={{ y: [0,8,0] }} transition={{ duration: 1.5, repeat: Infinity }}>
         <div className="pn-hero__scroll-wheel" />
       </motion.div>
+
       {/* Dynamic Background Waves */}
       <div className="pn-hero__waves-container">
         <svg className="pn-hero__waves" xmlns="http://www.w3.org/2000/svg" xmlnsXlink="http://www.w3.org/1999/xlink" viewBox="0 24 150 28" preserveAspectRatio="none" shapeRendering="auto">

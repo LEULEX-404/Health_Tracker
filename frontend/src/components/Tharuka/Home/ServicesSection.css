@@ -11,7 +11,7 @@
 .pn-svc-row__img-wrap {
   position: relative;
   border-radius: var(--radius-xl);
-  overflow: hidden;
+  overflow: visible; /* Changed to visible for plasma glow to extend outside */
 }
 .pn-svc-row__img {
   width: 100%;
@@ -23,9 +23,17 @@
 .pn-svc-row__img-wrap:hover .pn-svc-row__img { transform: scale(1.02); }
 .pn-svc-row__img-glow {
   position: absolute;
-  inset: 0;
-  background: linear-gradient(135deg, rgba(0,200,151,0.08), transparent);
+  inset: -30px;
+  background: radial-gradient(circle at 50% 50%, rgba(0,200,151,0.25), transparent 70%);
+  filter: blur(25px);
   pointer-events: none;
+  border-radius: 50%;
+  animation: plasmaGlow 4s alternate infinite;
+  z-index: -1;
+}
+@keyframes plasmaGlow {
+  0% { transform: scale(0.9); opacity: 0.6; }
+  100% { transform: scale(1.1); opacity: 1; }
 }
 .pn-svc-row__content { display: flex; flex-direction: column; gap: 1.2rem; }
 .pn-svc-row__title { font-size: var(--fs-2xl); font-weight: 700; }
