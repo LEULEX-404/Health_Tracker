@@ -1,24 +1,11 @@
 import { useMemo, useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
 import Logo from '../Tharuka/Common/Logo';
+import healthGroupImg from '../../assets/Imasha/health_group.png';
 import {
     Activity, Shield, Heart, TrendingUp,
     Sun, Moon, Zap, Award
 } from 'lucide-react';
-
-const FEATURES = [
-    { icon: <Activity size={20} />, title: 'Real-time Monitoring', desc: 'Track vitals and health metrics 24/7' },
-    { icon: <Heart size={20} />, title: 'AI Health Insights', desc: 'Personalised tips powered by your data' },
-    { icon: <TrendingUp size={20} />, title: 'Progress Analytics', desc: 'Visualise trends and health history' },
-    { icon: <Shield size={20} />, title: 'Secure & Private', desc: 'End-to-end encrypted health records' },
-    { icon: <Zap size={20} />, title: 'Instant Alerts', desc: 'Real-time notifications for critical changes' },
-    { icon: <Award size={20} />, title: 'Smart Reminders', desc: 'Medication, hydration & activity nudges' },
-];
-
-const STATS = [
-    { value: '50K+', label: 'Users' },
-    { value: '99.9%', label: 'Uptime' },
-    { value: '4.9★', label: 'Rating' },
-];
 
 /* ── Floating particles ── */
 function Particles() {
@@ -94,7 +81,6 @@ function EcgLine() {
                         <stop offset="100%" stopColor="#00e6ad" />
                     </linearGradient>
                 </defs>
-                {/* Two copies of the same path side by side so the scroll loop is seamless */}
                 <polyline
                     className="Imasha-ecg-path"
                     stroke="url(#ecgGrad)"
@@ -110,7 +96,52 @@ function EcgLine() {
     );
 }
 
-export default function AuthLayout({ children }) {
+/* ── Group Visual (3 people + floating markers) ── */
+function GroupVisual({ variant = 'stable' }) {
+    return (
+        <div className={`Imasha-visual-box ${variant === 'swing' ? 'Imasha-visual-swing' : ''}`}>
+            {/* Main Aura Glow behind people */}
+            <div className="Imasha-visual-aura" />
+
+            <div className="Imasha-visual-unit">
+                {/* The 3-person group image */}
+                <div className="Imasha-visual-img-wrap">
+                    <img src={healthGroupImg} alt="Health Community" className="Imasha-visual-img" />
+                </div>
+
+                {/* Floating Health-Tech Markers */}
+                <div className="Imasha-visual-marker marker-heart">
+                    <div className="marker-icon"><Activity size={14} /></div>
+                    <div className="marker-content">
+                        <span className="marker-label">Heart Rate</span>
+                        <span className="marker-value">72 BPM</span>
+                    </div>
+                </div>
+
+                <div className="Imasha-visual-marker marker-hydration">
+                    <div className="marker-icon"><Zap size={14} /></div>
+                    <div className="marker-content">
+                        <span className="marker-label">Hydration</span>
+                        <span className="marker-value">85%</span>
+                    </div>
+                </div>
+
+                <div className="Imasha-visual-marker marker-wellness">
+                    <div className="marker-icon"><TrendingUp size={14} /></div>
+                    <span className="marker-pill">Wellness: Optimal</span>
+                </div>
+
+                {/* Minimal Pulse ring accent */}
+                <div className="Imasha-visual-pulse-ring" />
+                
+                {/* Subtle ECG line overlay nearby */}
+                <div className="Imasha-visual-ecg-accent" />
+            </div>
+        </div>
+    );
+}
+
+export default function AuthLayout({ children, visualVariant = 'stable' }) {
     const [isDarkMode, setIsDarkMode] = useState(() => {
         const saved = localStorage.getItem('auth_theme');
         return saved ? saved === 'dark' : true;
@@ -127,6 +158,12 @@ export default function AuthLayout({ children }) {
 
             {/* ── LEFT PANEL ── */}
             <div className="Imasha-auth-left">
+                {/* Organic curved separator (SVG) */}
+                <div className="Imasha-organic-curve">
+                    <svg viewBox="0 0 100 100" preserveAspectRatio="none">
+                        <path d="M100,0 L0,0 C40,20 40,80 0,100 L100,100 Z" fill="currentColor" />
+                    </svg>
+                </div>
                 {/* Layered animated bg */}
                 <FloatingOrbs />
                 <MeshGrid />
@@ -149,28 +186,8 @@ export default function AuthLayout({ children }) {
                         Track, monitor and improve your wellbeing remotely with AI-powered insights
                     </p>
 
-                    {/* Stats row */}
-                    <div className="Imasha-auth-stats-grid">
-                        {STATS.map((s) => (
-                            <div className="Imasha-stat-card" key={s.label}>
-                                <span className="Imasha-stat-value">{s.value}</span>
-                                <span className="Imasha-stat-label">{s.label}</span>
-                            </div>
-                        ))}
-                    </div>
-
-                    {/* Features */}
-                    <div className="Imasha-auth-features-list">
-                        {FEATURES.map((f) => (
-                            <div key={f.title} className="Imasha-auth-feature-card">
-                                <div className="Imasha-feature-card-icon">{f.icon}</div>
-                                <div className="Imasha-feature-card-text">
-                                    <strong>{f.title}</strong>
-                                    <span>{f.desc}</span>
-                                </div>
-                            </div>
-                        ))}
-                    </div>
+                    {/* New Visual Group (Phase 3) */}
+                    <GroupVisual variant={visualVariant} />
 
                     {/* Trust badge */}
                     <div className="Imasha-auth-trust-badge">
@@ -182,9 +199,15 @@ export default function AuthLayout({ children }) {
 
             {/* ── RIGHT PANEL ── */}
             <div className="Imasha-auth-right">
-                {/* Subtle right panel bg glow orbs */}
-                <div className="Imasha-right-glow Imasha-right-glow--1" />
-                <div className="Imasha-right-glow Imasha-right-glow--2" />
+                {/* Mobile Top Logo Header (Hidden on Desktop) */}
+                <div className="Imasha-mobile-logo-wrap">
+                    <Logo />
+                </div>
+
+                {/* Subtle right panel bg glow orbs - Dynamic View */}
+                <div className="Imasha-aura-glow Imasha-aura-glow--1" />
+                <div className="Imasha-aura-glow Imasha-aura-glow--2" />
+                <div className="Imasha-aura-glow Imasha-aura-glow--3" />
 
                 {/* Theme toggle */}
                 <div className="Imasha-theme-toggle-wrap">

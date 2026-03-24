@@ -1,4 +1,5 @@
 import { useId, memo } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 
 /**
  * Reusable labelled form input with icon and inline error support.
@@ -27,7 +28,7 @@ const AuthFormInput = memo(function AuthFormInput({
             {label && (
                 <label className="Imasha-label" htmlFor={id}>
                     {label}
-                    {required && <span style={{ color: 'var(--auth-error)', marginLeft: '3px' }}>*</span>}
+                    {required && <span style={{ color: 'var(--auth-error)', marginLeft: '4px' }}>*</span>}
                 </label>
             )}
             <div className={`Imasha-input-wrap${hasError ? ' has-error' : ''}`}>
@@ -60,11 +61,21 @@ const AuthFormInput = memo(function AuthFormInput({
                     />
                 )}
             </div>
-            {hasError && (
-                <span className="Imasha-field-error" id={`${id}-error`} role="alert">
-                    ⚠ {error}
-                </span>
-            )}
+            
+            <AnimatePresence>
+                {hasError && (
+                    <motion.span
+                        initial={{ opacity: 0, y: -10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: -10 }}
+                        className="Imasha-field-error"
+                        id={`${id}-error`}
+                        role="alert"
+                    >
+                        <span style={{ fontSize: '1.1em' }}>⚠</span> {error}
+                    </motion.span>
+                )}
+            </AnimatePresence>
         </div>
     );
 });
