@@ -19,19 +19,20 @@ import BackgroundEffect from '../../components/Tharuka/Common/BackgroundEffect';
 import toast from 'react-hot-toast';
 import PatientAlertsTab from '../Tharindu/PatientAlertsTab';
 import ModernDatePicker from '../../components/Imasha/ModernDatePicker';
+import PatientAppointmentsTab from '../Tharindu/PatientAppointmentsTab';
 import './ProfilePage.css';
 
 /* ── Static data ────────────────────────────────────────── */
 const TABS = [
-    { id: 'settings',     label: 'Settings',      icon: Settings },
-    { id: 'appointments', label: 'Appointments',  icon: ClipboardList },
-    { id: 'health',       label: 'Health Data',   icon: Activity },
-    { id: 'alerts',       label: 'Alerts',        icon: Bell },
+    { id: 'settings', label: 'Settings', icon: Settings },
+    { id: 'appointments', label: 'Appointments', icon: ClipboardList },
+    { id: 'health', label: 'Health Data', icon: Activity },
+    { id: 'alerts', label: 'Alerts', icon: Bell },
 ];
 
 /* ── Animation presets ──────────────────────────────────── */
 const FADE_UP = {
-    hidden:  { opacity: 0, y: 16 },
+    hidden: { opacity: 0, y: 16 },
     visible: {
         opacity: 1, y: 0,
         transition: { type: 'spring', stiffness: 300, damping: 24 }
@@ -39,7 +40,7 @@ const FADE_UP = {
 };
 
 const STAGGER = {
-    hidden:  { opacity: 0 },
+    hidden: { opacity: 0 },
     visible: {
         opacity: 1,
         transition: { staggerChildren: 0.06, delayChildren: 0.04 }
@@ -47,7 +48,7 @@ const STAGGER = {
 };
 
 const CARD_HOVER = { y: -4, scale: 1.015 };
-const CARD_TAP   = { scale: 0.98 };
+const CARD_TAP = { scale: 0.98 };
 
 /* ── Memoised form field ────────────────────────────────── */
 const ProfileField = memo(({
@@ -78,7 +79,7 @@ const ProfileField = memo(({
                             type="text"
                             name={name}
                             value={displayValue}
-                            onChange={() => {}}
+                            onChange={() => { }}
                             placeholder={placeholder || 'mm/dd/yyyy'}
                             readOnly
                             onClick={() => !disabled && setIsOpen(!isOpen)}
@@ -131,7 +132,7 @@ const StatCard = memo(({ icon: Icon, iconClass, value, label, trend, trendClass,
 StatCard.displayName = 'StatCard';
 
 /* ── Custom hook: fetch real Stats ─────────────────────── */
-function useProfileStats(user, token) {
+function useProfileStats(user, token, refreshTrigger) {
     const [stats, setStats] = useState({
         appointments: null,   // total appointment count for this user
         healthRecords: null,  // total health entries
@@ -141,9 +142,9 @@ function useProfileStats(user, token) {
 
     useEffect(() => {
         if (!user || !token) return;
-        const userId    = user?.id || user?._id;
+        const userId = user?.id || user?._id;
         const userEmail = user?.email;
-        let cancelled   = false;
+        let cancelled = false;
 
         const headers = { Authorization: `Bearer ${token}` };
 
@@ -157,47 +158,55 @@ function useProfileStats(user, token) {
             fetch(`${import.meta.env.VITE_API_URL}/health-data/${userId}`, { headers })
                 .then(r => r.ok ? r.json() : { data: [] })
                 .catch(() => ({ data: [] })),
+
+            // 3. Caregiver bookings for this user
+            fetch('http://localhost:5000/api/tharindu/bookings/my-bookings', { headers })
+                .then(r => r.ok ? r.json() : { data: [] })
+                .catch(() => ({ data: [] }))
         ])
-        .then(([appts, healthRes]) => {
-            if (cancelled) return;
+            .then(([appts, healthRes, caregiverRes]) => {
+                if (cancelled) return;
 
-            // Filter appointments to this user by email
-            const userId = user?.id || user?._id;
-            const fullName = [user?.firstName, user?.lastName].filter(Boolean).join(' ').trim().toLowerCase();
-            const myAppts = Array.isArray(appts)
-                ? appts.filter((a) => {
-                    const byUserId = userId && (a.patientUserId === userId || a.patientUserId?._id === userId);
-                    const byEmail = a.patientEmail && a.patientEmail.toLowerCase() === (userEmail || '').toLowerCase();
-                    const byName = a.patientName && a.patientName.toLowerCase() === fullName;
-                    return byUserId || byEmail || byName;
-                  })
-                : [];
+                // Filter appointments to this user by email
+                const userId = user?.id || user?._id;
+                const fullName = [user?.firstName, user?.lastName].filter(Boolean).join(' ').trim().toLowerCase();
+                const myAppts = Array.isArray(appts)
+                    ? appts.filter((a) => {
+                        const byUserId = userId && (a.patientUserId === userId || a.patientUserId?._id === userId);
+                        const byEmail = a.patientEmail && a.patientEmail.toLowerCase() === (userEmail || '').toLowerCase();
+                        const byName = a.patientName && a.patientName.toLowerCase() === fullName;
+                        return byUserId || byEmail || byName;
+                    })
+                    : [];
 
-            // Health records
-            const records = Array.isArray(healthRes?.data) ? healthRes.data : [];
+                const caregiverApptsCount = Array.isArray(caregiverRes?.data) ? caregiverRes.data.length : 0;
+                const totalApptsCount = myAppts.length + caregiverApptsCount;
 
-            // Average oxygen level from records that have it
-            const oxygenRecords = records.filter(r => r.oxygenLevel != null);
-            const avgOxygen = oxygenRecords.length > 0
-                ? Math.round(
-                    oxygenRecords.reduce((sum, r) => sum + r.oxygenLevel, 0)
-                    / oxygenRecords.length
-                  )
-                : null;
+                // Health records
+                const records = Array.isArray(healthRes?.data) ? healthRes.data : [];
 
-            setStats({
-                appointments:  myAppts.length,
-                healthRecords: records.length,
-                avgOxygen,
-                loading: false,
+                // Average oxygen level from records that have it
+                const oxygenRecords = records.filter(r => r.oxygenLevel != null);
+                const avgOxygen = oxygenRecords.length > 0
+                    ? Math.round(
+                        oxygenRecords.reduce((sum, r) => sum + r.oxygenLevel, 0)
+                        / oxygenRecords.length
+                    )
+                    : null;
+
+                setStats({
+                    appointments: totalApptsCount,
+                    healthRecords: records.length,
+                    avgOxygen,
+                    loading: false,
+                });
+            })
+            .catch(() => {
+                if (!cancelled) setStats(s => ({ ...s, loading: false }));
             });
-        })
-        .catch(() => {
-            if (!cancelled) setStats(s => ({ ...s, loading: false }));
-        });
 
         return () => { cancelled = true; };
-    }, [user, token]);
+    }, [user, token, refreshTrigger]);
 
     return stats;
 }
@@ -207,12 +216,17 @@ export default function ProfilePage() {
     const { user, token, logout } = useAuth();
     const navigate = useNavigate();
     const { isDark } = useTheme();
-    const [activeTab, setActiveTab]     = useState('settings');
-    const [isUpdating, setIsUpdating]   = useState(false);
+    const [activeTab, setActiveTab] = useState('settings');
+    const [isUpdating, setIsUpdating] = useState(false);
     const [imageLoading, setImageLoading] = useState(false);
+    const [refreshTrigger, setRefreshTrigger] = useState(0);
+
+    const triggerStatsRefresh = useCallback(() => {
+        setRefreshTrigger(prev => prev + 1);
+    }, []);
 
     // Real stats from APIs
-    const profileStats = useProfileStats(user, token);
+    const profileStats = useProfileStats(user, token, refreshTrigger);
 
     const [formData, setFormData] = useState({
         firstName: '', lastName: '', phone: '',
@@ -256,14 +270,14 @@ export default function ProfilePage() {
     useEffect(() => {
         if (!user) return;
         setFormData({
-            firstName:   user.firstName   || '',
-            lastName:    user.lastName    || '',
-            phone:       user.phone       || '',
-            address:     user.address     || '',
+            firstName: user.firstName || '',
+            lastName: user.lastName || '',
+            phone: user.phone || '',
+            address: user.address || '',
             dateOfBirth: user.dateOfBirth
                 ? new Date(user.dateOfBirth).toISOString().split('T')[0]
                 : '',
-            gender:      user.gender      || '',
+            gender: user.gender || '',
         });
     }, [user]);
 
@@ -301,7 +315,7 @@ export default function ProfilePage() {
         setIsUpdating(true);
         try {
             const userId = user?.id || user?._id;
-            const res  = await fetch(`${import.meta.env.VITE_API_URL}/users/${userId}`, {
+            const res = await fetch(`${import.meta.env.VITE_API_URL}/users/${userId}`, {
                 method: 'PUT',
                 headers: {
                     'Content-Type': 'application/json',
@@ -358,7 +372,7 @@ export default function ProfilePage() {
     };
 
     const displayName = [user?.firstName, user?.lastName].filter(Boolean).join(' ') || 'User';
-    const ActiveIcon  = TABS.find(t => t.id === activeTab)?.icon ?? Settings;
+    const ActiveIcon = TABS.find(t => t.id === activeTab)?.icon ?? Settings;
 
     /* ── Tab content ─────────────────────────────────────── */
     const renderTabContent = () => {
@@ -405,10 +419,10 @@ export default function ProfilePage() {
                                     value={formData.gender}
                                     onChange={handleInputChange}
                                     options={[
-                                        { value: '',       label: 'Select gender' },
-                                        { value: 'male',   label: 'Male' },
+                                        { value: '', label: 'Select gender' },
+                                        { value: 'male', label: 'Male' },
                                         { value: 'female', label: 'Female' },
-                                        { value: 'other',  label: 'Other / Prefer not to say' },
+                                        { value: 'other', label: 'Other / Prefer not to say' },
                                     ]}
                                 />
                                 <ProfileField
@@ -433,8 +447,8 @@ export default function ProfilePage() {
                                     disabled={isUpdating}
                                 >
                                     {isUpdating
-                                        ? <><Loader2 className="spin" size={16}/><span>Saving…</span></>
-                                        : <><Save size={16}/><span>Save Changes</span></>
+                                        ? <><Loader2 className="spin" size={16} /><span>Saving…</span></>
+                                        : <><Save size={16} /><span>Save Changes</span></>
                                     }
                                 </motion.button>
                             </div>
@@ -454,48 +468,69 @@ export default function ProfilePage() {
                     exit={{ opacity: 0, y: -10 }}
                     className="ims-profile__settings"
                 >
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
-                        <h3 className="ims-profile__form-section-title">
-                            <ClipboardList size={12} />Appointments
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
+                        <h3 className="ims-profile__form-section-title" style={{ margin: 0 }}>
+                            <ClipboardList size={12} />Appointments & Bookings
                         </h3>
-                        <Link to="/Appointment" className="ims-profile__save-btn" style={{ textDecoration: 'none', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', width: 'auto', padding: '0 14px', height: 36 }}>
-                            Manage Appointments
+                        <Link to="/Appointment" className="ims-profile__save-btn" style={{ textDecoration: 'none', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', width: 'auto', padding: '0 14px', height: 36, fontSize: '13px' }}>
+                            View All History
                         </Link>
                     </div>
 
-                    {appointmentsLoading ? (
-                        <div className="ims-profile__placeholder-content">
-                            <p>Loading appointments...</p>
+                    <div className="ims-profile__appointments-layout" style={{ display: 'flex', flexDirection: 'column', gap: '30px' }}>
+                        {/* Caregiver Bookings Section (Integrated) */}
+                        <div className="ims-profile__section">
+                            <h4 style={{ fontSize: '14px', marginBottom: '15px', color: 'var(--p-cyan)', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                <Sparkles size={14} /> Caregiver Services
+                            </h4>
+                            <PatientAppointmentsTab onBookingSuccess={triggerStatsRefresh} />
                         </div>
-                    ) : recentAppointments.length === 0 ? (
-                        <div className="ims-profile__placeholder-content">
-                            <p>No appointments found yet.</p>
-                        </div>
-                    ) : (
-                        <div className="ims-profile__form-grid">
-                            {recentAppointments.slice(0, 6).map((apt) => (
-                                <div key={apt._id} className="ims-profile__appointment-card full">
-                                    <div className="ims-profile__appointment-left">
-                                        <img
-                                            src={apt.avatar || '/images/Priya/doctor-01.png'}
-                                            alt={apt.doctor || 'Doctor'}
-                                            className="ims-profile__appointment-avatar"
-                                        />
-                                        <div>
-                                            <label>{apt.doctor || 'Doctor'}</label>
-                                            <div style={{ color: 'var(--text-secondary)', fontSize: 13 }}>Date: {apt.date || '-'}</div>
-                                            <div style={{ color: 'var(--text-secondary)', fontSize: 13 }}>Time: {apt.time || '-'}</div>
-                                            <div style={{ color: 'var(--text-secondary)', fontSize: 13 }}>Status: {apt.status || 'Pending'}</div>
-                                        </div>
-                                    </div>
-                                    <div className="ims-profile__appointment-actions">
-                                        <button type="button" onClick={() => navigate('/Appointment')}>Edit</button>
-                                        <button type="button" onClick={() => handleDeleteAppointment(apt._id)}>Cancel</button>
-                                    </div>
+
+                        <div className="ims-profile__divider" style={{ margin: '10px 0' }} />
+
+                        {/* Recent Doctor Appointments List */}
+                        <div className="ims-profile__section">
+                            <h4 style={{ fontSize: '14px', marginBottom: '15px', opacity: 0.8 }}>Recent Doctor Appointments</h4>
+                            {appointmentsLoading ? (
+                                <div className="ims-profile__placeholder-content">
+                                    <p>Loading appointments...</p>
                                 </div>
-                            ))}
+                            ) : recentAppointments.length === 0 ? (
+                                <div className="ims-profile__placeholder-content">
+                                    <p>No recent doctor appointments found.</p>
+                                </div>
+                            ) : (
+                                <div className="ims-profile__form-grid">
+                                    {recentAppointments.slice(0, 4).map((apt) => (
+                                        <div key={apt._id} className="ims-profile__appointment-card full">
+                                            <div className="ims-profile__appointment-left">
+                                                <img
+                                                    src={apt.avatar || '/images/Priya/doctor-01.png'}
+                                                    alt={apt.doctor || 'Doctor'}
+                                                    className="ims-profile__appointment-avatar"
+                                                />
+                                                <div>
+                                                    <label>{apt.doctor || 'Doctor'}</label>
+                                                    <div style={{ color: 'var(--text-secondary)', fontSize: 13 }}>{apt.date || '-'} at {apt.time || '-'}</div>
+                                                    <div className={`ims-profile__status-tag ${apt.status?.toLowerCase() || 'pending'}`}>
+                                                        {apt.status || 'Scheduled'}
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div className="ims-profile__appointment-actions">
+                                                <button type="button" onClick={() => navigate('/Appointment')}>Manage</button>
+                                                <button type="button" className="cancel-btn" onClick={() => handleDeleteAppointment(apt._id)}>Cancel</button>
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+                            )}
                         </div>
-                    )}
+                    </div>
+                </motion.div>
+            );
+        }
+
         if (activeTab === 'alerts') {
             return (
                 <motion.div
@@ -539,253 +574,260 @@ export default function ProfilePage() {
         );
     };
 
-    return (
-        <AnimatePresence>
-            <BackgroundEffect />
-            <Header />
+                    return (
+                    <AnimatePresence>
+                        <BackgroundEffect />
+                        <Header />
 
-            <motion.main
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                transition={{ duration: 0.35 }}
-                className="ims-profile-page"
-            >
-                {/* Floating ambient orbs — GPU composited, 0 layout cost */}
-                <div className="ims-profile__orb ims-profile__orb--1" aria-hidden="true" />
-                <div className="ims-profile__orb ims-profile__orb--2" aria-hidden="true" />
-                <div className="ims-profile__orb ims-profile__orb--3" aria-hidden="true" />
-
-                <div className="container">
-                    <div className="ims-profile__layout">
-
-                        {/* ── Sidebar ──────────────────────────────────── */}
-                        <motion.aside
-                            initial={{ x: -36, opacity: 0 }}
-                            animate={{ x: 0, opacity: 1 }}
-                            transition={{ duration: 0.42, ease: [0.4, 0, 0.2, 1] }}
-                            className="ims-profile__sidebar"
+                        <motion.main
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                            transition={{ duration: 0.35 }}
+                            className="ims-profile-page"
                         >
-                            {/* Avatar */}
-                            <div className="ims-profile__avatar-container">
-                                <div
-                                    className="ims-profile__avatar-ring"
-                                    onClick={() => fileInputRef.current?.click()}
-                                    title="Change photo"
-                                >
-                                    <div className="ims-profile__avatar-wrap">
-                                        {user?.profileImage
-                                            ? <img src={user.profileImage} alt={displayName} className="ims-profile__avatar" />
-                                            : <div className="ims-profile__avatar-placeholder"><User size={32} /></div>
-                                        }
-                                        {imageLoading
-                                            ? <div className="ims-profile__avatar-loader"><Loader2 className="spin" size={22}/></div>
-                                            : <div className="ims-profile__avatar-overlay"><Camera size={18}/><span>Change</span></div>
-                                        }
-                                    </div>
-                                </div>
+                            {/* Floating ambient orbs — GPU composited, 0 layout cost */}
+                            <div className="ims-profile__orb ims-profile__orb--1" aria-hidden="true" />
+                            <div className="ims-profile__orb ims-profile__orb--2" aria-hidden="true" />
+                            <div className="ims-profile__orb ims-profile__orb--3" aria-hidden="true" />
 
-                                <div className="ims-profile__user-info">
-                                    <h2 className="ims-profile__user-name">{displayName}</h2>
-                                    <p className="ims-profile__user-email">{user?.email}</p>
-                                    {user?.role && (
-                                        <div className="ims-profile__role-badge">
-                                            <CheckCircle2 size={9} />{user.role}
-                                        </div>
-                                    )}
-                                </div>
-                            </div>
+                            <div className="container">
+                                <div className="ims-profile__layout">
 
-                            <input type="file" ref={fileInputRef} onChange={handleImageUpload} accept="image/*" hidden />
-
-                            {/* Mini stats */}
-                            <div className="ims-profile__mini-stats">
-                                <div className="ims-profile__mini-stat">
-                                    <div className="ims-profile__mini-stat-value">{profileScore}%</div>
-                                    <div className="ims-profile__mini-stat-label">Profile</div>
-                                </div>
-                                <div className="ims-profile__mini-stat">
-                                    <div className="ims-profile__mini-stat-value">{accountDays}</div>
-                                    <div className="ims-profile__mini-stat-label">Days Active</div>
-                                </div>
-                            </div>
-
-                            <div className="ims-profile__divider" />
-
-                            {/* Nav */}
-                            <nav className="ims-profile__nav">
-                                {TABS.map(({ id, label, icon: Icon }) => (
-                                    <button
-                                        key={id}
-                                        className={`ims-profile__nav-item${activeTab === id ? ' active' : ''}`}
-                                        onClick={() => setActiveTab(id)}
+                                    {/* ── Sidebar ──────────────────────────────────── */}
+                                    <motion.aside
+                                        initial={{ x: -36, opacity: 0 }}
+                                        animate={{ x: 0, opacity: 1 }}
+                                        transition={{ duration: 0.42, ease: [0.4, 0, 0.2, 1] }}
+                                        className="ims-profile__sidebar"
                                     >
-                                        <Icon size={17} />
-                                        <span>{label}</span>
-                                        <ChevronRight size={13} className="nav-arrow" />
-                                    </button>
-                                ))}
-                                <button className="ims-profile__nav-item logout" onClick={logout}>
-                                    <LogOut size={17} />
-                                    <span>Sign Out</span>
-                                </button>
-                            </nav>
+                                        {/* Avatar */}
+                                        <div className="ims-profile__avatar-container">
+                                            <div
+                                                className="ims-profile__avatar-ring"
+                                                onClick={() => fileInputRef.current?.click()}
+                                                title="Change photo"
+                                            >
+                                                <div className="ims-profile__avatar-wrap">
+                                                    {user?.profileImage
+                                                        ? <img src={user.profileImage} alt={displayName} className="ims-profile__avatar" />
+                                                        : <div className="ims-profile__avatar-placeholder"><User size={32} /></div>
+                                                    }
+                                                    {imageLoading
+                                                        ? <div className="ims-profile__avatar-loader"><Loader2 className="spin" size={22} /></div>
+                                                        : <div className="ims-profile__avatar-overlay"><Camera size={18} /><span>Change</span></div>
+                                                    }
+                                                </div>
+                                            </div>
 
-                            <div className="ims-profile__divider" />
-
-                            {/* Branding */}
-                            <div className="ims-profile__branding">
-                                <div className="ims-profile__logo">
-                                    <div className="ims-profile__logo-dot">P</div>
-                                    <span className="ims-profile__logo-text">PulseNova</span>
-                                </div>
-                                <span className="ims-profile__version">Enterprise v2.5</span>
-                            </div>
-                        </motion.aside>
-
-                        {/* ── Main Content ──────────────────────────── */}
-                        <section className="ims-profile__content">
-
-                            {/* Hero banner */}
-                            <motion.div
-                                initial={{ opacity: 0, y: -14 }}
-                                animate={{ opacity: 1, y: 0 }}
-                                transition={{ duration: 0.4, delay: 0.08 }}
-                                className="ims-profile__hero"
-                            >
-                                <img
-                                    src="/profile_hero_art.png"
-                                    alt="Profile hero"
-                                    className="ims-profile__hero-img"
-                                    loading="eager"
-                                    decoding="async"
-                                />
-                                <div className="ims-profile__hero-overlay">
-                                    <div className="ims-profile__hero-text">
-                                        <h2>Welcome back, {user?.firstName || 'User'} <Sparkles size={22} color="var(--p-green)" style={{ display: 'inline', marginLeft: '4px', verticalAlign: '-3px' }} /></h2>
-                                        <p>Manage your health journey from one place</p>
-                                        <div className="ims-profile__hero-badge">
-                                            <span className="pulse-dot" />
-                                            PulseNova Active
+                                            <div className="ims-profile__user-info">
+                                                <h2 className="ims-profile__user-name">{displayName}</h2>
+                                                <p className="ims-profile__user-email">{user?.email}</p>
+                                                {user?.role && (
+                                                    <div className="ims-profile__role-badge">
+                                                        <CheckCircle2 size={9} />{user.role}
+                                                    </div>
+                                                )}
+                                            </div>
                                         </div>
-                                    </div>
+
+                                        <input type="file" ref={fileInputRef} onChange={handleImageUpload} accept="image/*" hidden />
+
+                                        {/* Mini stats */}
+                                        <div className="ims-profile__mini-stats">
+                                            <div className="ims-profile__mini-stat">
+                                                <div className="ims-profile__mini-stat-value">{profileScore}%</div>
+                                                <div className="ims-profile__mini-stat-label">Profile</div>
+                                            </div>
+                                            <div className="ims-profile__mini-stat">
+                                                <div className="ims-profile__mini-stat-value">{accountDays}</div>
+                                                <div className="ims-profile__mini-stat-label">Days Active</div>
+                                            </div>
+                                        </div>
+
+                                        <div className="ims-profile__divider" />
+
+                                        {/* Nav */}
+                                        <nav className="ims-profile__nav">
+                                            {TABS.map(({ id, label, icon: Icon }) => (
+                                                <button
+                                                    key={id}
+                                                    className={`ims-profile__nav-item${activeTab === id ? ' active' : ''}`}
+                                                    onClick={() => setActiveTab(id)}
+                                                >
+                                                    <Icon size={17} />
+                                                    <span>{label}</span>
+                                                    <ChevronRight size={13} className="nav-arrow" />
+                                                </button>
+                                            ))}
+                                            <button className="ims-profile__nav-item logout" onClick={logout}>
+                                                <LogOut size={17} />
+                                                <span>Sign Out</span>
+                                            </button>
+                                        </nav>
+
+                                        <div className="ims-profile__divider" />
+
+                                        {/* Branding */}
+                                        <div className="ims-profile__branding">
+                                            <div className="ims-profile__logo">
+                                                <div className="ims-profile__logo-dot">P</div>
+                                                <span className="ims-profile__logo-text">PulseNova</span>
+                                            </div>
+                                            <span className="ims-profile__version">Enterprise v2.5</span>
+                                        </div>
+                                    </motion.aside>
+
+                                    {/* ── Main Content ──────────────────────────── */}
+                                    <section className="ims-profile__content">
+
+                                        {/* Hero banner */}
+                                        <motion.div
+                                            initial={{ opacity: 0, y: -14 }}
+                                            animate={{ opacity: 1, y: 0 }}
+                                            transition={{ duration: 0.4, delay: 0.08 }}
+                                            className="ims-profile__hero"
+                                        >
+                                            <img
+                                                src="/profile_hero_art.png"
+                                                alt="Profile hero"
+                                                className="ims-profile__hero-img"
+                                                loading="eager"
+                                                decoding="async"
+                                            />
+                                            <div className="ims-profile__hero-overlay">
+                                                <div className="ims-profile__hero-text">
+                                                    <h2>Welcome back, {user?.firstName || 'User'} <Sparkles size={22} color="var(--p-green)" style={{ display: 'inline', marginLeft: '4px', verticalAlign: '-3px' }} /></h2>
+                                                    <p>Manage your health journey from one place</p>
+                                                    <div className="ims-profile__hero-badge">
+                                                        <span className="pulse-dot" />
+                                                        PulseNova Active
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </motion.div>
+
+                                        {/* Quick stats row */}
+                                        <motion.div
+                                            variants={STAGGER}
+                                            initial="hidden"
+                                            animate="visible"
+                                            className="ims-profile__stats-row"
+                                        >
+                                            <StatCard
+                                                icon={TrendingUp}
+                                                iconClass="ims-profile__stat-icon--green"
+                                                value={`${profileScore}%`}
+                                                label="Profile Complete"
+                                                trend={profileScore >= 80 ? '↑ Great' : profileScore >= 50 ? '↑ Good' : '⬤ Fill in'}
+                                                trendClass={profileScore >= 80 ? 'ims-profile__stat-trend--up' : 'ims-profile__stat-trend--stable'}
+                                                barColor="var(--p-green)"
+                                                loading={false}
+                                            />
+                                            <StatCard
+                                                icon={Zap}
+                                                iconClass="ims-profile__stat-icon--cyan"
+                                                value={accountDays}
+                                                label="Days Active"
+                                                trend="↑ Streak"
+                                                trendClass="ims-profile__stat-trend--stable"
+                                                barColor="var(--p-cyan)"
+                                                loading={false}
+                                            />
+                                            <StatCard
+                                                icon={Heart}
+                                                iconClass="ims-profile__stat-icon--amber"
+                                                value={
+                                                    profileStats.loading ? '—'
+                                                        : profileStats.avgOxygen != null ? `${profileStats.avgOxygen}%`
+                                                            : 'N/A'
+                                                }
+                                                label="Avg O₂ Level"
+                                                trend={
+                                                    !profileStats.loading && profileStats.avgOxygen != null
+                                                        ? profileStats.avgOxygen >= 95 ? '↑ Normal'
+                                                            : profileStats.avgOxygen >= 90 ? '⚠ Low'
+                                                                : '↓ Critical'
+                                                        : null
+                                                }
+                                                trendClass={
+                                                    !profileStats.loading && profileStats.avgOxygen != null
+                                                        ? profileStats.avgOxygen >= 95
+                                                            ? 'ims-profile__stat-trend--up'
+                                                            : 'ims-profile__stat-trend--stable'
+                                                        : ''
+                                                }
+                                                barColor="#f59e0b"
+                                                loading={profileStats.loading}
+                                            />
+                                            <StatCard
+                                                icon={ClipboardList}
+                                                iconClass="ims-profile__stat-icon--purple"
+                                                value={
+                                                    profileStats.loading ? '—'
+                                                        : profileStats.appointments != null ? profileStats.appointments
+                                                            : 0
+                                                }
+                                                label="Appointments"
+                                                trend={
+                                                    !profileStats.loading && profileStats.appointments != null
+                                                        ? `${profileStats.appointments} total`
+                                                        : null
+                                                }
+                                                trendClass="ims-profile__stat-trend--stable"
+                                                barColor="#8b5cf6"
+                                                loading={profileStats.loading}
+                                            />
+                                        </motion.div>
+
+                                        {/* Tab header */}
+                                        <motion.div
+                                            initial={{ opacity: 0, y: -12 }}
+                                            animate={{ opacity: 1, y: 0 }}
+                                            transition={{ duration: 0.38, delay: 0.15 }}
+                                            className="ims-profile__header"
+                                        >
+                                            <div className="ims-profile__header-left">
+                                                <div className="ims-profile__header-icon">
+                                                    <ActiveIcon size={19} />
+                                                </div>
+                                                <div className="ims-profile__header-text">
+                                                    <h1 style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                                                        {TABS.find(t => t.id === activeTab)?.label}
+                                                        {activeTab === 'appointments' && !profileStats.loading && (
+                                                            <span className="ims-profile__header-count">
+                                                                {profileStats.appointments}
+                                                            </span>
+                                                        )}
+                                                    </h1>
+                                                    <p>Manage your PulseNova profile &amp; preferences</p>
+                                                </div>
+                                            </div>
+                                            <div className="ims-profile__header-right">
+                                                <div className="ims-profile__header-badge">
+                                                    <span className="pulse-dot" />
+                                                    Active Session
+                                                </div>
+                                            </div>
+                                        </motion.div>
+
+                                        {/* Tab body */}
+                                        <motion.div
+                                            initial={{ opacity: 0, y: 14 }}
+                                            animate={{ opacity: 1, y: 0 }}
+                                            transition={{ duration: 0.38, delay: 0.2 }}
+                                            className="ims-profile__body"
+                                        >
+                                            <AnimatePresence mode="wait">
+                                                {renderTabContent()}
+                                            </AnimatePresence>
+                                        </motion.div>
+
+                                    </section>
                                 </div>
-                            </motion.div>
+                            </div>
+                        </motion.main>
 
-                            {/* Quick stats row */}
-                            <motion.div
-                                variants={STAGGER}
-                                initial="hidden"
-                                animate="visible"
-                                className="ims-profile__stats-row"
-                            >
-                                <StatCard
-                                    icon={TrendingUp}
-                                    iconClass="ims-profile__stat-icon--green"
-                                    value={`${profileScore}%`}
-                                    label="Profile Complete"
-                                    trend={profileScore >= 80 ? '↑ Great' : profileScore >= 50 ? '↑ Good' : '⬤ Fill in'}
-                                    trendClass={profileScore >= 80 ? 'ims-profile__stat-trend--up' : 'ims-profile__stat-trend--stable'}
-                                    barColor="var(--p-green)"
-                                    loading={false}
-                                />
-                                <StatCard
-                                    icon={Zap}
-                                    iconClass="ims-profile__stat-icon--cyan"
-                                    value={accountDays}
-                                    label="Days Active"
-                                    trend="↑ Streak"
-                                    trendClass="ims-profile__stat-trend--stable"
-                                    barColor="var(--p-cyan)"
-                                    loading={false}
-                                />
-                                <StatCard
-                                    icon={Heart}
-                                    iconClass="ims-profile__stat-icon--amber"
-                                    value={
-                                        profileStats.loading ? '—'
-                                        : profileStats.avgOxygen != null ? `${profileStats.avgOxygen}%`
-                                        : 'N/A'
-                                    }
-                                    label="Avg O₂ Level"
-                                    trend={
-                                        !profileStats.loading && profileStats.avgOxygen != null
-                                            ? profileStats.avgOxygen >= 95 ? '↑ Normal'
-                                            : profileStats.avgOxygen >= 90 ? '⚠ Low'
-                                            : '↓ Critical'
-                                            : null
-                                    }
-                                    trendClass={
-                                        !profileStats.loading && profileStats.avgOxygen != null
-                                            ? profileStats.avgOxygen >= 95
-                                                ? 'ims-profile__stat-trend--up'
-                                                : 'ims-profile__stat-trend--stable'
-                                            : ''
-                                    }
-                                    barColor="#f59e0b"
-                                    loading={profileStats.loading}
-                                />
-                                <StatCard
-                                    icon={ClipboardList}
-                                    iconClass="ims-profile__stat-icon--purple"
-                                    value={
-                                        profileStats.loading ? '—'
-                                        : profileStats.appointments != null ? profileStats.appointments
-                                        : 0
-                                    }
-                                    label="Appointments"
-                                    trend={
-                                        !profileStats.loading && profileStats.appointments != null
-                                            ? `${profileStats.appointments} total`
-                                            : null
-                                    }
-                                    trendClass="ims-profile__stat-trend--stable"
-                                    barColor="#8b5cf6"
-                                    loading={profileStats.loading}
-                                />
-                            </motion.div>
-
-                            {/* Tab header */}
-                            <motion.div
-                                initial={{ opacity: 0, y: -12 }}
-                                animate={{ opacity: 1, y: 0 }}
-                                transition={{ duration: 0.38, delay: 0.15 }}
-                                className="ims-profile__header"
-                            >
-                                <div className="ims-profile__header-left">
-                                    <div className="ims-profile__header-icon">
-                                        <ActiveIcon size={19} />
-                                    </div>
-                                    <div className="ims-profile__header-text">
-                                        <h1>{TABS.find(t => t.id === activeTab)?.label}</h1>
-                                        <p>Manage your PulseNova profile &amp; preferences</p>
-                                    </div>
-                                </div>
-                                <div className="ims-profile__header-right">
-                                    <div className="ims-profile__header-badge">
-                                        <span className="pulse-dot" />
-                                        Active Session
-                                    </div>
-                                </div>
-                            </motion.div>
-
-                            {/* Tab body */}
-                            <motion.div
-                                initial={{ opacity: 0, y: 14 }}
-                                animate={{ opacity: 1, y: 0 }}
-                                transition={{ duration: 0.38, delay: 0.2 }}
-                                className="ims-profile__body"
-                            >
-                                <AnimatePresence mode="wait">
-                                    {renderTabContent()}
-                                </AnimatePresence>
-                            </motion.div>
-
-                        </section>
-                    </div>
-                </div>
-            </motion.main>
-
-            <Footer />
-        </AnimatePresence>
-    );
+                        <Footer />
+                    </AnimatePresence>
+                    );
 }
