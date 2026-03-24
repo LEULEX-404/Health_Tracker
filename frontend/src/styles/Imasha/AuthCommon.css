@@ -8,41 +8,46 @@
 
 /* ── CSS Variables ─────────────────────────────────────────────── */
 :root {
-  --auth-primary: #00c897;
-  --auth-primary-dark: #009973;
-  --auth-primary-glow: rgba(0, 200, 151, 0.35);
+  --auth-primary: #00a87d; /* Slightly darker, more premium green */
+  --auth-primary-dark: #007a5c;
+  --auth-primary-glow: rgba(0, 168, 125, 0.25);
   --auth-accent: #39ff14;
 
   /* Dark (default) */
   --auth-bg: #07110d;
   --auth-right-bg: #07110d;
-  --auth-card-bg: rgba(10, 24, 17, 0.95);
-  --auth-card-border: rgba(0, 200, 151, 0.22);
-  --auth-text-main: #e8f5ee;
-  --auth-text-muted: #7aaa94;
-  --auth-text-label: #9eceb5;
-  --auth-input-bg: rgba(0, 30, 20, 0.7);
-  --auth-input-border: rgba(0, 200, 151, 0.25);
-  --auth-divider: rgba(0, 200, 151, 0.15);
+  --auth-card-bg: rgba(10, 24, 18, 0.98);
+  --auth-card-border: rgba(0, 168, 125, 0.2);
+  --auth-text-main: #eff6f2;
+  --auth-text-muted: #8dad9e;
+  --auth-text-label: #a3c9b6;
+  --auth-input-bg: rgba(2, 10, 8, 0.8);
+  --auth-input-border: rgba(0, 168, 125, 0.2);
+  --auth-divider: rgba(0, 168, 125, 0.12);
   --auth-error: #ff5c5c;
   --auth-error-bg: rgba(255, 92, 92, 0.08);
   --auth-shadow: 0 30px 80px rgba(0, 0, 0, 0.6);
+  --auth-shadow-premium: 0 20px 50px -12px rgba(0, 0, 0, 0.8), 0 0 30px rgba(0, 168, 125, 0.08);
+
+  /* Realistic Noise Texture */
+  --auth-noise-url: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
 }
 
 .light-theme {
-  --auth-bg: #f0faf5;
-  --auth-right-bg: #f0faf5;
+  --auth-bg: #f5fcf9;
+  --auth-right-bg: #f5fcf9;
   --auth-card-bg: #ffffff;
-  --auth-card-border: rgba(0, 200, 151, 0.3);
+  --auth-card-border: rgba(0, 168, 125, 0.15);
   --auth-text-main: #062514;
-  --auth-text-muted: #4a7a63;
-  --auth-text-label: #0f3a25;
+  --auth-text-muted: #5a7d6c;
+  --auth-text-label: #1a4a35;
   --auth-input-bg: #ffffff;
-  --auth-input-border: rgba(0, 200, 151, 0.4);
-  --auth-divider: rgba(0, 200, 151, 0.18);
+  --auth-input-border: rgba(0, 168, 125, 0.25);
+  --auth-divider: rgba(0, 168, 125, 0.1);
   --auth-error: #d93025;
   --auth-error-bg: rgba(217, 48, 37, 0.06);
-  --auth-shadow: 0 20px 50px rgba(0, 200, 151, 0.12);
+  --auth-shadow: 0 20px 50px rgba(0, 168, 125, 0.1);
+  --auth-shadow-premium: 0 15px 40px rgba(0, 168, 125, 0.08), 0 0 1px rgba(0, 168, 125, 0.1);
 }
 
 /* ── Root Reset ─────────────────────────────────────────────────── */
@@ -64,25 +69,48 @@
   inset: 0;
 }
 
+.Imasha-auth-page::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background-image: var(--auth-noise-url);
+  opacity: 0.035;
+  pointer-events: none;
+  z-index: 5;
+}
+
 /* ── LEFT PANEL (green) ─────────────────────────────────────────── */
 .Imasha-auth-left {
   flex: 0 0 50%;
   height: 100vh;
-  background: linear-gradient(160deg, rgba(0, 200, 151, 0.75) 0%, rgba(0, 153, 115, 0.85) 55%, rgba(0, 110, 82, 0.9) 100%);
-  backdrop-filter: blur(0px);
-  background-color: #00c897;
+  background: linear-gradient(160deg, #003d2e 0%, #001610 100%);
   display: flex;
   flex-direction: column;
   position: relative;
   overflow: hidden;
   padding: 2rem 2.5rem;
   justify-content: space-between;
-  /* Spread elements to cover height */
 }
 
-/* Dark mode — deep forest teal */
-:not(.light-theme) .Imasha-auth-left {
-  background: linear-gradient(160deg, #003d2e 0%, #002619 55%, #001610 100%);
+/* ── Organic Curved Separator ── */
+.Imasha-organic-curve {
+  position: absolute;
+  top: 0;
+  right: -1px;
+  width: 150px;
+  height: 100%;
+  z-index: 5;
+  color: var(--auth-right-bg); /* Match right panel bg */
+  pointer-events: none;
+}
+
+.Imasha-organic-curve svg {
+  width: 100%;
+  height: 100%;
+}
+
+.light-theme .Imasha-organic-curve {
+  color: #f8fafc; /* Match light theme right panel bg */
 }
 
 /* Light mode — still dark-ish green (lighter shade but still readable with white text) */
@@ -410,65 +438,60 @@
   animation: Imasha-content-float 5s ease-in-out infinite;
 }
 
-/* ── Right panel subtle animated bg glow orbs ────────────────────── */
-.Imasha-right-glow {
+/* ── Right panel realistic dynamic background (Aura Glows) ────── */
+.Imasha-aura-glow {
   position: absolute;
   border-radius: 50%;
   pointer-events: none;
-  filter: blur(70px);
+  filter: blur(80px);
   z-index: 0;
+  opacity: 0.6;
+  transition: opacity 1s ease;
 }
 
-.Imasha-right-glow--1 {
-  width: 320px;
-  height: 320px;
-  background: radial-gradient(circle, rgba(0, 200, 151, 0.09) 0%, transparent 70%);
-  top: -60px;
-  right: -60px;
-  animation: Imasha-right-orb-1 15s ease-in-out infinite alternate;
+.Imasha-aura-glow--1 {
+  width: 400px;
+  height: 400px;
+  background: radial-gradient(circle, rgba(0, 168, 125, 0.15) 0%, transparent 70%);
+  top: -100px;
+  right: -50px;
+  animation: Imasha-aura-float-1 25s ease-in-out infinite alternate;
 }
 
-.Imasha-right-glow--2 {
-  width: 260px;
-  height: 260px;
+.Imasha-aura-glow--2 {
+  width: 350px;
+  height: 350px;
+  background: radial-gradient(circle, rgba(16, 185, 129, 0.1) 0%, transparent 70%);
+  bottom: -50px;
+  left: -80px;
+  animation: Imasha-aura-float-2 30s ease-in-out infinite alternate;
+}
+
+.Imasha-aura-glow--3 {
+  width: 300px;
+  height: 300px;
   background: radial-gradient(circle, rgba(57, 255, 20, 0.05) 0%, transparent 70%);
-  bottom: -40px;
-  left: -40px;
-  animation: Imasha-right-orb-2 18s ease-in-out infinite alternate;
+  top: 40%;
+  right: 15%;
+  animation: Imasha-aura-float-3 20s ease-in-out infinite alternate-reverse;
 }
 
-@keyframes Imasha-right-orb-1 {
-  0% {
-    transform: translate(0, 0) scale(1);
-    opacity: 0.7;
-  }
-
-  50% {
-    transform: translate(-30px, 40px) scale(1.15);
-    opacity: 1;
-  }
-
-  100% {
-    transform: translate(20px, 20px) scale(0.9);
-    opacity: 0.6;
-  }
+@keyframes Imasha-aura-float-1 {
+  0% { transform: translate(0, 0) scale(1) rotate(0deg); }
+  50% { transform: translate(-40px, 60px) scale(1.1) rotate(10deg); }
+  100% { transform: translate(20px, 10px) scale(0.95) rotate(-5deg); }
 }
 
-@keyframes Imasha-right-orb-2 {
-  0% {
-    transform: translate(0, 0) scale(1);
-    opacity: 0.6;
-  }
+@keyframes Imasha-aura-float-2 {
+  0% { transform: translate(0, 0) scale(1.05); }
+  50% { transform: translate(50px, -40px) scale(1.2); }
+  100% { transform: translate(-30px, 20px) scale(0.9); }
+}
 
-  50% {
-    transform: translate(40px, -30px) scale(1.2);
-    opacity: 1;
-  }
-
-  100% {
-    transform: translate(-20px, 20px) scale(0.85);
-    opacity: 0.5;
-  }
+@keyframes Imasha-aura-float-3 {
+  0% { transform: translate(0, 0) scale(1); opacity: 0.4; }
+  50% { transform: translate(-60px, -20px) scale(1.15); opacity: 0.6; }
+  100% { transform: translate(40px, 40px) scale(0.85); opacity: 0.3; }
 }
 
 /* Form card subtle shimmer border */
@@ -555,146 +578,199 @@
 }
 
 
-/* Stat cards grid - Taller cards */
-.Imasha-auth-stats-grid {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 1.25rem;
-  margin-top: 1.5rem;
-  margin-bottom: 1.5rem;
+/* ── Phase 3: Visual Group (3 people + markers) ────────────────── */
+.Imasha-visual-box {
+  position: relative;
   width: 100%;
-}
-
-.Imasha-stat-card {
-  background: rgba(255, 255, 255, 0.08);
-  border: 1px solid rgba(255, 255, 255, 0.15);
-  border-radius: 16px;
-  padding: 1.25rem 0.75rem;
-  /* Taller cards to fill verticality */
-  display: flex;
-  flex-direction: column;
-  gap: 0.4rem;
-  backdrop-filter: blur(10px);
-  transition: all 0.3s ease;
-  flex: 1;
-}
-
-.Imasha-stat-card:hover {
-  background: rgba(255, 255, 255, 0.15);
-  transform: translateY(-3px);
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.25), 0 0 15px rgba(0, 200, 151, 0.15);
-  border-color: rgba(0, 200, 151, 0.4);
-}
-
-.Imasha-stat-value {
-  font-family: 'Space Grotesk', sans-serif;
-  font-size: 1.75rem;
-  /* Bolder value */
-  font-weight: 800;
-  color: #fff;
-  line-height: 1;
-  text-shadow: 0 0 12px rgba(0, 200, 151, 0.6);
-}
-
-.Imasha-stat-label {
-  font-size: 0.7rem;
-  font-weight: 500;
-  color: rgba(255, 255, 255, 0.65);
-  text-transform: uppercase;
-  letter-spacing: 0.6px;
-}
-
-/* Feature list - Filling area with bigger icons/text */
-.Imasha-auth-features-list {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 1.25rem 2rem;
-  /* Wider gaps */
-  margin-top: 2rem;
-  margin-bottom: 2rem;
-}
-
-.Imasha-auth-feature-card {
-  display: flex;
-  align-items: center;
-  gap: 0.6rem;
-  padding: 0.4rem 0;
-  /* Minimal padding */
-  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
-  transition: all 0.25s;
-}
-
-.Imasha-auth-feature-card:last-child {
-  border-bottom: none;
-}
-
-/* Custom Smooth Scrollbar */
-.Imasha-auth-right::-webkit-scrollbar {
-  width: 8px;
-}
-
-.Imasha-auth-right::-webkit-scrollbar-track {
-  background: transparent;
-}
-
-.Imasha-auth-right::-webkit-scrollbar-thumb {
-  background: rgba(0, 200, 151, 0.15);
-  border-radius: 10px;
-  border: 2px solid transparent;
-  background-clip: content-box;
-}
-
-.Imasha-auth-right::-webkit-scrollbar-thumb:hover {
-  background: rgba(0, 200, 151, 0.3);
-  background-clip: content-box;
-}
-
-.Imasha-auth-right {
-  overscroll-behavior: contain;
-}
-
-.Imasha-auth-feature-card {
-  transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275), opacity 0.4s;
-  will-change: transform, opacity;
-}
-
-.Imasha-auth-feature-card:hover {
-  transform: translateX(10px);
-}
-
-.Imasha-feature-card-icon {
-  width: 36px;
-  height: 36px;
-  background: rgba(255, 255, 255, 0.12);
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  border-radius: 10px;
+  max-width: 540px;
+  height: 480px;
+  margin: 1.5rem 0;
   display: flex;
   align-items: center;
   justify-content: center;
-  flex-shrink: 0;
-  transition: all 0.25s;
-  color: #fff;
+  z-index: 10;
+  perspective: 1000px;
 }
 
-.Imasha-feature-card-icon svg {
-  width: 18px;
-  height: 18px;
+.Imasha-visual-unit {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transform-origin: top center;
 }
 
-.Imasha-feature-card-text strong {
-  display: block;
-  font-family: 'Space Grotesk', sans-serif;
-  font-size: 0.9rem;
-  /* Much bigger presence */
+/* Pendulum Swing for Register Page */
+.Imasha-visual-swing .Imasha-visual-unit {
+  animation: Imasha-pendulum-swing 10s ease-in-out infinite alternate;
+}
+
+@keyframes Imasha-pendulum-swing {
+  0% { transform: translateY(-5px); }
+  100% { transform: translateY(5px); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .Imasha-visual-swing .Imasha-visual-unit {
+    animation: none;
+  }
+}
+
+.Imasha-visual-aura {
+  position: absolute;
+  width: 380px;
+  height: 380px;
+  background: radial-gradient(circle, rgba(57, 255, 20, 0.12) 0%, transparent 70%);
+  filter: blur(50px);
+  z-index: -1;
+  animation: Imasha-aura-pulse 8s ease-in-out infinite alternate;
+}
+
+@keyframes Imasha-aura-pulse {
+  0% { transform: scale(1); opacity: 0.6; }
+  100% { transform: scale(1.15); opacity: 0.9; }
+}
+
+.Imasha-visual-img-wrap {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  filter: drop-shadow(0 20px 40px rgba(0, 0, 0, 0.3));
+}
+
+.Imasha-visual-img {
+  max-width: 110%;
+  height: auto;
+  object-fit: contain;
+  /* Premium blend to fade the white background of the generated image */
+  mix-blend-mode: multiply;
+  mask-image: linear-gradient(to bottom, black 85%, transparent 100%);
+  -webkit-mask-image: linear-gradient(to bottom, black 85%, transparent 100%);
+}
+
+.light-theme .Imasha-visual-img {
+  mix-blend-mode: normal; /* In light theme, white background is fine or use darken */
+  opacity: 0.95;
+}
+
+/* ── Floating Health-Tech Markers ── */
+.Imasha-visual-marker {
+  position: absolute;
+  background: rgba(255, 255, 255, 0.08);
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 12px;
+  padding: 0.7rem 1rem;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+  animation: Imasha-float-marker 6s ease-in-out infinite;
+  z-index: 20;
+}
+
+.marker-icon {
+  width: 28px;
+  height: 28px;
+  background: rgba(0, 168, 125, 0.2);
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--auth-accent);
+}
+
+.marker-content {
+  display: flex;
+  flex-direction: column;
+}
+
+.marker-label {
+  font-size: 0.65rem;
+  color: rgba(255, 255, 255, 0.6);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.marker-value {
+  font-size: 0.85rem;
   font-weight: 700;
   color: #fff;
-  margin-bottom: 1px;
 }
 
-.Imasha-feature-card-text span {
-  font-size: 0.72rem;
-  color: rgba(255, 255, 255, 0.8);
-  line-height: 1.35;
+.marker-pill {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: #fff;
+}
+
+/* Individual marker positions & delays */
+.marker-heart {
+  top: 15%;
+  right: -5%;
+  animation-delay: 0s;
+}
+
+.marker-hydration {
+  bottom: 25%;
+  left: -8%;
+  animation-delay: 1.5s;
+}
+
+.marker-wellness {
+  top: 45%;
+  left: -5%;
+  padding: 0.6rem 0.9rem;
+  animation-delay: 3s;
+}
+
+@keyframes Imasha-float-marker {
+  0%, 100% { transform: translateY(0) rotate(0deg); }
+  50% { transform: translateY(-12px) rotate(1deg); }
+}
+
+/* ── Minimal Pulse ring accent ── */
+.Imasha-visual-pulse-ring {
+  position: absolute;
+  top: 40%;
+  right: 20%;
+  width: 60px;
+  height: 60px;
+  border: 2px solid var(--auth-accent);
+  border-radius: 50%;
+  opacity: 0;
+  animation: Imasha-visual-pulse 3s ease-out infinite;
+}
+
+@keyframes Imasha-visual-pulse {
+  0% { transform: scale(0.5); opacity: 0.8; }
+  100% { transform: scale(2.5); opacity: 0; }
+}
+
+/* ── ECG line accent ── */
+.Imasha-visual-ecg-accent {
+  position: absolute;
+  bottom: 15%;
+  right: 5%;
+  width: 120px;
+  height: 40px;
+  background: linear-gradient(90deg, transparent, var(--auth-primary), transparent);
+  opacity: 0.2;
+  mask-image: url('data:image/svg+xml;utf8,<svg viewBox="0 0 100 40" xmlns="http://www.w3.org/2000/svg"><path d="M0 20 L20 20 L25 10 L30 30 L35 20 L50 20 L55 5 L60 35 L65 20 L100 20" stroke="black" fill="none" stroke-width="2"/></svg>');
+  -webkit-mask-image: url('data:image/svg+xml;utf8,<svg viewBox="0 0 100 40" xmlns="http://www.w3.org/2000/svg"><path d="M0 20 L20 20 L25 10 L30 30 L35 20 L50 20 L55 5 L60 35 L65 20 L100 20" stroke="black" fill="none" stroke-width="2"/></svg>');
+  animation: Imasha-ecg-slide 4s linear infinite;
+}
+
+@keyframes Imasha-ecg-slide {
+  from { transform: translateX(-20px); opacity: 0; }
+  20% { opacity: 0.3; }
+  80% { opacity: 0.3; }
+  to { transform: translateX(20px); opacity: 0; }
 }
 
 /* Trust badge */
@@ -808,10 +884,26 @@
   max-width: 500px;
   background: var(--auth-card-bg);
   border: 1px solid var(--auth-card-border);
-  border-radius: 24px;
-  padding: 2.2rem 2.8rem 2rem;
-  box-shadow: var(--auth-shadow);
-  animation: Imasha-scale-in 0.5s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+  border-radius: 28px;
+  padding: 3rem;
+  box-shadow: var(--auth-shadow-premium);
+  position: relative;
+  z-index: 10;
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+}
+/* Subtle inner glow for depth */
+.Imasha-form-card::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: 28px;
+  padding: 1px;
+  background: linear-gradient(135deg, rgba(255,255,255,0.1), transparent 50%, rgba(255,255,255,0.05));
+  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  pointer-events: none;
 }
 
 /* Mascot */
@@ -884,29 +976,35 @@
   width: 100%;
   background: var(--auth-input-bg);
   border: 1.5px solid var(--auth-input-border);
-  border-radius: 12px;
+  border-radius: 14px;
   color: var(--auth-text-main);
-  padding: 0.85rem 0.9rem 0.85rem 2.7rem;
+  padding: 1rem 1rem 1rem 3rem;
   font-size: 0.95rem;
   font-family: 'Inter', sans-serif;
   outline: none;
-  transition: border-color 0.25s, box-shadow 0.25s, background 0.25s;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .Imasha-input::placeholder {
   color: var(--auth-text-muted);
-  opacity: 0.7;
+  opacity: 0.5;
+}
+
+.Imasha-input:hover {
+  border-color: rgba(0, 168, 125, 0.4);
+  background: rgba(0, 168, 125, 0.02);
 }
 
 .Imasha-input:focus {
   border-color: var(--auth-primary);
-  background: rgba(0, 200, 151, 0.04);
-  box-shadow: 0 0 0 3px var(--auth-primary-glow);
+  background: rgba(0, 168, 125, 0.03);
+  box-shadow: 0 0 0 4px var(--auth-primary-glow);
+  transform: translateY(-1px);
 }
 
 .Imasha-input.has-error {
   border-color: var(--auth-error) !important;
-  box-shadow: 0 0 0 3px var(--auth-error-bg) !important;
+  box-shadow: 0 0 0 4px var(--auth-error-bg) !important;
 }
 
 .Imasha-input-wrap:focus-within .Imasha-input-icon {
@@ -956,20 +1054,24 @@
 /* ── Primary Button ─────────────────────────────────────────────── */
 .Imasha-btn-primary {
   width: 100%;
-  padding: 0.95rem;
-  background: linear-gradient(135deg, var(--auth-primary), #00e6ad);
+  padding: 1.1rem;
+  background: linear-gradient(135deg, var(--auth-primary), #10b981);
   color: #fff;
   border: none;
-  border-radius: 12px;
+  border-radius: 14px;
   font-size: 1rem;
   font-weight: 700;
   font-family: 'Inter', sans-serif;
   cursor: pointer;
-  transition: all 0.3s;
-  box-shadow: 0 6px 20px rgba(0, 200, 151, 0.35);
+  transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  box-shadow: 0 8px 25px rgba(0, 168, 125, 0.3);
   margin-bottom: 0.75rem;
   position: relative;
   overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
 }
 
 .Imasha-btn-primary:hover,
@@ -977,12 +1079,14 @@
 .Imasha-btn-primary:hover:not(:disabled) {
   transform: translateY(-2px);
   box-shadow: 0 10px 28px rgba(0, 200, 151, 0.5);
-  color: #fff !important; /* Force text to remain white despite global anchor hover overlaps */
+  color: #fff !important;
+  /* Force text to remain white despite global anchor hover overlaps */
 }
 
 .Imasha-btn-primary:hover *,
 .Imasha-btn-primary:active * {
-  color: #fff !important; /* Force icons and nested text to stay white */
+  color: #fff !important;
+  /* Force icons and nested text to stay white */
 }
 
 .Imasha-btn-primary:active:not(:disabled) {
@@ -1121,7 +1225,8 @@
 .Imasha-btn-secondary:active {
   background: var(--auth-divider);
   border-color: var(--auth-primary);
-  color: var(--auth-text-main) !important; /* Protect text color from global anchor hover rules */
+  color: var(--auth-text-main) !important;
+  /* Protect text color from global anchor hover rules */
 }
 
 .Imasha-btn-secondary:hover *,
@@ -1180,6 +1285,11 @@
   }
 }
 
+/* ── Mobile-only Top Logo (Hidden on Desktop) ────────────────────── */
+.Imasha-mobile-logo-wrap {
+  display: none;
+}
+
 /* ── Responsive ─────────────────────────────────────────────────── */
 @media (max-width: 1024px) {
   .Imasha-auth-left {
@@ -1198,17 +1308,23 @@
   }
 
   .Imasha-auth-left {
-    display: none;
+    display: flex;
+    flex: none;
+    width: 100%;
+    height: auto;
+    min-height: 400px;
+    padding: 3rem 1.5rem 1rem;
+    justify-content: flex-start;
+    align-items: center;
+    background: linear-gradient(160deg, #003d2e 0%, #001610 100%);
   }
 
   .Imasha-auth-right {
     flex: none;
     width: 100%;
-    padding: 6rem 1.5rem 3rem;
-    /* Extra top padding for mobile to fix cutoff */
-    min-height: 100vh;
+    padding: 3rem 1.5rem; 
+    min-height: auto;
     justify-content: flex-start;
-    /* Start from top on mobile */
     position: relative;
     overflow: visible;
     display: flex;
@@ -1216,8 +1332,53 @@
     align-items: center;
   }
 
+  .Imasha-mobile-logo-wrap {
+    display: none !important; /* Hide redundant logo as Left Panel now shows up */
+  }
+
+  .Imasha-auth-left-content {
+    align-items: center;
+    text-align: center;
+  }
+
+  .Imasha-auth-left-title {
+    font-size: 1.75rem !important;
+    margin-bottom: 0.5rem;
+  }
+
+  .Imasha-auth-left-subtitle {
+    font-size: 0.85rem !important;
+    margin-bottom: 1.5rem;
+    max-width: 320px;
+  }
+
+  .Imasha-visual-box {
+    max-width: 300px;
+    height: 280px;
+    margin: 1rem 0;
+  }
+
+  .Imasha-visual-img {
+    max-width: 100%;
+    object-position: center 20%;
+  }
+
+  /* Simplify markers on mobile */
+  .marker-hydration, 
+  .marker-wellness, 
+  .Imasha-visual-ecg-accent,
+  .Imasha-auth-trust-badge {
+    display: none !important;
+  }
+
+  .marker-heart {
+    top: 5%;
+    right: 0%;
+    transform: scale(0.8);
+  }
+
   .Imasha-auth-toggle {
-    margin-top: 1rem;
+    margin-top: 0;
   }
 
   .Imasha-form-card {

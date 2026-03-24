@@ -9,7 +9,7 @@
 
 .Imasha-register-progress-bar {
     width: 100%;
-    height: 4px;
+    height: 6px;
     background: var(--auth-divider);
     border-radius: 99px;
     overflow: hidden;
@@ -18,10 +18,10 @@
 
 .Imasha-register-progress-fill {
     height: 100%;
-    background: linear-gradient(90deg, var(--auth-primary), #39ff14);
+    background: linear-gradient(90deg, var(--auth-primary), #10b981);
     border-radius: 99px;
-    transition: width 0.45s cubic-bezier(0.4, 0, 0.2, 1);
-    box-shadow: 0 0 12px var(--auth-primary-glow);
+    transition: width 0.6s cubic-bezier(0.65, 0, 0.35, 1);
+    box-shadow: 0 0 15px var(--auth-primary-glow);
 }
 
 .Imasha-register-steps {
@@ -109,28 +109,29 @@
     align-items: center;
     justify-content: center;
     gap: 0.5rem;
-    padding: 0.75rem 1rem;
+    padding: 1rem;
     background: var(--auth-input-bg);
     border: 1.5px solid var(--auth-input-border);
-    border-radius: 12px;
+    border-radius: 14px;
     color: var(--auth-text-muted);
     cursor: pointer;
-    transition: all 0.25s ease;
-    font-size: 0.88rem;
-    font-weight: 500;
+    transition: all 0.3s ease;
+    font-size: 0.9rem;
+    font-weight: 600;
     font-family: inherit;
 }
 
 .Imasha-gender-pill:hover {
-    background: var(--auth-divider);
+    background: rgba(0, 168, 125, 0.05);
     border-color: var(--auth-primary);
+    transform: translateY(-2px);
 }
 
 .Imasha-gender-pill.active {
-    background: rgba(0, 200, 151, 0.12);
+    background: rgba(0, 168, 125, 0.12);
     border-color: var(--auth-primary);
     color: var(--auth-primary);
-    box-shadow: 0 0 12px var(--auth-primary-glow);
+    box-shadow: 0 4px 12px var(--auth-primary-glow);
 }
 
 /* Health Chips */
@@ -142,14 +143,15 @@
 }
 
 .Imasha-health-chip {
-    padding: 0.6rem 0.8rem;
+    padding: 0.75rem 1rem;
     background: var(--auth-input-bg);
     border: 1.5px solid var(--auth-input-border);
-    border-radius: 10px;
+    border-radius: 12px;
     color: var(--auth-text-muted);
     cursor: pointer;
-    transition: all 0.2s;
-    font-size: 0.8rem;
+    transition: all 0.25s;
+    font-size: 0.85rem;
+    font-weight: 500;
     text-align: center;
     text-transform: capitalize;
     display: flex;
@@ -159,14 +161,16 @@
 }
 
 .Imasha-health-chip:hover {
-    background: var(--auth-divider);
+    background: rgba(0, 168, 125, 0.04);
     border-color: var(--auth-primary);
+    transform: scale(1.02);
 }
 
 .Imasha-health-chip.active {
-    background: rgba(0, 200, 151, 0.1);
+    background: rgba(0, 168, 125, 0.1);
     border-color: var(--auth-primary);
     color: var(--auth-primary);
+    box-shadow: 0 2px 8px var(--auth-primary-glow);
 }
 
 /* Transitions */
