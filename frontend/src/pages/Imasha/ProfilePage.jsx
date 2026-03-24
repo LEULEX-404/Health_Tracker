@@ -19,6 +19,7 @@ import BackgroundEffect from '../../components/Tharuka/Common/BackgroundEffect';
 import toast from 'react-hot-toast';
 import PatientAlertsTab from '../Tharindu/PatientAlertsTab';
 import ModernDatePicker from '../../components/Imasha/ModernDatePicker';
+import PatientAppointmentsTab from '../Tharindu/PatientAppointmentsTab';
 import './ProfilePage.css';
 
 /* ── Static data ────────────────────────────────────────── */
@@ -131,7 +132,7 @@ const StatCard = memo(({ icon: Icon, iconClass, value, label, trend, trendClass,
 StatCard.displayName = 'StatCard';
 
 /* ── Custom hook: fetch real Stats ─────────────────────── */
-function useProfileStats(user, token) {
+function useProfileStats(user, token, refreshTrigger) {
     const [stats, setStats] = useState({
         appointments: null,   // total appointment count for this user
         healthRecords: null,  // total health entries
@@ -157,21 +158,29 @@ function useProfileStats(user, token) {
             fetch(`${import.meta.env.VITE_API_URL}/health-data/${userId}`, { headers })
                 .then(r => r.ok ? r.json() : { data: [] })
                 .catch(() => ({ data: [] })),
+
+            // 3. Caregiver bookings for this user
+            fetch('http://localhost:5000/api/tharindu/bookings/my-bookings', { headers })
+                .then(r => r.ok ? r.json() : { data: [] })
+                .catch(() => ({ data: [] }))
         ])
-        .then(([appts, healthRes]) => {
+        .then(([appts, healthRes, caregiverRes]) => {
             if (cancelled) return;
 
             // Filter appointments to this user by email
-            const userId = user?.id || user?._id;
+            const userId   = user?.id || user?._id;
             const fullName = [user?.firstName, user?.lastName].filter(Boolean).join(' ').trim().toLowerCase();
-            const myAppts = Array.isArray(appts)
+            const myAppts  = Array.isArray(appts)
                 ? appts.filter((a) => {
                     const byUserId = userId && (a.patientUserId === userId || a.patientUserId?._id === userId);
-                    const byEmail = a.patientEmail && a.patientEmail.toLowerCase() === (userEmail || '').toLowerCase();
-                    const byName = a.patientName && a.patientName.toLowerCase() === fullName;
+                    const byEmail  = a.patientEmail && a.patientEmail.toLowerCase() === (userEmail || '').toLowerCase();
+                    const byName   = a.patientName && a.patientName.toLowerCase() === fullName;
                     return byUserId || byEmail || byName;
                   })
                 : [];
+
+            const caregiverApptsCount = Array.isArray(caregiverRes?.data) ? caregiverRes.data.length : 0;
+            const totalApptsCount     = myAppts.length + caregiverApptsCount;
 
             // Health records
             const records = Array.isArray(healthRes?.data) ? healthRes.data : [];
@@ -186,7 +195,7 @@ function useProfileStats(user, token) {
                 : null;
 
             setStats({
-                appointments:  myAppts.length,
+                appointments:  totalApptsCount,
                 healthRecords: records.length,
                 avgOxygen,
                 loading: false,
@@ -197,7 +206,7 @@ function useProfileStats(user, token) {
         });
 
         return () => { cancelled = true; };
-    }, [user, token]);
+    }, [user, token, refreshTrigger]);
 
     return stats;
 }
@@ -207,19 +216,24 @@ export default function ProfilePage() {
     const { user, token, logout, updateUser } = useAuth();
     const navigate = useNavigate();
     const { isDark } = useTheme();
-    const [activeTab, setActiveTab]     = useState('settings');
-    const [isUpdating, setIsUpdating]   = useState(false);
-    const [imageLoading, setImageLoading] = useState(false);
+    const [activeTab, setActiveTab]           = useState('settings');
+    const [isUpdating, setIsUpdating]         = useState(false);
+    const [imageLoading, setImageLoading]     = useState(false);
+    const [refreshTrigger, setRefreshTrigger] = useState(0);
+
+    const triggerStatsRefresh = useCallback(() => {
+        setRefreshTrigger(prev => prev + 1);
+    }, []);
 
     // Real stats from APIs
-    const profileStats = useProfileStats(user, token);
+    const profileStats = useProfileStats(user, token, refreshTrigger);
 
     const [formData, setFormData] = useState({
         firstName: '', lastName: '', phone: '',
         address: '', dateOfBirth: '', gender: '',
     });
-    const [recentAppointments, setRecentAppointments] = useState([]);
-    const [appointmentsLoading, setAppointmentsLoading] = useState(false);
+    const [recentAppointments, setRecentAppointments]     = useState([]);
+    const [appointmentsLoading, setAppointmentsLoading]   = useState(false);
 
     const fileInputRef = useRef(null);
 
@@ -233,14 +247,14 @@ export default function ProfilePage() {
             const data = await res.json();
             if (!res.ok) throw new Error(data?.message || 'Failed to fetch appointments');
 
-            const list = Array.isArray(data) ? data : [];
-            const userId = user?.id || user?._id;
+            const list     = Array.isArray(data) ? data : [];
+            const userId   = user?.id || user?._id;
             const fullName = [user?.firstName, user?.lastName].filter(Boolean).join(' ').trim().toLowerCase();
             const mine = list
                 .filter((a) => {
                     const byUserId = userId && (a.patientUserId === userId || a.patientUserId?._id === userId);
-                    const byEmail = (a.patientEmail || '').toLowerCase() === user.email.toLowerCase();
-                    const byName = (a.patientName || '').toLowerCase() === fullName;
+                    const byEmail  = (a.patientEmail || '').toLowerCase() === user.email.toLowerCase();
+                    const byName   = (a.patientName  || '').toLowerCase() === fullName;
                     return byUserId || byEmail || byName;
                 })
                 .sort((a, b) => new Date(b.createdAt || 0) - new Date(a.createdAt || 0));
@@ -266,7 +280,7 @@ export default function ProfilePage() {
             gender:      user.gender      || '',
         });
     }, [user]);
- 
+
     useEffect(() => {
         if (activeTab === 'appointments') {
             loadRecentAppointments();
@@ -301,7 +315,7 @@ export default function ProfilePage() {
         setIsUpdating(true);
         try {
             const userId = user?.id || user?._id;
-            const res  = await fetch(`${import.meta.env.VITE_API_URL}/users/${userId}`, {
+            const res    = await fetch(`${import.meta.env.VITE_API_URL}/users/${userId}`, {
                 method: 'PUT',
                 headers: {
                     'Content-Type': 'application/json',
@@ -340,7 +354,7 @@ export default function ProfilePage() {
             if (res.ok) {
                 const d = await res.json();
                 toast.success('Photo updated!');
-                if (updateUser && d.user) updateUser(d.user);
+                if (updateUser && d.user)         updateUser(d.user);
                 else if (updateUser && d.profileImage) updateUser({ profileImage: d.profileImage });
             } else {
                 const d = await res.json();
@@ -353,7 +367,6 @@ export default function ProfilePage() {
     const handleDeleteAppointment = async (appointmentId) => {
         const ok = window.confirm('Do you want to delete this appointment?');
         if (!ok) return;
-
         try {
             const res = await fetch(`${import.meta.env.VITE_API_URL}/appointments/${appointmentId}`, {
                 method: 'DELETE',
@@ -373,6 +386,8 @@ export default function ProfilePage() {
 
     /* ── Tab content ─────────────────────────────────────── */
     const renderTabContent = () => {
+
+        /* ── Settings ── */
         if (activeTab === 'settings') {
             return (
                 <motion.div
@@ -444,8 +459,8 @@ export default function ProfilePage() {
                                     disabled={isUpdating}
                                 >
                                     {isUpdating
-                                        ? <><Loader2 className="spin" size={16}/><span>Saving…</span></>
-                                        : <><Save size={16}/><span>Save Changes</span></>
+                                        ? <><Loader2 className="spin" size={16} /><span>Saving…</span></>
+                                        : <><Save size={16} /><span>Save Changes</span></>
                                     }
                                 </motion.button>
                             </div>
@@ -455,6 +470,7 @@ export default function ProfilePage() {
             );
         }
 
+        /* ── Appointments ── */
         if (activeTab === 'appointments') {
             return (
                 <motion.div
@@ -465,52 +481,85 @@ export default function ProfilePage() {
                     exit={{ opacity: 0, y: -10 }}
                     className="ims-profile__settings"
                 >
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
-                        <h3 className="ims-profile__form-section-title">
-                            <ClipboardList size={12} />Appointments
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
+                        <h3 className="ims-profile__form-section-title" style={{ margin: 0 }}>
+                            <ClipboardList size={12} />Appointments &amp; Bookings
                         </h3>
-                        <Link to="/Appointment" className="ims-profile__save-btn" style={{ textDecoration: 'none', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', width: 'auto', padding: '0 14px', height: 36 }}>
-                            Manage Appointments
+                        <Link
+                            to="/Appointment"
+                            className="ims-profile__save-btn"
+                            style={{
+                                textDecoration: 'none',
+                                display: 'inline-flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                width: 'auto',
+                                padding: '0 14px',
+                                height: 36,
+                                fontSize: '13px',
+                            }}
+                        >
+                            View All History
                         </Link>
                     </div>
 
-                    {appointmentsLoading ? (
-                        <div className="ims-profile__placeholder-content">
-                            <p>Loading appointments...</p>
+                    <div className="ims-profile__appointments-layout" style={{ display: 'flex', flexDirection: 'column', gap: '30px' }}>
+
+                        {/* Caregiver Bookings Section */}
+                        <div className="ims-profile__section">
+                            <h4 style={{ fontSize: '14px', marginBottom: '15px', color: 'var(--p-cyan)', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                <Sparkles size={14} /> Caregiver Services
+                            </h4>
+                            <PatientAppointmentsTab onBookingSuccess={triggerStatsRefresh} />
                         </div>
-                    ) : recentAppointments.length === 0 ? (
-                        <div className="ims-profile__placeholder-content">
-                            <p>No appointments found yet.</p>
-                        </div>
-                    ) : (
-                        <div className="ims-profile__form-grid">
-                            {recentAppointments.slice(0, 6).map((apt) => (
-                                <div key={apt._id} className="ims-profile__appointment-card full">
-                                    <div className="ims-profile__appointment-left">
-                                        <img
-                                            src={apt.avatar || '/images/Priya/doctor-01.png'}
-                                            alt={apt.doctor || 'Doctor'}
-                                            className="ims-profile__appointment-avatar"
-                                        />
-                                        <div>
-                                            <label>{apt.doctor || 'Doctor'}</label>
-                                            <div style={{ color: 'var(--text-secondary)', fontSize: 13 }}>Date: {apt.date || '-'}</div>
-                                            <div style={{ color: 'var(--text-secondary)', fontSize: 13 }}>Time: {apt.time || '-'}</div>
-                                            <div style={{ color: 'var(--text-secondary)', fontSize: 13 }}>Status: {apt.status || 'Pending'}</div>
-                                        </div>
-                                    </div>
-                                    <div className="ims-profile__appointment-actions">
-                                        <button type="button" onClick={() => navigate('/Appointment')}>Edit</button>
-                                        <button type="button" onClick={() => handleDeleteAppointment(apt._id)}>Cancel</button>
-                                    </div>
+
+                        <div className="ims-profile__divider" style={{ margin: '10px 0' }} />
+
+                        {/* Recent Doctor Appointments */}
+                        <div className="ims-profile__section">
+                            <h4 style={{ fontSize: '14px', marginBottom: '15px', opacity: 0.8 }}>Recent Doctor Appointments</h4>
+                            {appointmentsLoading ? (
+                                <div className="ims-profile__placeholder-content">
+                                    <p>Loading appointments...</p>
                                 </div>
-                            ))}
+                            ) : recentAppointments.length === 0 ? (
+                                <div className="ims-profile__placeholder-content">
+                                    <p>No recent doctor appointments found.</p>
+                                </div>
+                            ) : (
+                                <div className="ims-profile__form-grid">
+                                    {recentAppointments.slice(0, 4).map((apt) => (
+                                        <div key={apt._id} className="ims-profile__appointment-card full">
+                                            <div className="ims-profile__appointment-left">
+                                                <img
+                                                    src={apt.avatar || '/images/Priya/doctor-01.png'}
+                                                    alt={apt.doctor || 'Doctor'}
+                                                    className="ims-profile__appointment-avatar"
+                                                />
+                                                <div>
+                                                    <label>{apt.doctor || 'Doctor'}</label>
+                                                    <div style={{ color: 'var(--text-secondary)', fontSize: 13 }}>{apt.date || '-'} at {apt.time || '-'}</div>
+                                                    <div className={`ims-profile__status-tag ${apt.status?.toLowerCase() || 'pending'}`}>
+                                                        {apt.status || 'Scheduled'}
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div className="ims-profile__appointment-actions">
+                                                <button type="button" onClick={() => navigate('/Appointment')}>Manage</button>
+                                                <button type="button" className="cancel-btn" onClick={() => handleDeleteAppointment(apt._id)}>Cancel</button>
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+                            )}
                         </div>
-                    )}
+
+                    </div>
                 </motion.div>
             );
         }
 
+        /* ── Alerts ── */
         if (activeTab === 'alerts') {
             return (
                 <motion.div
@@ -526,6 +575,7 @@ export default function ProfilePage() {
             );
         }
 
+        /* ── Placeholder (Health, etc.) ── */
         return (
             <motion.div
                 key={activeTab}
@@ -554,6 +604,7 @@ export default function ProfilePage() {
         );
     };
 
+    /* ── Render ──────────────────────────────────────────── */
     return (
         <AnimatePresence>
             <BackgroundEffect />
@@ -593,8 +644,8 @@ export default function ProfilePage() {
                                             : <div className="ims-profile__avatar-placeholder"><User size={32} /></div>
                                         }
                                         {imageLoading
-                                            ? <div className="ims-profile__avatar-loader"><Loader2 className="spin" size={22}/></div>
-                                            : <div className="ims-profile__avatar-overlay"><Camera size={18}/><span>Change</span></div>
+                                            ? <div className="ims-profile__avatar-loader"><Loader2 className="spin" size={22} /></div>
+                                            : <div className="ims-profile__avatar-overlay"><Camera size={18} /><span>Change</span></div>
                                         }
                                     </div>
                                 </div>
@@ -676,7 +727,10 @@ export default function ProfilePage() {
                                 />
                                 <div className="ims-profile__hero-overlay">
                                     <div className="ims-profile__hero-text">
-                                        <h2>Welcome back, {user?.firstName || 'User'} <Sparkles size={22} color="var(--p-green)" style={{ display: 'inline', marginLeft: '4px', verticalAlign: '-3px' }} /></h2>
+                                        <h2>
+                                            Welcome back, {user?.firstName || 'User'}{' '}
+                                            <Sparkles size={22} color="var(--p-green)" style={{ display: 'inline', marginLeft: '4px', verticalAlign: '-3px' }} />
+                                        </h2>
                                         <p>Manage your health journey from one place</p>
                                         <div className="ims-profile__hero-badge">
                                             <span className="pulse-dot" />
@@ -771,7 +825,14 @@ export default function ProfilePage() {
                                         <ActiveIcon size={19} />
                                     </div>
                                     <div className="ims-profile__header-text">
-                                        <h1>{TABS.find(t => t.id === activeTab)?.label}</h1>
+                                        <h1 style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                                            {TABS.find(t => t.id === activeTab)?.label}
+                                            {activeTab === 'appointments' && !profileStats.loading && (
+                                                <span className="ims-profile__header-count">
+                                                    {profileStats.appointments}
+                                                </span>
+                                            )}
+                                        </h1>
                                         <p>Manage your PulseNova profile &amp; preferences</p>
                                     </div>
                                 </div>
