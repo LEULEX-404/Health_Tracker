@@ -20,6 +20,7 @@ import toast from 'react-hot-toast';
 import PatientAlertsTab from '../Tharindu/PatientAlertsTab';
 import ModernDatePicker from '../../components/Imasha/ModernDatePicker';
 import PatientAppointmentsTab from '../Tharindu/PatientAppointmentsTab';
+import PatientHealthTab from '../Tharuka/PatientHealthTab';
 import './ProfilePage.css';
 
 /* ── Static data ────────────────────────────────────────── */
@@ -575,7 +576,23 @@ export default function ProfilePage() {
             );
         }
 
-        /* ── Placeholder (Health, etc.) ── */
+        /* ── Health Data ── */
+        if (activeTab === 'health') {
+            return (
+                <motion.div
+                    key="health"
+                    initial={{ opacity: 0, scale: 0.97 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    exit={{ opacity: 0 }}
+                    transition={{ duration: 0.22 }}
+                    className="ims-profile__settings"
+                >
+                    <PatientHealthTab />
+                </motion.div>
+            );
+        }
+
+        /* ── Placeholder (Any other remaining) ── */
         return (
             <motion.div
                 key={activeTab}

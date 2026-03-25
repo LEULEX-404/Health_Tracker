@@ -80,7 +80,7 @@ app.use(helmet({
 // CORS CONFIGURATION
 // ==========================================
 app.use(cors({
-    origin: [CLIENT_URL, ADMIN_DASHBOARD_URL],
+    origin: [CLIENT_URL, ADMIN_DASHBOARD_URL, "http://localhost:5173"],
     credentials: true, // Allow cookies to be sent
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH'],
     allowedHeaders: ['Content-Type', 'Authorization'],
