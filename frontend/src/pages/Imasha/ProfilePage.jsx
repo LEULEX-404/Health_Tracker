@@ -623,16 +623,19 @@ export default function ProfilePage() {
 
     /* ── Render ──────────────────────────────────────────── */
     return (
-        <AnimatePresence>
+        <>
             <BackgroundEffect />
             <Header />
 
-            <motion.main
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                transition={{ duration: 0.35 }}
-                className="ims-profile-page"
-            >
+            <AnimatePresence mode="wait">
+                <motion.main
+                    key="profile-main"
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
+                    transition={{ duration: 0.35 }}
+                    className="ims-profile-page"
+                >
                 {/* Floating ambient orbs — GPU composited, 0 layout cost */}
                 <div className="ims-profile__orb ims-profile__orb--1" aria-hidden="true" />
                 <div className="ims-profile__orb ims-profile__orb--2" aria-hidden="true" />
@@ -876,9 +879,10 @@ export default function ProfilePage() {
                         </section>
                     </div>
                 </div>
-            </motion.main>
+                </motion.main>
+            </AnimatePresence>
 
             <Footer />
-        </AnimatePresence>
+        </>
     );
 }
