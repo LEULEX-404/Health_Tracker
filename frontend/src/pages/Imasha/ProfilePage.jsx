@@ -160,7 +160,7 @@ function useProfileStats(user, token, refreshTrigger) {
                 .catch(() => ({ data: [] })),
 
             // 3. Caregiver bookings for this user
-            fetch('http://localhost:5000/api/tharindu/bookings/my-bookings', { headers })
+            fetch(`${import.meta.env.VITE_API_URL}/tharindu/bookings/my-bookings`, { headers })
                 .then(r => r.ok ? r.json() : { data: [] })
                 .catch(() => ({ data: [] }))
         ])

@@ -28,7 +28,7 @@ export default function PatientAppointmentsTab({ onBookingSuccess }) {
     setLoading(true);
     try {
       // Fetch My Bookings
-      const bookRes = await fetch('http://localhost:5000/api/tharindu/bookings/my-bookings', {
+      const bookRes = await fetch(`${import.meta.env.VITE_API_URL}/tharindu/bookings/my-bookings`, {
         headers: {
           'Content-Type': 'application/json',
           Authorization: `Bearer ${token}`
@@ -39,7 +39,7 @@ export default function PatientAppointmentsTab({ onBookingSuccess }) {
       setMyBookings(bookData.data || []);
 
       // Fetch Available Caregivers via new dedicated route
-      const cgRes = await fetch('http://localhost:5000/api/tharindu/bookings/caregivers', {
+      const cgRes = await fetch(`${import.meta.env.VITE_API_URL}/tharindu/bookings/caregivers`, {
         headers: {
           'Content-Type': 'application/json',
           Authorization: `Bearer ${token}`
@@ -93,7 +93,7 @@ export default function PatientAppointmentsTab({ onBookingSuccess }) {
         notes: bookingNotes
       };
 
-      const res = await fetch('http://localhost:5000/api/tharindu/bookings/request', {
+      const res = await fetch(`${import.meta.env.VITE_API_URL}/tharindu/bookings/request`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -125,7 +125,7 @@ export default function PatientAppointmentsTab({ onBookingSuccess }) {
   const handleDownloadReport = async () => {
     setDownloadingReport(true);
     try {
-      const res = await fetch('http://localhost:5000/api/tharindu/bookings/my-bookings/report', {
+      const res = await fetch(`${import.meta.env.VITE_API_URL}/tharindu/bookings/my-bookings/report`, {
         headers: {
           Authorization: `Bearer ${token}`
         }
