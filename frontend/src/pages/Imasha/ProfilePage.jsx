@@ -157,6 +157,11 @@ function useProfileStats(user, token) {
             fetch(`${import.meta.env.VITE_API_URL}/health-data/${userId}`, { headers })
                 .then(r => r.ok ? r.json() : { data: [] })
                 .catch(() => ({ data: [] })),
+
+            // 3. Caregiver bookings for this user
+            fetch(`${import.meta.env.VITE_API_URL}/tharindu/bookings/my-bookings`, { headers })
+                .then(r => r.ok ? r.json() : { data: [] })
+                .catch(() => ({ data: [] }))
         ])
         .then(([appts, healthRes]) => {
             if (cancelled) return;
