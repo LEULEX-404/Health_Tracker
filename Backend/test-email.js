@@ -12,7 +12,8 @@ async function testEmail() {
             pass: process.env.EMAIL_PASSWORD,
         },
         tls: {
-            rejectUnauthorized: false
+            rejectUnauthorized: false,
+            family: 4
         }
     });
 

@@ -117,12 +117,26 @@
   color: var(--text-muted);
 }
 
-@media (max-width: 480px) {
+/* Mobile search dropdown — fixed full-width, works on all narrow screens */
+@media (max-width: 768px) {
   .pn-search__dropdown {
     position: fixed;
-    top: 72px;
-    left: 12px;
-    right: 12px;
-    width: auto;
+    top: var(--header-height, 72px);
+    left: 0;
+    right: 0;
+    width: 100%;
+    border-radius: 0;
+    border-top: 1px solid var(--border-color);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+    max-height: calc(100dvh - var(--header-height, 72px) - 16px);
+    overflow-y: auto;
+  }
+}
+
+/* Small screen: add side margin so it doesn't bleed to edges */
+@media (max-width: 480px) {
+  .pn-search__trigger {
+    width: 36px;
+    height: 36px;
   }
 }

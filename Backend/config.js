@@ -25,7 +25,7 @@ export const REFRESH_TOKEN_EXPIRES_IN = process.env.REFRESH_TOKEN_EXPIRES_IN || 
 // ==========================================
 export const GOOGLE_CLIENT_ID = process.env.GOOGLE_CLIENT_ID || '';
 export const GOOGLE_CLIENT_SECRET = process.env.GOOGLE_CLIENT_SECRET || '';
-export const GOOGLE_CALLBACK_URL = process.env.GOOGLE_CALLBACK_URL || 'http://localhost:5000/api/auth/google/callback';
+export const GOOGLE_CALLBACK_URL = process.env.GOOGLE_CALLBACK_URL || 'https://health-tracker-y6v2.onrender.com/api/auth/google/callback';
 
 // ==========================================
 // EMAIL CONFIGURATION (NODEMAILER)
@@ -46,9 +46,9 @@ export const VONAGE_BRAND_NAME = process.env.VONAGE_BRAND_NAME || 'HealthSys';
 // ==========================================
 // FRONTEND URLS
 // ==========================================
-export const CLIENT_URL = process.env.CLIENT_URL || 'http://localhost:3000';
-export const ADMIN_DASHBOARD_URL = process.env.ADMIN_DASHBOARD_URL || 'http://localhost:3000/admin/dashboard';
-export const PATIENT_HOME_URL = process.env.PATIENT_HOME_URL || 'http://localhost:3000/home';
+export const CLIENT_URL = process.env.CLIENT_URL || 'https://health-tracker-y6v2.onrender.com';
+export const ADMIN_DASHBOARD_URL = process.env.ADMIN_DASHBOARD_URL || 'https://health-tracker-y6v2.onrender.com/admin/dashboard';
+export const PATIENT_HOME_URL = process.env.PATIENT_HOME_URL || 'https://health-tracker-y6v2.onrender.com/home';
 
 // ==========================================
 // SECURITY CONFIGURATION

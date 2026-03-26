@@ -4,6 +4,13 @@
   grid-template-columns: repeat(3, 1fr);
   gap: 1.5rem;
 }
+/* Lightswind UI Bento Grid Pattern */
+.pn-feat-card:nth-child(1) { grid-column: span 2; }
+.pn-feat-card:nth-child(2) { grid-column: span 1; }
+.pn-feat-card:nth-child(3) { grid-column: span 1; }
+.pn-feat-card:nth-child(4) { grid-column: span 2; }
+.pn-feat-card:nth-child(5) { grid-column: span 2; }
+.pn-feat-card:nth-child(6) { grid-column: span 1; }
 .pn-feat-card {
   perspective: 1200px;
   background: transparent;

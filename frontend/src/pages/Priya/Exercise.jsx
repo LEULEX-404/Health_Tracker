@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import toast from 'react-hot-toast';
-import { Dumbbell, Timer, Flame, Heart, CalendarDays, Bike, Activity, BadgeCheck } from 'lucide-react';
+import { Dumbbell, Timer, Flame, CalendarDays, Bike, Activity, BadgeCheck, Pencil, Trash2, X } from 'lucide-react';
 import Header from '../../components/Tharuka/Header/Header';
 import Footer from '../../components/Tharuka/Footer/Footer';
 import ScrollToTop from '../../components/Tharuka/Common/ScrollToTop';
@@ -9,6 +9,8 @@ import {
   getExerciseLogs,
   getExerciseStats,
   createExerciseLog,
+  updateExerciseLog,
+  deleteExerciseLog,
   getExerciseDateBounds,
   isDateInAllowedRange
 } from '../../utils/Priya/exerciseApi';
@@ -21,11 +23,27 @@ const ACTIVITY_ICONS = {
   Walking: Activity,
   'Strength Training': Dumbbell
 };
+
 const TONES = ['blue', 'purple', 'orange'];
+
+const INITIAL_CREATE_FORM = {
+  type: '',
+  duration: '',
+  calories: '',
+  date: ''
+};
+
+const INITIAL_EDIT_FORM = {
+  id: '',
+  type: '',
+  duration: '',
+  calories: '',
+  date: ''
+};
 
 function formatHistoryTime(dateStr) {
   if (!dateStr) return '';
-  const d = new Date(dateStr + 'T12:00:00');
+  const d = new Date(`${dateStr}T12:00:00`);
   const today = new Date();
   today.setHours(0, 0, 0, 0);
   const diffDays = Math.floor((today - d) / (24 * 60 * 60 * 1000));
@@ -38,8 +56,10 @@ function formatHistoryTime(dateStr) {
 function logToHistoryItem(log, index) {
   const Icon = ACTIVITY_ICONS[log.type] || Dumbbell;
   const tone = TONES[index % TONES.length];
+
   return {
     id: log.id,
+    raw: log,
     title: log.type,
     duration: `${log.duration} min`,
     calories: `${log.calories} kcal`,
@@ -55,11 +75,15 @@ export default function ExercisePage() {
   const [stats, setStats] = useState({ activeMinutes: 0, caloriesBurned: 0 });
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [editSaving, setEditSaving] = useState(false);
+  const [createForm, setCreateForm] = useState(INITIAL_CREATE_FORM);
+  const [editForm, setEditForm] = useState(INITIAL_EDIT_FORM);
   const [dateBounds, setDateBounds] = useState(() => getExerciseDateBounds());
-  const guestDateBounds = getExerciseDateBounds(2);
+  const guestDateBounds = getExerciseDateBounds();
 
   const fetchData = useCallback(async () => {
     if (!token) return;
+
     setLoading(true);
     try {
       const [logsData, statsData] = await Promise.all([
@@ -84,49 +108,65 @@ export default function ExercisePage() {
     setDateBounds(getExerciseDateBounds());
   }, []);
 
+  const closeEditForm = useCallback(() => {
+    setEditForm(INITIAL_EDIT_FORM);
+  }, []);
+
   const handleGuestSubmit = (e) => {
     e.preventDefault();
     toast.error('Please log in or sign up to save your exercise.');
   };
 
-  const handleSubmit = async (e) => {
+  const handleCreateFormChange = (e) => {
+    const { name, value } = e.target;
+    setCreateForm((prev) => ({ ...prev, [name]: value }));
+  };
+
+  const handleEditFormChange = (e) => {
+    const { name, value } = e.target;
+    setEditForm((prev) => ({ ...prev, [name]: value }));
+  };
+
+  const validateExerciseForm = (formValues) => {
+    const type = formValues.type.trim();
+    const duration = parseInt(formValues.duration, 10);
+    const calories = parseInt(formValues.calories, 10);
+    const date = formValues.date.trim();
+
+    if (!type) {
+      throw new Error('Please select an activity type.');
+    }
+    if (!Number.isFinite(duration) || duration < 1) {
+      throw new Error('Please enter a valid duration (at least 1 min).');
+    }
+    if (!Number.isFinite(calories) || calories < 0) {
+      throw new Error('Please enter valid calories burned.');
+    }
+    if (!date) {
+      throw new Error('Please select the date of activity.');
+    }
+    if (!isDateInAllowedRange(date)) {
+      throw new Error('Date must be from today up to the next 2 weeks. Previous days are not allowed.');
+    }
+
+    return { type, duration, calories, date };
+  };
+
+  const handleCreateSubmit = async (e) => {
     e.preventDefault();
+
     if (!user || !token) {
       toast.error('Please log in to save exercise.');
       return;
     }
-    const type = document.getElementById('activityType')?.value?.trim();
-    const duration = parseInt(document.getElementById('duration')?.value, 10);
-    const calories = parseInt(document.getElementById('calories')?.value, 10);
-    const date = document.getElementById('activityDate')?.value?.trim();
 
-    if (!type) {
-      toast.error('Please select an activity type.');
-      return;
-    }
-    if (!Number.isFinite(duration) || duration < 1) {
-      toast.error('Please enter a valid duration (at least 1 min).');
-      return;
-    }
-    if (!Number.isFinite(calories) || calories < 0) {
-      toast.error('Please enter valid calories burned.');
-      return;
-    }
-    if (!date) {
-      toast.error('Please select the date of activity.');
-      return;
-    }
-    if (!isDateInAllowedRange(date)) {
-      toast.error('Date must be within the current week or next week. Past dates are not allowed.');
-      return;
-    }
-
-    setSaving(true);
     try {
-      await createExerciseLog(token, { type, duration, calories, date });
+      const payload = validateExerciseForm(createForm);
+      setSaving(true);
+      await createExerciseLog(token, payload);
       toast.success('Activity saved.');
-      fetchData();
-      e.target.reset();
+      await fetchData();
+      setCreateForm(INITIAL_CREATE_FORM);
     } catch (err) {
       toast.error(err.message || 'Failed to save activity');
     } finally {
@@ -134,8 +174,64 @@ export default function ExercisePage() {
     }
   };
 
+  const handleEditSubmit = async (e) => {
+    e.preventDefault();
+
+    if (!token || !editForm.id) {
+      toast.error('Unable to update this activity.');
+      return;
+    }
+
+    try {
+      const payload = validateExerciseForm(editForm);
+      setEditSaving(true);
+      await updateExerciseLog(token, editForm.id, payload);
+      toast.success('Activity updated.');
+      await fetchData();
+      closeEditForm();
+    } catch (err) {
+      toast.error(err.message || 'Failed to update activity');
+    } finally {
+      setEditSaving(false);
+    }
+  };
+
+  const handleEdit = (log) => {
+    setEditForm({
+      id: log.id,
+      type: log.type || '',
+      duration: String(log.duration ?? ''),
+      calories: String(log.calories ?? ''),
+      date: log.date || ''
+    });
+  };
+
+  const handleDelete = async (log) => {
+    if (!token) {
+      toast.error('Please log in to delete exercise.');
+      return;
+    }
+
+    const confirmed = window.confirm(`Delete ${log.type || 'this activity'} from ${log.date || 'the selected date'}?`);
+    if (!confirmed) return;
+
+    try {
+      await deleteExerciseLog(token, log.id);
+      toast.success('Activity deleted.');
+
+      if (editForm.id === log.id) {
+        closeEditForm();
+      }
+
+      await fetchData();
+    } catch (err) {
+      toast.error(err.message || 'Failed to delete activity');
+    }
+  };
+
   const recentHistory = logs.slice(0, 5).map((log, i) => logToHistoryItem(log, i));
   const isLoggedIn = !!user;
+  const isEditOpen = Boolean(editForm.id);
 
   return (
     <>
@@ -185,14 +281,7 @@ export default function ExercisePage() {
                     </div>
                   </div>
 
-                  <label htmlFor="heartRate">Average Heart Rate (BPM)</label>
-                  <div className="pr-input-wrap">
-                    <Heart size={16} />
-                    <input id="heartRate" type="number" defaultValue="" min={0} placeholder="135" />
-                    <span>BPM</span>
-                  </div>
-
-                  <label htmlFor="activityDate">Date of Activity (current + next 2 weeks)</label>
+                  <label htmlFor="activityDate">Date of Activity (today to next 2 weeks)</label>
                   <div className="pr-input-wrap">
                     <input
                       id="activityDate"
@@ -209,9 +298,9 @@ export default function ExercisePage() {
                   </button>
                 </form>
               ) : (
-                <form onSubmit={handleSubmit}>
+                <form onSubmit={handleCreateSubmit}>
                   <label htmlFor="activityType">Exercise Type</label>
-                  <select id="activityType" required defaultValue="">
+                  <select id="activityType" name="type" required value={createForm.type} onChange={handleCreateFormChange}>
                     <option value="" disabled>
                       Select activity (e.g. Running, Cycling)
                     </option>
@@ -226,31 +315,27 @@ export default function ExercisePage() {
                     <div>
                       <label htmlFor="duration">Duration (min)</label>
                       <div className="pr-input-wrap">
-                        <input id="duration" type="number" defaultValue="45" min={1} required />
+                        <input id="duration" name="duration" type="number" value={createForm.duration} onChange={handleCreateFormChange} min={1} placeholder="45" required />
                         <span>MIN</span>
                       </div>
                     </div>
                     <div>
                       <label htmlFor="calories">Calories Burned (kcal)</label>
                       <div className="pr-input-wrap">
-                        <input id="calories" type="number" defaultValue="320" min={0} required />
+                        <input id="calories" name="calories" type="number" value={createForm.calories} onChange={handleCreateFormChange} min={0} placeholder="320" required />
                         <span>KCAL</span>
                       </div>
                     </div>
                   </div>
 
-                  <label htmlFor="heartRate">Average Heart Rate (BPM)</label>
-                  <div className="pr-input-wrap">
-                    <Heart size={16} />
-                    <input id="heartRate" type="number" defaultValue="135" min={0} />
-                    <span>BPM</span>
-                  </div>
-
-                  <label htmlFor="activityDate">Date of Activity (current or next week only)</label>
+                  <label htmlFor="activityDate">Date of Activity (today to next 2 weeks)</label>
                   <div className="pr-input-wrap">
                     <input
                       id="activityDate"
+                      name="date"
                       type="date"
+                      value={createForm.date}
+                      onChange={handleCreateFormChange}
                       min={dateBounds.min}
                       max={dateBounds.max}
                       required
@@ -260,7 +345,7 @@ export default function ExercisePage() {
 
                   <button type="submit" className="pr-primary-btn" disabled={saving}>
                     <BadgeCheck size={18} />
-                    {saving ? 'Saving…' : 'Save Activity'}
+                    {saving ? 'Saving...' : 'Save Activity'}
                   </button>
                 </form>
               )}
@@ -271,13 +356,13 @@ export default function ExercisePage() {
                 <article className="pr-card pr-stat pr-stat-blue">
                   <p>Total Active</p>
                   <h3>
-                    {loading && isLoggedIn ? '…' : (isLoggedIn ? (stats.activeMinutes ?? 0) : '—')} <span>min</span>
+                    {loading && isLoggedIn ? '...' : (isLoggedIn ? (stats.activeMinutes ?? 0) : '-')} <span>min</span>
                   </h3>
                 </article>
                 <article className="pr-card pr-stat pr-stat-green">
                   <p>Calories</p>
                   <h3>
-                    {loading && isLoggedIn ? '…' : (isLoggedIn ? (stats.caloriesBurned ?? 0) : '—')} <span>kcal</span>
+                    {loading && isLoggedIn ? '...' : (isLoggedIn ? (stats.caloriesBurned ?? 0) : '-')} <span>kcal</span>
                   </h3>
                 </article>
               </div>
@@ -295,7 +380,7 @@ export default function ExercisePage() {
                 {!isLoggedIn ? (
                   <p className="pr-history-note">Log in or sign up to view your recent exercise history.</p>
                 ) : loading ? (
-                  <p className="pr-history-note">Loading…</p>
+                  <p className="pr-history-note">Loading...</p>
                 ) : recentHistory.length === 0 ? (
                   <p className="pr-history-note">No exercises logged yet. Add one above!</p>
                 ) : (
@@ -303,6 +388,7 @@ export default function ExercisePage() {
                     <ul>
                       {recentHistory.map((item) => {
                         const Icon = item.icon;
+
                         return (
                           <li key={item.id}>
                             <div className={`pr-history-icon ${item.tone}`}>
@@ -321,12 +407,34 @@ export default function ExercisePage() {
                                 </span>
                               </div>
                             </div>
-                            <p className="pr-history-time">{item.time}</p>
+                            <div className="pr-history-side">
+                              <p className="pr-history-time">{item.time}</p>
+                              <div className="pr-history-actions">
+                                <button
+                                  type="button"
+                                  className="pr-icon-btn"
+                                  onClick={() => handleEdit(item.raw)}
+                                  aria-label={`Edit ${item.title}`}
+                                  title="Edit"
+                                >
+                                  <Pencil size={15} />
+                                </button>
+                                <button
+                                  type="button"
+                                  className="pr-icon-btn danger"
+                                  onClick={() => handleDelete(item.raw)}
+                                  aria-label={`Delete ${item.title}`}
+                                  title="Delete"
+                                >
+                                  <Trash2 size={15} />
+                                </button>
+                              </div>
+                            </div>
                           </li>
                         );
                       })}
                     </ul>
-                    <p className="pr-history-note">You can only log dates in the current week or next week.</p>
+                    <p className="pr-history-note">You can only log dates from today up to the next 2 weeks.</p>
                   </>
                 )}
               </article>
@@ -339,6 +447,77 @@ export default function ExercisePage() {
           </div>
         </section>
       </main>
+
+      {isEditOpen ? (
+        <div className="pr-exercise-modal-overlay" onClick={closeEditForm}>
+          <section className="pr-exercise-modal" onClick={(e) => e.stopPropagation()}>
+            <div className="pr-exercise-modal-head">
+              <h2>Edit Activity</h2>
+              <button type="button" className="pr-icon-btn" onClick={closeEditForm} aria-label="Close edit form">
+                <X size={16} />
+              </button>
+            </div>
+
+            <form onSubmit={handleEditSubmit}>
+              <label htmlFor="editActivityType">Exercise Type</label>
+              <select id="editActivityType" name="type" required value={editForm.type} onChange={handleEditFormChange}>
+                <option value="" disabled>
+                  Select activity (e.g. Running, Cycling)
+                </option>
+                <option>Running</option>
+                <option>Cycling</option>
+                <option>Yoga</option>
+                <option>Walking</option>
+                <option>Strength Training</option>
+              </select>
+
+              <div className="pr-form-row">
+                <div>
+                  <label htmlFor="editDuration">Duration (min)</label>
+                  <div className="pr-input-wrap">
+                    <input id="editDuration" name="duration" type="number" value={editForm.duration} onChange={handleEditFormChange} min={1} placeholder="45" required />
+                    <span>MIN</span>
+                  </div>
+                </div>
+                <div>
+                  <label htmlFor="editCalories">Calories Burned (kcal)</label>
+                  <div className="pr-input-wrap">
+                    <input id="editCalories" name="calories" type="number" value={editForm.calories} onChange={handleEditFormChange} min={0} placeholder="320" required />
+                    <span>KCAL</span>
+                  </div>
+                </div>
+              </div>
+
+              <label htmlFor="editActivityDate">Date of Activity (today to next 2 weeks)</label>
+              <div className="pr-input-wrap">
+                <input
+                  id="editActivityDate"
+                  name="date"
+                  type="date"
+                  value={editForm.date}
+                  onChange={handleEditFormChange}
+                  min={dateBounds.min}
+                  max={dateBounds.max}
+                  required
+                />
+                <CalendarDays size={16} />
+              </div>
+
+              <div className="pr-form-actions">
+                <button type="button" className="pr-secondary-btn" onClick={closeEditForm} disabled={editSaving}>
+                  <X size={18} />
+                  Cancel
+                </button>
+                <button type="submit" className="pr-primary-btn" disabled={editSaving}>
+                  <BadgeCheck size={18} />
+                  {editSaving ? 'Updating...' : 'Update Activity'}
+                </button>
+              </div>
+            </form>
+          </section>
+        </div>
+      ) : null}
+
       <Footer />
       <ScrollToTop />
     </>

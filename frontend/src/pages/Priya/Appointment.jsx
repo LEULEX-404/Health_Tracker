@@ -7,8 +7,8 @@ import ScrollToTop from '../../components/Tharuka/Common/ScrollToTop';
 import { useAuth } from '../../context/Imasha/AuthContext';
 import '../../styles/Priya/Appointment.css';
 
-const APPOINTMENTS_API = 'http://localhost:5000/api/appointments';
-const BACKEND_ORIGIN = 'http://localhost:5000';
+const APPOINTMENTS_API = `${import.meta.env.VITE_API_URL}/appointments`;
+const BACKEND_ORIGIN = import.meta.env.VITE_API_URL.replace('/api', '');
 const FALLBACK_DOCTOR_IMAGE = '/images/Priya/doctor-01.png';
 
 function resolveAvatarSrc(src) {
@@ -28,14 +28,14 @@ function normalizePhone(phone) {
 }
 
 function isValidSriLankaMobile(phone) {
-  return /^(070|071|072|074|076|077|078)\d{7}$/.test(normalizePhone(phone));
+  return /^(070|071|072|074|075|076|077|078)\d{7}$/.test(normalizePhone(phone));
 }
 
 function getPhoneValidationMessage(phone) {
   const digits = normalizePhone(phone);
   if (!digits) return 'Phone is required';
-  if (digits.length >= 3 && !/^(070|071|072|074|076|077|078)/.test(digits)) {
-    return 'Phone must start with 070, 071, 072, 074, 076, 077, or 078.';
+  if (digits.length >= 3 && !/^(070|071|072|074|075|076|077|078)/.test(digits)) {
+    return 'Phone must start with 070, 071, 072, 074, 075, 076, 077, or 078.';
   }
   if (digits.length < 10) {
     return 'Phone must contain exactly 10 digits.';
