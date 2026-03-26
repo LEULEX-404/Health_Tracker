@@ -1,4 +1,4 @@
-import {sendBravoEmail} from './bravoEmailService.js';
+import {sendBravoEmail} from '../../utils/brevoEmailSender.js';
 import { EMAIL_SUBJECTS } from '../../constants/Imasha/index.js';
 
 /**
