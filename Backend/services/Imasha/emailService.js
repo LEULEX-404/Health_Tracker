@@ -1,4 +1,4 @@
-import {sendBravoEmail} from '../../utils/brevoEmailSender.js';
+import { sendBrevoEmail } from '../../utils/brevoEmailSender.js';
 import { EMAIL_SUBJECTS } from '../../constants/Imasha/index.js';
 
 /**
@@ -46,7 +46,7 @@ export const sendVerificationEmail = async (email, firstName, token) => {
     `;
   
   try {
-    await sendBravoEmail(email, EMAIL_SUBJECTS.VERIFY_EMAIL, htmlContent);
+    await sendBrevoEmail(email, EMAIL_SUBJECTS.VERIFY_EMAIL, htmlContent);
     console.log(`Verification email sent to ${email}`);
   } catch (error) {
     console.error('Error sending verification email:', error);
@@ -102,7 +102,7 @@ export const sendPasswordResetEmail = async (email, firstName, token) => {
     `;
   
   try {
-    await sendBravoEmail(email, EMAIL_SUBJECTS.PASSWORD_RESET, htmlContent);
+    await sendBrevoEmail(email, EMAIL_SUBJECTS.PASSWORD_RESET, htmlContent);
     console.log(`Password reset email sent to ${email}`);
   } catch (error) {
     console.error('Error sending password reset email:', error);
@@ -155,7 +155,7 @@ export const sendAccountLockedEmail = async (email, firstName) => {
     `;
   
   try {
-    await sendBravoEmail(email, EMAIL_SUBJECTS.ACCOUNT_LOCKED, htmlContent);
+    await sendBrevoEmail(email, EMAIL_SUBJECTS.ACCOUNT_LOCKED, htmlContent);
     console.log(`Account locked email sent to ${email}`);
   } catch (error) {
     console.error('Error sending account locked email:', error);
@@ -204,7 +204,7 @@ export const sendWelcomeEmail = async (email, firstName) => {
     `;
   
   try {
-    await sendBravoEmail(email, EMAIL_SUBJECTS.WELCOME, htmlContent);
+    await sendBrevoEmail(email, EMAIL_SUBJECTS.WELCOME, htmlContent);
     console.log(`Welcome email sent to ${email}`);
   } catch (error) {
     console.error('Error sending welcome email:', error);
