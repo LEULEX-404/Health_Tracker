@@ -46,6 +46,43 @@
   padding: 1.7rem;
 }
 
+.pr-exercise-modal {
+  width: min(680px, calc(100vw - 2rem));
+  max-height: calc(100vh - 2rem);
+  overflow-y: auto;
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: 20px;
+  box-shadow: var(--shadow-md);
+  padding: 1.5rem;
+}
+
+.pr-exercise-modal-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 1200;
+  background: rgba(10, 15, 20, 0.7);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+}
+
+.pr-exercise-modal-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+.pr-exercise-modal-head h2 {
+  margin: 0;
+  color: var(--text-primary);
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: var(--fs-2xl);
+}
+
 .pr-form-card h2,
 .pr-history-head h2 {
   margin: 0 0 1.2rem;
@@ -71,8 +108,19 @@
   font-weight: 600;
 }
 
+.pr-exercise-modal label {
+  display: block;
+  margin: 1.1rem 0 0.45rem;
+  color: var(--text-secondary);
+  font-family: 'Inter', sans-serif;
+  font-size: var(--fs-sm);
+  font-weight: 600;
+}
+
 .pr-form-card input,
-.pr-form-card select {
+.pr-form-card select,
+.pr-exercise-modal input,
+.pr-exercise-modal select {
   width: 100%;
   height: 54px;
   border-radius: var(--radius-md);
@@ -86,7 +134,9 @@
 }
 
 .pr-form-card input:focus,
-.pr-form-card select:focus {
+.pr-form-card select:focus,
+.pr-exercise-modal input:focus,
+.pr-exercise-modal select:focus {
   outline: none;
   border-color: var(--color-primary);
   box-shadow: 0 0 0 4px var(--color-primary-glow);
@@ -163,6 +213,45 @@
 }
 
 .pr-primary-btn:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
+.pr-form-actions {
+  display: flex;
+  gap: 0.75rem;
+  align-items: center;
+}
+
+.pr-form-actions .pr-primary-btn {
+  margin-top: 1.5rem;
+}
+
+.pr-secondary-btn {
+  margin-top: 1.5rem;
+  height: 56px;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border-color-strong);
+  background: var(--bg-secondary);
+  color: var(--text-primary);
+  padding: 0 1rem;
+  font-family: 'Inter', sans-serif;
+  font-size: var(--fs-md);
+  font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  cursor: pointer;
+  transition: border-color var(--transition-fast), background var(--transition-fast);
+}
+
+.pr-secondary-btn:hover {
+  background: var(--bg-card);
+  border-color: var(--color-primary);
+}
+
+.pr-secondary-btn:disabled {
   opacity: 0.7;
   cursor: not-allowed;
 }
@@ -374,6 +463,41 @@
   font-size: var(--fs-xs);
 }
 
+.pr-history-side {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.pr-history-actions {
+  display: flex;
+  gap: 0.45rem;
+}
+
+.pr-icon-btn {
+  width: 34px;
+  height: 34px;
+  border-radius: 10px;
+  border: 1px solid var(--border-color-strong);
+  background: var(--bg-secondary);
+  color: var(--text-primary);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: border-color var(--transition-fast), background var(--transition-fast), color var(--transition-fast);
+}
+
+.pr-icon-btn:hover {
+  border-color: var(--color-primary);
+  color: var(--color-primary);
+}
+
+.pr-icon-btn.danger:hover {
+  border-color: var(--color-error);
+  color: var(--color-error);
+}
+
 .pr-history-note {
   margin: 0;
   text-align: center;
@@ -423,6 +547,15 @@
     grid-template-columns: 1fr;
   }
 
+  .pr-form-actions {
+    flex-direction: column;
+  }
+
+  .pr-form-actions .pr-primary-btn,
+  .pr-secondary-btn {
+    width: 100%;
+  }
+
   .pr-history-card li {
     grid-template-columns: 50px 1fr;
   }
@@ -431,7 +564,13 @@
     grid-column: 2;
   }
 
+  .pr-history-side {
+    grid-column: 2;
+    justify-content: space-between;
+  }
+
   .pr-form-card,
+  .pr-exercise-modal,
   .pr-motivation-card {
     padding: 1.1rem;
   }
