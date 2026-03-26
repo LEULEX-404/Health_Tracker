@@ -9,7 +9,8 @@ import {
     Camera, LogOut, Save, Bell, Activity,
     ClipboardList, Settings, ChevronRight,
     Loader2, ShieldCheck, CheckCircle2,
-    TrendingUp, Zap, Star, Clock, Heart, Sparkles
+    TrendingUp, Zap, Star, Clock, Heart, Sparkles,
+    IdCard, Briefcase
 } from 'lucide-react';
 import { useAuth } from '../../context/Imasha/AuthContext';
 import { useTheme } from '../../context/Tharuka/ThemeContext';
@@ -101,35 +102,67 @@ const ProfileField = memo(({
 ));
 ProfileField.displayName = 'ProfileField';
 
-/* ── Memoised stat card ─────────────────────────────────── */
-const StatCard = memo(({ icon: Icon, iconClass, value, label, trend, trendClass, barColor, loading = false }) => (
-    <motion.div
-        variants={FADE_UP}
-        whileHover={CARD_HOVER}
-        transition={{ type: 'spring', stiffness: 320, damping: 20 }}
-        className="ims-profile__stat-card"
-    >
-        <div className={`ims-profile__stat-icon ${iconClass}`}>
-            <Icon size={17} />
-        </div>
-        {loading ? (
-            <>
-                <div className="ims-profile__stat-skeleton ims-profile__stat-skeleton--value" />
-                <div className="ims-profile__stat-skeleton ims-profile__stat-skeleton--label" />
-            </>
-        ) : (
-            <>
-                <div className="ims-profile__stat-value">{value}</div>
-                <div className="ims-profile__stat-label">{label}</div>
-                {trend && <div className={`ims-profile__stat-trend ${trendClass}`}>{trend}</div>}
-            </>
-        )}
-        <div
-            className="ims-profile__stat-bar"
-            style={{ background: `linear-gradient(90deg, ${barColor}, transparent)` }}
-        />
-    </motion.div>
-));
+const StatCard = memo(({ icon: Icon, iconClass, value, unit, label, trend, trendClass, barColor, bgImage, overlayColor, loading = false }) => {
+    // Determine progress fill width based on value
+    const progressWidth = useMemo(() => {
+        if (loading) return 0;
+        const val = parseFloat(value);
+        if (isNaN(val)) return 70; // fallback aesthetic width
+        if (label?.toLowerCase().includes('complete') || label?.toLowerCase().includes('oxygen')) {
+             return Math.min(Math.max(val, 5), 100);
+        }
+        return 75; // aesthetic width for counts
+    }, [value, label, loading]);
+
+    return (
+        <motion.div
+            variants={FADE_UP}
+            whileHover={CARD_HOVER}
+            transition={{ type: 'spring', stiffness: 320, damping: 20 }}
+            className="ims-profile__stat-card"
+        >
+            {bgImage && (
+                <div className="ims-profile__stat-bg" style={{ backgroundImage: `url(${bgImage})` }} />
+            )}
+            <div className="ims-profile__stat-overlay" style={{ background: overlayColor }} />
+
+            <div className="ims-profile__stat-content">
+                <div className="ims-profile__stat-top">
+                    <div className="ims-profile__stat-icon-wrap">
+                        <Icon size={18} />
+                    </div>
+                    {trend && !loading && (
+                        <div className={`ims-profile__stat-status-badge ${trendClass}`}>
+                            {trend}
+                        </div>
+                    )}
+                </div>
+
+                <div className="ims-profile__stat-main">
+                    {loading ? (
+                        <div className="ims-profile__stat-skeleton" />
+                    ) : (
+                        <div className="ims-profile__stat-value-group">
+                            <span className="ims-profile__stat-value">{value}</span>
+                            {unit && <span className="ims-profile__stat-unit">{unit}</span>}
+                        </div>
+                    )}
+                    <div className="ims-profile__stat-name">{label}</div>
+                    
+                    <div className="ims-profile__stat-progress">
+                        <div 
+                            className="ims-profile__stat-progress-fill" 
+                            style={{ 
+                                width: `${progressWidth}%`,
+                                background: barColor 
+                            }} 
+                        />
+                    </div>
+                </div>
+            </div>
+        </motion.div>
+    );
+});
 StatCard.displayName = 'StatCard';
 
 /* ── Custom hook: fetch real Stats ─────────────────────── */
@@ -649,25 +682,37 @@ export default function ProfilePage() {
                             initial={{ x: -36, opacity: 0 }}
                             animate={{ x: 0, opacity: 1 }}
                             transition={{ duration: 0.42, ease: [0.4, 0, 0.2, 1] }}
-                            className="ims-profile__sidebar"
+                            className={`ims-profile__sidebar ${isDark ? 'is-dark' : ''}`}
                         >
-                            {/* Avatar */}
-                            <div className="ims-profile__avatar-container">
-                                <div
-                                    className="ims-profile__avatar-ring"
-                                    onClick={() => fileInputRef.current?.click()}
-                                    title="Change photo"
-                                >
-                                    <div className="ims-profile__avatar-wrap">
-                                        {user?.profileImage
-                                            ? <img src={user.profileImage} alt={displayName} className="ims-profile__avatar" />
-                                            : <div className="ims-profile__avatar-placeholder"><User size={32} /></div>
-                                        }
-                                        {imageLoading
-                                            ? <div className="ims-profile__avatar-loader"><Loader2 className="spin" size={22} /></div>
-                                            : <div className="ims-profile__avatar-overlay"><Camera size={18} /><span>Change</span></div>
-                                        }
+                            {/* ── Green header section ── */}
+                            <div className="ims-profile__sidebar-header">
+                                <span className="ims-sidebar-deco ims-sidebar-deco--1" />
+                                <span className="ims-sidebar-deco ims-sidebar-deco--2" />
+                            </div>
+
+                            <input type="file" ref={fileInputRef} onChange={handleImageUpload} accept="image/*" hidden />
+
+                            {/* ── Body section ── */}
+                            <div className="ims-profile__sidebar-body">
+                                {/* Avatar Overlap */}
+                                <div className="ims-profile__avatar-container">
+                                    <div
+                                        className="ims-profile__avatar-ring"
+                                        onClick={() => fileInputRef.current?.click()}
+                                        title="Change photo"
+                                    >
+                                        <div className="ims-profile__avatar-wrap">
+                                            {user?.profileImage
+                                                ? <img src={user.profileImage} alt={displayName} className="ims-profile__avatar" />
+                                                : <div className="ims-profile__avatar-placeholder"><User size={32} /></div>
+                                            }
+                                            {imageLoading
+                                                ? <div className="ims-profile__avatar-loader"><Loader2 className="spin" size={22} /></div>
+                                                : <div className="ims-profile__avatar-overlay"><Camera size={18} /><span>Change</span></div>
+                                            }
+                                        </div>
                                     </div>
+                                    <span className="ims-profile__online-badge">● Online</span>
                                 </div>
 
                                 <div className="ims-profile__user-info">
@@ -679,83 +724,121 @@ export default function ProfilePage() {
                                         </div>
                                     )}
                                 </div>
-                            </div>
 
-                            <input type="file" ref={fileInputRef} onChange={handleImageUpload} accept="image/*" hidden />
-
-                            {/* Mini stats */}
-                            <div className="ims-profile__mini-stats">
-                                <div className="ims-profile__mini-stat">
-                                    <div className="ims-profile__mini-stat-value">{profileScore}%</div>
-                                    <div className="ims-profile__mini-stat-label">Profile</div>
+                                {/* Mini stats */}
+                                <div className="ims-profile__mini-stats">
+                                    <div className="ims-profile__mini-stat">
+                                        <div className="ims-profile__mini-stat-value">{profileScore}%</div>
+                                        <div className="ims-profile__mini-stat-label">Profile</div>
+                                    </div>
+                                    <div className="ims-profile__mini-stat">
+                                        <div className="ims-profile__mini-stat-value">{accountDays}</div>
+                                        <div className="ims-profile__mini-stat-label">Days Active</div>
+                                    </div>
                                 </div>
-                                <div className="ims-profile__mini-stat">
-                                    <div className="ims-profile__mini-stat-value">{accountDays}</div>
-                                    <div className="ims-profile__mini-stat-label">Days Active</div>
+
+                                {/* Health Score bar */}
+                                <div className="ims-profile__health-score">
+                                    <div className="ims-profile__health-score-row">
+                                        <span className="ims-profile__health-score-label">Health Score</span>
+                                        <span className="ims-profile__health-score-value">{profileScore}/100</span>
+                                    </div>
+                                    <div className="ims-profile__health-score-track">
+                                        <div className="ims-profile__health-score-fill" style={{ width: `${profileScore}%` }} />
+                                    </div>
                                 </div>
-                            </div>
 
-                            <div className="ims-profile__divider" />
+                                <div className="ims-profile__divider" />
 
-                            {/* Nav */}
-                            <nav className="ims-profile__nav">
-                                {TABS.map(({ id, label, icon: Icon }) => (
-                                    <button
-                                        key={id}
-                                        className={`ims-profile__nav-item${activeTab === id ? ' active' : ''}`}
-                                        onClick={() => setActiveTab(id)}
-                                    >
-                                        <Icon size={17} />
-                                        <span>{label}</span>
-                                        <ChevronRight size={13} className="nav-arrow" />
-                                    </button>
-                                ))}
+                                {/* Nav section header */}
+                                <div className="ims-profile__nav-section-header">
+                                    <span className="ims-profile__nav-section-label">Navigation</span>
+                                    <span className="ims-profile__nav-section-active">{TABS.find(t => t.id === activeTab)?.label || ''}</span>
+                                </div>
+
+                                {/* Nav */}
+                                <nav className="ims-profile__nav">
+                                    {TABS.map(({ id, label, icon: Icon }) => (
+                                        <button
+                                            key={id}
+                                            className={`ims-profile__nav-item${activeTab === id ? ' active' : ''}`}
+                                            onClick={() => setActiveTab(id)}
+                                        >
+                                            <span className="ims-profile__nav-icon-wrap">
+                                                <Icon size={17} />
+                                            </span>
+                                            <span>{label}</span>
+                                            <ChevronRight size={13} className="nav-arrow" />
+                                        </button>
+                                    ))}
+                                </nav>
+
+                                <div className="ims-profile__divider" />
+
                                 <button className="ims-profile__nav-item logout" onClick={logout}>
-                                    <LogOut size={17} />
+                                    <span className="ims-profile__nav-icon-wrap logout-icon">
+                                        <LogOut size={17} />
+                                    </span>
                                     <span>Sign Out</span>
                                 </button>
-                            </nav>
 
-                            <div className="ims-profile__divider" />
-
-                            {/* Branding */}
-                            <div className="ims-profile__branding">
-                                <div className="ims-profile__logo">
-                                    <div className="ims-profile__logo-dot">P</div>
-                                    <span className="ims-profile__logo-text">PulseNova</span>
-                                </div>
-                                <span className="ims-profile__version">Enterprise v2.5</span>
                             </div>
                         </motion.aside>
 
                         {/* ── Main Content ──────────────────────────── */}
                         <section className="ims-profile__content">
 
-                            {/* Hero banner */}
+                            {/* User Data Banner */}
                             <motion.div
                                 initial={{ opacity: 0, y: -14 }}
                                 animate={{ opacity: 1, y: 0 }}
                                 transition={{ duration: 0.4, delay: 0.08 }}
-                                className="ims-profile__hero"
+                                className="ims-profile__user-banner"
                             >
                                 <img
-                                    src="/profile_hero_art.png"
-                                    alt="Profile hero"
-                                    className="ims-profile__hero-img"
+                                    src="/images/stats/banner_background_v2.png"
+                                    alt="Background"
+                                    className="ims-profile__banner-bg"
                                     loading="eager"
-                                    decoding="async"
                                 />
-                                <div className="ims-profile__hero-overlay">
-                                    <div className="ims-profile__hero-text">
-                                        <h2>
-                                            Welcome back, {user?.firstName || 'User'}{' '}
-                                            <Sparkles size={22} color="var(--p-green)" style={{ display: 'inline', marginLeft: '4px', verticalAlign: '-3px' }} />
-                                        </h2>
-                                        <p>Manage your health journey from one place</p>
-                                        <div className="ims-profile__hero-badge">
-                                            <span className="pulse-dot" />
-                                            PulseNova Active
+                                <div className="ims-profile__banner-overlay" />
+
+                                <div className="ims-profile__banner-content-new">
+                                    {/* Left side: header info */}
+                                    <div className="ims-profile__banner-header-left">
+                                        <div className="ims-profile__header-title-inner">
+                                            <div className="ims-profile__header-icon-wrap" style={{ 
+                                                background: 'rgba(0,0,0,0.4)', 
+                                                border: '1px solid rgba(255,255,255,0.6)',
+                                                boxShadow: '0 4px 15px rgba(0,0,0,0.4)' 
+                                            }}>
+                                                <User size={20} color="#ffffff" strokeWidth={2.5} />
+                                            </div>
+                                            <div className="ims-profile__header-text">
+                                                <h2 style={{ color: '#ffffff', textShadow: '0 2px 8px rgba(0,0,0,0.8)', fontWeight: 800 }}>User Data</h2>
+                                                <p style={{ color: 'rgba(255,255,255,0.95)', fontWeight: 500 }}>Personal information & profile settings</p>
+                                            </div>
                                         </div>
+                                        <div className="ims-profile__banner-badges">
+                                            <div className="ims-profile__banner-badge">
+                                                <IdCard size={14} />
+                                                <span>{user?.id ? `PN-2024-${user.id}` : 'PN-2024-00142'}</span>
+                                            </div>
+                                            <div className="ims-profile__banner-badge">
+                                                <MapPin size={14} />
+                                                <span>{user?.address || user?.location || 'Colombo, Sri Lanka'}</span>
+                                            </div>
+                                            <div className="ims-profile__banner-badge">
+                                                <Briefcase size={14} />
+                                                <span>{user?.role || 'Patient'}</span>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    {/* Right side: name and email */}
+                                    <div className="ims-profile__banner-user-right">
+                                        <h2 className="ims-profile__banner-name">{displayName}</h2>
+                                        <p className="ims-profile__banner-email">{user?.email}</p>
                                     </div>
                                 </div>
                             </motion.div>
@@ -769,66 +852,64 @@ export default function ProfilePage() {
                             >
                                 <StatCard
                                     icon={TrendingUp}
-                                    iconClass="ims-profile__stat-icon--green"
-                                    value={`${profileScore}%`}
+                                    value={profileScore}
+                                    unit="%"
                                     label="Profile Complete"
-                                    trend={profileScore >= 80 ? '↑ Great' : profileScore >= 50 ? '↑ Good' : '⬤ Fill in'}
-                                    trendClass={profileScore >= 80 ? 'ims-profile__stat-trend--up' : 'ims-profile__stat-trend--stable'}
-                                    barColor="var(--p-green)"
+                                    trend={profileScore >= 80 ? 'Great' : profileScore >= 50 ? 'Good' : 'Fill in'}
+                                    trendClass=""
+                                    barColor="#ffffff"
+                                    bgImage="/images/stats/stat_completeness.png"
+                                    overlayColor="linear-gradient(135deg, rgba(220, 38, 38, 0.6) 0%, rgba(185, 28, 28, 0.75) 100%)"
                                     loading={false}
                                 />
                                 <StatCard
                                     icon={Zap}
-                                    iconClass="ims-profile__stat-icon--cyan"
                                     value={accountDays}
+                                    unit="Days"
                                     label="Days Active"
-                                    trend="↑ Streak"
-                                    trendClass="ims-profile__stat-trend--stable"
-                                    barColor="var(--p-cyan)"
+                                    trend="Streak"
+                                    trendClass=""
+                                    barColor="#ffffff"
+                                    bgImage="/images/stats/stat_days.png"
+                                    overlayColor="linear-gradient(135deg, rgba(8, 145, 178, 0.6) 0%, rgba(15, 118, 110, 0.75) 100%)"
                                     loading={false}
                                 />
                                 <StatCard
                                     icon={Heart}
-                                    iconClass="ims-profile__stat-icon--amber"
                                     value={
                                         profileStats.loading ? '—'
-                                        : profileStats.avgOxygen != null ? `${profileStats.avgOxygen}%`
+                                        : profileStats.avgOxygen != null ? profileStats.avgOxygen
                                         : 'N/A'
                                     }
+                                    unit={!profileStats.loading && profileStats.avgOxygen != null ? '%' : ''}
                                     label="Avg O₂ Level"
                                     trend={
                                         !profileStats.loading && profileStats.avgOxygen != null
-                                            ? profileStats.avgOxygen >= 95 ? '↑ Normal'
-                                            : profileStats.avgOxygen >= 90 ? '⚠ Low'
-                                            : '↓ Critical'
+                                            ? profileStats.avgOxygen >= 95 ? 'Normal'
+                                            : profileStats.avgOxygen >= 90 ? 'Low'
+                                            : 'Critical'
                                             : null
                                     }
-                                    trendClass={
-                                        !profileStats.loading && profileStats.avgOxygen != null
-                                            ? profileStats.avgOxygen >= 95
-                                                ? 'ims-profile__stat-trend--up'
-                                                : 'ims-profile__stat-trend--stable'
-                                            : ''
-                                    }
-                                    barColor="#f59e0b"
+                                    trendClass=""
+                                    barColor="#ffffff"
+                                    bgImage="/images/stats/stat_oxygen.png"
+                                    overlayColor="linear-gradient(135deg, rgba(16, 185, 129, 0.6) 0%, rgba(5, 150, 105, 0.75) 100%)"
                                     loading={profileStats.loading}
                                 />
                                 <StatCard
                                     icon={ClipboardList}
-                                    iconClass="ims-profile__stat-icon--purple"
                                     value={
                                         profileStats.loading ? '—'
                                         : profileStats.appointments != null ? profileStats.appointments
                                         : 0
                                     }
+                                    unit="Total"
                                     label="Appointments"
-                                    trend={
-                                        !profileStats.loading && profileStats.appointments != null
-                                            ? `${profileStats.appointments} total`
-                                            : null
-                                    }
-                                    trendClass="ims-profile__stat-trend--stable"
-                                    barColor="#8b5cf6"
+                                    trend="Active"
+                                    trendClass=""
+                                    barColor="#ffffff"
+                                    bgImage="/images/stats/stat_appointments.png"
+                                    overlayColor="linear-gradient(135deg, rgba(245, 158, 11, 0.6) 0%, rgba(217, 119, 6, 0.75) 100%)"
                                     loading={profileStats.loading}
                                 />
                             </motion.div>
