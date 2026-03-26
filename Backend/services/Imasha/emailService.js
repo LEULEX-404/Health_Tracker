@@ -13,8 +13,11 @@ const createTransporter = () => {
       user: process.env.EMAIL_USER,
       pass: process.env.EMAIL_PASSWORD,
     },
+    tls: {
+      family: 4 // Force IPv4
+    }
   });
-};
+}
 
 /**
  * Sends email verification email
