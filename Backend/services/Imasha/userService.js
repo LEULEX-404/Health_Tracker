@@ -83,6 +83,8 @@ export const updateUser = async (userId, updateData, requestingUser) => {
   const allowedFields = [
     'firstName', 'lastName', 'phone',
     'dateOfBirth', 'gender', 'address',
+    'city', 'country', 'occupation',
+    'emergencyContactName', 'emergencyContactPhone', 'emergencyContactEmail',
   ];
 
   // Extra fields admin can update
