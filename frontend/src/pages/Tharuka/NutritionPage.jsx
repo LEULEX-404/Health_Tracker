@@ -8,11 +8,12 @@ import MealLogTable from '../../components/Tharuka/Nutrition/MealLogTable';
 import MealFormModal from '../../components/Tharuka/Nutrition/MealFormModal';
 import NutritionCheckModal from '../../components/Tharuka/Nutrition/NutritionCheckModal';
 import MealPlanDashboard from '../../components/Tharuka/Nutrition/MealPlanDashboard';
+import DeleteConfirmModal from '../../components/Tharuka/Nutrition/DeleteConfirmModal';
 import BackgroundEffect from '../../components/Tharuka/Common/BackgroundEffect';
 import Header from '../../components/Tharuka/Header/Header';
 import Footer from '../../components/Tharuka/Footer/Footer';
 import ScrollToTop from '../../components/Tharuka/Common/ScrollToTop';
-import { BarChart2, CalendarDays, Lightbulb, Zap, HeartPulse, TrendingUp, Apple, Salad, Flame, Utensils, Carrot, Coffee, Fish, Grape } from 'lucide-react';
+import { BarChart2, CalendarDays, Lightbulb, Zap, HeartPulse, TrendingUp, Apple, Salad, Flame, Utensils, Carrot, Coffee, Fish, Grape, Plus } from 'lucide-react';
 import toast from 'react-hot-toast';
 import HeroBanner from '../../assets/nutrition_hero_banner.png';
 import './NutritionPage.css';
@@ -26,6 +27,8 @@ export default function NutritionPage() {
   const [isModalOpen,      setIsModalOpen]      = useState(false);
   const [isCheckModalOpen, setIsCheckModalOpen] = useState(false);
   const [selectedMeal,     setSelectedMeal]     = useState(null);
+  const [deletingMealId,   setDeletingMealId]   = useState(null);
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
 
   const userId = user?.id || user?._id;
 
@@ -54,9 +57,16 @@ export default function NutritionPage() {
 
   const handleModalSubmit = async (formData) => {
     try {
-      if (selectedMeal) {
+      if (selectedMeal?._id) {
         await updateMeal(selectedMeal._id, { ...formData, userId });
         toast.success('Meal updated!');
+      } else if (formData.mealReminderId) {
+        // Log meal AND complete reminder
+        const { mealReminderId, ...mealData } = formData;
+        // Import markReminderCompleted inside handleModalSubmit to avoid redundant top-level imports if needed
+        const { markReminderCompleted } = await import('../../services/Tharuka/mealReminderService');
+        await markReminderCompleted(mealReminderId, userId, mealData);
+        toast.success('Meal logged and reminder completed!');
       } else {
         await addMeal({ ...formData, userId });
         toast.success('Meal logged!');
@@ -68,14 +78,22 @@ export default function NutritionPage() {
     }
   };
 
-  const handleDeleteMeal = async (mealId) => {
-    if (!window.confirm('Delete this log?')) return;
+  const handleDeleteMeal = (mealId) => {
+    setDeletingMealId(mealId);
+    setIsDeleteModalOpen(true);
+  };
+
+  const confirmDeleteMeal = async () => {
+    setLoading(true);
     try {
-      await deleteMeal(mealId, userId);
-      toast.success('Meal deleted');
+      await deleteMeal(deletingMealId, userId);
+      toast.success('Meal log deleted successfully');
+      setIsDeleteModalOpen(false);
       loadData();
     } catch {
       toast.error('Failed to delete meal');
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -223,7 +241,13 @@ export default function NutritionPage() {
                   exit={{ opacity: 0, x: -10 }}
                   transition={{ duration: 0.3 }}
                 >
-                  <MealPlanDashboard />
+                  <MealPlanDashboard 
+                    onLogMeal={(preFilledData) => {
+                      setSelectedMeal(preFilledData);
+                      setIsModalOpen(true);
+                    }}
+                    onRefresh={loadData}
+                  />
                 </motion.div>
               )}
             </AnimatePresence>
@@ -253,12 +277,28 @@ export default function NutritionPage() {
       <Footer />
       <ScrollToTop />
 
-      <NutritionCheckModal isOpen={isCheckModalOpen} onClose={() => setIsCheckModalOpen(false)} />
+      <NutritionCheckModal 
+        isOpen={isCheckModalOpen} 
+        onClose={() => setIsCheckModalOpen(false)} 
+        onLogResolvedMeal={(mealData) => {
+          setSelectedMeal(mealData);
+          setIsModalOpen(true);
+        }}
+      />
       <MealFormModal
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
         onSubmit={handleModalSubmit}
         initialData={selectedMeal}
+        isSimple={!selectedMeal?._id && !selectedMeal?.mealReminderId}
+      />
+      <DeleteConfirmModal 
+        isOpen={isDeleteModalOpen}
+        onClose={() => { setIsDeleteModalOpen(false); setDeletingMealId(null); }}
+        onConfirm={confirmDeleteMeal}
+        loading={loading}
+        title="Remove Meal Log?"
+        message="This record will be deleted from your nutrition analysis history. This cannot be undone."
       />
     </>
   );

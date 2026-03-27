@@ -59,7 +59,7 @@ function getDateRange(type) {
 }
 
 async function addMeal(userId, data) {
-  const { mealType, mealName, items = [], notes, recordedAt, useApiForNutrition = true } = data;
+  const { mealType, mealName, items = [], notes, recordedAt, useApiForNutrition = true, mealReminderId } = data;
 
   let enrichedItems = items;
 
@@ -106,6 +106,7 @@ async function addMeal(userId, data) {
     items: enrichedItems,
     ...totals,
     notes,
+    mealReminderId: mealReminderId || null,
     recordedAt: recordedAt ? new Date(recordedAt) : new Date(),
   });
   return entry;
