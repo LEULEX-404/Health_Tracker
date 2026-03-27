@@ -10,7 +10,7 @@ import {
     ClipboardList, Settings, ChevronRight,
     Loader2, ShieldCheck, CheckCircle2,
     TrendingUp, Zap, Star, Clock, Heart, Sparkles,
-    IdCard, Briefcase
+    IdCard, Briefcase, Globe, Home, BriefcaseIcon, PhoneCall
 } from 'lucide-react';
 import { useAuth } from '../../context/Imasha/AuthContext';
 import { useTheme } from '../../context/Tharuka/ThemeContext';
@@ -52,52 +52,94 @@ const STAGGER = {
 const CARD_HOVER = { y: -4, scale: 1.015 };
 const CARD_TAP   = { scale: 0.98 };
 
+/* ── Premium Gender Selector ────────────────────────────── */
+const GenderSelector = ({ name, value, onChange, options, disabled }) => {
+    return (
+        <div className="ims-profile__gender-selector">
+            {options.filter(o => o.value !== '').map(option => {
+                const isSelected = value === option.value;
+                return (
+                    <motion.button
+                        key={option.value}
+                        type="button"
+                        onClick={() => !disabled && onChange({ target: { name, value: option.value } })}
+                        className={`ims-profile__gender-chip ${isSelected ? 'active' : ''}`}
+                        whileHover={!disabled ? { y: -2, backgroundColor: isSelected ? 'rgba(59, 130, 246, 0.15)' : 'rgba(0,0,0,0.03)' } : {}}
+                        whileTap={!disabled ? { scale: 0.97 } : {}}
+                        disabled={disabled}
+                    >
+                        {isSelected && (
+                            <motion.div 
+                                layoutId="gender-focus"
+                                className="ims-profile__gender-indicator"
+                                transition={{ type: 'spring', bounce: 0.2, duration: 0.6 }}
+                            />
+                        )}
+                        <span className="ims-profile__gender-text">{option.label}</span>
+                    </motion.button>
+                );
+            })}
+        </div>
+    );
+};
+
 /* ── Memoised form field ────────────────────────────────── */
 const ProfileField = memo(({
     label, icon: Icon, name, value, onChange,
     placeholder, type = 'text', fullWidth = false,
-    disabled = false, options = []
+    disabled = false, options = [], placement = 'bottom'
 }) => (
     <motion.div
         variants={FADE_UP}
-        className={`ims-profile__input-container${fullWidth ? ' full' : ''}`}
+        className={`ims-profile__input-container${fullWidth ? ' full' : ''} type-${type}`}
         style={{ position: 'relative', zIndex: type === 'date' ? 50 : 1 }}
     >
         <label><Icon size={13} />{label}</label>
-        <div className="ims-profile__input-wrapper">
-            <Icon size={15} className="ims-profile__input-icon" />
-            {type === 'select' ? (
-                <select name={name} value={value} onChange={onChange} disabled={disabled}>
-                    {options.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
-                </select>
-            ) : type === 'date' ? (
-                <ModernDatePicker
-                    name={name}
-                    value={value}
-                    onChange={onChange}
-                    placement="top"
-                    customTrigger={({ displayValue, isOpen, setIsOpen }) => (
-                        <input
-                            type="text"
-                            name={name}
-                            value={displayValue}
-                            onChange={() => {}}
-                            placeholder={placeholder || 'mm/dd/yyyy'}
-                            readOnly
-                            onClick={() => !disabled && setIsOpen(!isOpen)}
-                            style={{ cursor: disabled ? 'not-allowed' : 'pointer' }}
-                            disabled={disabled}
-                        />
-                    )}
-                />
-            ) : (
-                <input
-                    type={type} name={name} value={value}
-                    onChange={onChange} placeholder={placeholder}
-                    disabled={disabled}
-                />
-            )}
-        </div>
+        
+        {type === 'gender' ? (
+            <GenderSelector 
+                name={name} 
+                value={value} 
+                onChange={onChange} 
+                options={options} 
+                disabled={disabled} 
+            />
+        ) : (
+            <div className="ims-profile__input-wrapper">
+                <Icon size={15} className="ims-profile__input-icon" />
+                {type === 'select' ? (
+                    <select name={name} value={value} onChange={onChange} disabled={disabled}>
+                        {options.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
+                    </select>
+                ) : type === 'date' ? (
+                    <ModernDatePicker
+                        name={name}
+                        value={value}
+                        onChange={onChange}
+                        placement={placement}
+                        customTrigger={({ displayValue, isOpen, setIsOpen }) => (
+                            <input
+                                type="text"
+                                name={name}
+                                value={displayValue}
+                                onChange={() => {}}
+                                placeholder={placeholder || 'mm/dd/yyyy'}
+                                readOnly
+                                onClick={() => !disabled && setIsOpen(!isOpen)}
+                                style={{ cursor: disabled ? 'not-allowed' : 'pointer' }}
+                                disabled={disabled}
+                            />
+                        )}
+                    />
+                ) : (
+                    <input
+                        type={type} name={name} value={value}
+                        onChange={onChange} placeholder={placeholder}
+                        disabled={disabled}
+                    />
+                )}
+            </div>
+        )}
     </motion.div>
 ));
 ProfileField.displayName = 'ProfileField';
@@ -312,6 +354,12 @@ export default function ProfilePage() {
                 ? new Date(user.dateOfBirth).toISOString().split('T')[0]
                 : '',
             gender:      user.gender      || '',
+            city:        user.city        || '',
+            country:     user.country     || '',
+            occupation:  user.occupation  || '',
+            emergencyContactName: user.emergencyContactName || '',
+            emergencyContactPhone: user.emergencyContactPhone || '',
+            emergencyContactEmail: user.emergencyContactEmail || '',
         });
     }, [user]);
 
@@ -326,6 +374,7 @@ export default function ProfilePage() {
         const fields = [
             formData.firstName, formData.lastName, formData.phone,
             formData.address, formData.dateOfBirth, formData.gender,
+            formData.city, formData.country, formData.occupation,
             user?.email,
         ];
         const filled = fields.filter(Boolean).length;
@@ -359,8 +408,8 @@ export default function ProfilePage() {
             });
             const data = await res.json();
             if (res.ok) {
-                toast.success('Profile updated!');
-                if (updateUser) updateUser(formData);
+                toast.success('Profile updated successfully!');
+                if (updateUser) updateUser(data.data);
             } else {
                 toast.error(data.message || 'Update failed');
             }
@@ -432,58 +481,109 @@ export default function ProfilePage() {
                     exit={{ opacity: 0, y: -10 }}
                     className="ims-profile__settings"
                 >
-                    <div>
-                        <h3 className="ims-profile__form-section-title">
-                            <User size={12} />Personal Information
-                        </h3>
-                        <form onSubmit={handleUpdateProfile} className="ims-profile__form">
-                            <div className="ims-profile__form-grid">
-                                <ProfileField
-                                    label="First Name" icon={User}
-                                    name="firstName" value={formData.firstName}
-                                    onChange={handleInputChange} placeholder="e.g. John"
-                                />
-                                <ProfileField
-                                    label="Last Name" icon={User}
-                                    name="lastName" value={formData.lastName}
-                                    onChange={handleInputChange} placeholder="e.g. Doe"
-                                />
-                                <ProfileField
-                                    label="Phone Number" icon={Phone}
-                                    name="phone" value={formData.phone}
-                                    onChange={handleInputChange} placeholder="+1 555 000 0000"
-                                />
-                                <ProfileField
-                                    label="Date of Birth" icon={Calendar}
-                                    name="dateOfBirth" type="date"
-                                    value={formData.dateOfBirth}
-                                    onChange={handleInputChange}
-                                />
-                                <ProfileField
-                                    label="Gender" icon={ShieldCheck}
-                                    name="gender" type="select"
-                                    value={formData.gender}
-                                    onChange={handleInputChange}
-                                    options={[
-                                        { value: '',       label: 'Select gender' },
-                                        { value: 'male',   label: 'Male' },
-                                        { value: 'female', label: 'Female' },
-                                        { value: 'other',  label: 'Other / Prefer not to say' },
-                                    ]}
-                                />
-                                <ProfileField
-                                    label="Registered Email" icon={Mail}
-                                    value={user?.email || ''}
-                                    disabled placeholder="Email"
-                                />
-                                <ProfileField
-                                    label="Address" icon={MapPin}
-                                    name="address" value={formData.address}
-                                    onChange={handleInputChange}
-                                    placeholder="Street, City, Country"
-                                    fullWidth
-                                />
+                        <form onSubmit={handleUpdateProfile} className="ims-profile__form-clinical">
+                            {/* Section 1: Personal Information */}
+                            <div className="ims-profile__settings-card">
+                                <h3 className="ims-profile__settings-card-title">
+                                    <User size={16} /> PERSONAL INFORMATION
+                                </h3>
+                                <div className="ims-profile__form-grid">
+                                    <ProfileField
+                                        label="First Name" icon={User}
+                                        name="firstName" value={formData.firstName}
+                                        onChange={handleInputChange} placeholder="First name"
+                                    />
+                                    <ProfileField
+                                        label="Last Name" icon={User}
+                                        name="lastName" value={formData.lastName}
+                                        onChange={handleInputChange} placeholder="Last name"
+                                    />
+                                    <ProfileField
+                                        label="Phone Number" icon={Phone}
+                                        name="phone" value={formData.phone}
+                                        onChange={handleInputChange} placeholder="Phone number"
+                                    />
+                                    <ProfileField
+                                        label="Date of Birth" icon={Calendar}
+                                        name="dateOfBirth" type="date"
+                                        value={formData.dateOfBirth}
+                                        onChange={handleInputChange}
+                                        placement="bottom"
+                                    />
+                                    <ProfileField
+                                        label="Gender" icon={ShieldCheck}
+                                        name="gender" type="gender"
+                                        value={formData.gender}
+                                        onChange={handleInputChange}
+                                        options={[
+                                            { value: 'male',   label: 'Male' },
+                                            { value: 'female', label: 'Female' },
+                                            { value: 'other',  label: 'Other / Prefer not to say' },
+                                        ]}
+                                    />
+                                </div>
                             </div>
+
+                            {/* Section 2: Address & Location */}
+                            <div className="ims-profile__settings-card">
+                                <h3 className="ims-profile__settings-card-title">
+                                    <MapPin size={16} /> ADDRESS &amp; LOCATION
+                                </h3>
+                                <div className="ims-profile__form-grid">
+                                    <ProfileField
+                                        label="Address" icon={Home}
+                                        name="address" value={formData.address}
+                                        onChange={handleInputChange}
+                                        placeholder="Street address"
+                                    />
+                                    <ProfileField
+                                        label="City" icon={MapPin}
+                                        name="city" value={formData.city}
+                                        onChange={handleInputChange}
+                                        placeholder="City"
+                                    />
+                                    <ProfileField
+                                        label="Country" icon={Globe}
+                                        name="country" value={formData.country}
+                                        onChange={handleInputChange}
+                                        placeholder="Country"
+                                    />
+                                    <ProfileField
+                                        label="Occupation" icon={BriefcaseIcon}
+                                        name="occupation" value={formData.occupation}
+                                        onChange={handleInputChange}
+                                        placeholder="Occupation"
+                                    />
+                                </div>
+                            </div>
+
+                            {/* Section 3: Emergency Contact */}
+                            <div className="ims-profile__settings-card">
+                                <h3 className="ims-profile__settings-card-title emergency">
+                                    <PhoneCall size={16} /> EMERGENCY CONTACT
+                                </h3>
+                                <div className="ims-profile__form-grid">
+                                    <ProfileField
+                                        label="Contact Name" icon={User}
+                                        name="emergencyContactName" value={formData.emergencyContactName}
+                                        onChange={handleInputChange}
+                                        placeholder="Contact name"
+                                    />
+                                    <ProfileField
+                                        label="Phone" icon={Phone}
+                                        name="emergencyContactPhone" value={formData.emergencyContactPhone}
+                                        onChange={handleInputChange}
+                                        placeholder="Phone number"
+                                    />
+                                    <ProfileField
+                                        label="Email" icon={Mail}
+                                        name="emergencyContactEmail" value={formData.emergencyContactEmail}
+                                        onChange={handleInputChange}
+                                        placeholder="Email address"
+                                    />
+                                </div>
+                            </div>
+
                             <div className="ims-profile__form-footer">
                                 <motion.button
                                     whileHover={{ scale: 1.04, y: -3 }}
@@ -499,7 +599,6 @@ export default function ProfilePage() {
                                 </motion.button>
                             </div>
                         </form>
-                    </div>
                 </motion.div>
             );
         }
