@@ -6,7 +6,7 @@ import './NutritionComponents.css';
 
 const UNITS = ['g', 'ml', 'cup(s)', 'slice(s)', 'bowl(s)', 'item(s)', 'tbsp', 'tsp'];
 
-export default function NutritionCheckModal({ isOpen, onClose }) {
+export default function NutritionCheckModal({ isOpen, onClose, onLogResolvedMeal }) {
   const [items,   setItems]   = useState([{ name: '', quantity: '', unit: 'g' }]);
   const [results, setResults] = useState(null);
   const [loading, setLoading] = useState(false);
@@ -34,7 +34,7 @@ export default function NutritionCheckModal({ isOpen, onClose }) {
         quantity: parseFloat(it.quantity) || 0,
         unit:     it.unit,
       })));
-      setResults(res.data);
+      setResults(res);
     } catch (err) {
       toast.error(err.message || 'Could not fetch nutrition data');
     } finally {
@@ -49,6 +49,29 @@ export default function NutritionCheckModal({ isOpen, onClose }) {
     acc.fat           += r.fat           || 0;
     return acc;
   }, { calories: 0, protein: 0, carbohydrates: 0, fat: 0 });
+
+  const handleLogResults = () => {
+    if (!results || !onLogResolvedMeal) return;
+    
+    // Default meal type to snack for standalone logs if not specified
+    const mealData = {
+      mealType: 'snack',
+      mealName: items.map(it => it.name).join(', ').substring(0, 50),
+      items: results.map((r, i) => ({
+        name: r.name || items[i]?.name,
+        quantity: items[i]?.quantity,
+        unit: items[i]?.unit,
+        calories: r.calories,
+        protein: r.protein,
+        carbohydrates: r.carbohydrates,
+        fat: r.fat,
+        fiber: r.fiber
+      }))
+    };
+    
+    onLogResolvedMeal(mealData);
+    onClose();
+  };
 
   return (
     <div className="n-overlay" onClick={onClose}>
@@ -131,6 +154,18 @@ export default function NutritionCheckModal({ isOpen, onClose }) {
           {/* Footer */}
           <div className="n-modal-foot">
             <button type="button" className="n-btn n-btn-ghost" onClick={onClose}>Close</button>
+            
+            {results && (
+              <button 
+                type="button" 
+                className="n-btn n-btn-secondary" 
+                onClick={handleLogResults}
+                style={{ background: 'var(--pn-glass-teal)', color: 'white' }}
+              >
+                <Plus size={15} /> Log as Meal
+              </button>
+            )}
+
             <button type="submit" className="n-btn n-btn-primary" disabled={loading}>
               {loading
                 ? <><div className="n-spinner" style={{ width: 16, height: 16, borderWidth: 2 }} /> Checking…</>

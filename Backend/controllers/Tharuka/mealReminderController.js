@@ -7,8 +7,9 @@ const serverError = (res, message) => res.status(500).json({ success: false, mes
 
 export const getUserReminders = async (req, res) => {
   try {
-    const { userId } = req.params;
-    const { status, startDate, endDate, limit, page } = req.query;
+    const { userId } = req.params || {};
+    const query = req.query || {};
+    const { status, startDate, endDate, limit, page } = query;
     const result = await reminderService.getUserReminders(userId, {
       status,
       startDate,
@@ -40,9 +41,11 @@ export const generateReminders = async (req, res) => {
 export const markReminderCompleted = async (req, res) => {
   try {
     const { id } = req.params;
-    const { userId } = req.body;
+    const body = req.body || {};
+    const userId = req.user?._id || req.user?.id || body.userId;
+    const { mealData } = body;
     if (!userId) return badRequest(res, "userId is required");
-    const reminder = await reminderService.markReminderCompleted(id, userId);
+    const reminder = await reminderService.markReminderCompleted(id, userId, mealData);
     if (!reminder) return notFound(res, "Reminder not found");
     return ok(res, reminder, { message: "Reminder marked as completed" });
   } catch (err) {
@@ -54,7 +57,8 @@ export const markReminderCompleted = async (req, res) => {
 export const markReminderSkipped = async (req, res) => {
   try {
     const { id } = req.params;
-    const { userId } = req.body;
+    const body = req.body || {};
+    const userId = req.user?._id || req.user?.id || body.userId;
     if (!userId) return badRequest(res, "userId is required");
     const reminder = await reminderService.markReminderSkipped(id, userId);
     if (!reminder) return notFound(res, "Reminder not found");

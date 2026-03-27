@@ -19,9 +19,9 @@ export const getUserMealPlans = async (userId, params = {}) => {
   }
 };
 
-export const suggestMealPlans = async (userId) => {
+export const suggestMealPlans = async (userId, mealType) => {
   try {
-    const response = await axios.post(`${API_URL}/suggest/${userId}`, {}, getAuthHeaders());
+    const response = await axios.post(`${API_URL}/suggest/${userId}`, { mealType }, getAuthHeaders());
     return response.data;
   } catch (error) {
     throw new Error(error.response?.data?.message || 'Failed to generate suggested meal plans');
@@ -45,7 +45,7 @@ export const deleteMealPlan = async (id, userId) => {
   try {
     const response = await axios.delete(`${API_URL}/${id}`, {
       ...getAuthHeaders(),
-      data: { userId }
+      params: { userId }
     });
     return response.data;
   } catch (error) {

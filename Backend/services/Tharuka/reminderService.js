@@ -1,6 +1,7 @@
 import MealReminder from "../../models/Tharuka/MealReminder.js";
 import MealPlan from "../../models/Tharuka/MealPlan.js";
 import { sendMealReminderEmail } from "./emailService.js";
+import nutritionService from "./nutritionService.js";
 
 /**
  * NOTE:
@@ -306,7 +307,7 @@ async function sendReminder(reminderId) {
   }
 }
 
-async function markReminderCompleted(reminderId, userId) {
+async function markReminderCompleted(reminderId, userId, mealData = null) {
   const reminder = await MealReminder.findOne({
     _id: reminderId,
     userId,
@@ -315,8 +316,26 @@ async function markReminderCompleted(reminderId, userId) {
 
   if (!reminder) return null;
 
+  // If meal data is provided, create a nutrition log linked to this reminder
+  let nutritionId = null;
+  if (mealData) {
+    try {
+      const nutritionEntry = await nutritionService.addMeal(userId, {
+        ...mealData,
+        mealReminderId: reminderId,
+      });
+      nutritionId = nutritionEntry._id;
+    } catch (error) {
+      console.error(`Failed to log meal for reminder ${reminderId}:`, error.message);
+      // We continue marking the reminder as completed even if logging fails
+    }
+  }
+
   reminder.status = "completed";
   reminder.completedAt = new Date();
+  if (nutritionId) {
+    reminder.nutritionId = nutritionId;
+  }
   await reminder.save();
 
   return reminder;
