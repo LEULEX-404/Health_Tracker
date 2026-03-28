@@ -8,7 +8,7 @@ import ReportsTab from './ReportsTab';
 import AppointmentsTab from './AppointmentsTab';
 import AdminAlertsTab from '../../Tharindu/AdminAlertsTab';
 import AdminAppointmentsTab from '../../Tharindu/AdminAppointmentsTab';
-import { Users, UserCheck, UserPlus, Activity, ShieldAlert, LogOut, Sun, Moon, Menu, Clock, FileText, CheckCircle, X } from 'lucide-react';
+import { Users, UserCheck, UserPlus, Activity, ShieldAlert, LogOut, Sun, Moon, Menu, Clock, FileText, CheckCircle, X, Heart, ShieldCheck } from 'lucide-react';
 import { toast } from 'react-hot-toast';
 
 import '../../../styles/Imasha/AdminDashboard.css';
@@ -83,6 +83,13 @@ const AdminDashboard = () => {
         }
     };
 
+    const getGreeting = () => {
+        const h = new Date().getHours();
+        if (h < 12) return 'Good Morning';
+        if (h < 17) return 'Good Afternoon';
+        return 'Good Evening';
+    };
+
     const renderContent = () => {
         switch (activeTab) {
             case 'patients': return <PatientsTable />;
@@ -93,50 +100,154 @@ const AdminDashboard = () => {
             case 'alerts': return <AdminAlertsTab />;
             default: return (
                 <div className="admin-overview">
+
+                    {/* ── Hero Welcome Banner ── */}
+                    <div className="admin-hero-banner">
+                        <div className="hero-left">
+                            <div className="hero-live-pill">
+                                <span className="hero-live-dot" />
+                                LIVE MONITORING
+                            </div>
+                            <h2 className="hero-greeting">
+                                {getGreeting()},{' '}
+                                <span className="hero-name">
+                                    {user?.firstName ? `${user.firstName} ${user.lastName || ''}`.trim() : 'Super Admin'}
+                                </span>
+                            </h2>
+                            <p className="hero-subtitle">
+                                {new Date().toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}
+                                &nbsp;·&nbsp; PulseNova Health Command Center
+                            </p>
+                            <div className="hero-quick-stats">
+                                <div className="hero-qstat qstat-green">
+                                    <div className="qstat-icon-wrap">
+                                        <Users size={15} />
+                                    </div>
+                                    <div className="qstat-body">
+                                        <span className="qstat-value">{dashboardStats.loading ? '—' : dashboardStats.totalPatients}</span>
+                                        <span className="qstat-label">Patients Active</span>
+                                    </div>
+                                </div>
+                                <div className="hero-qstat qstat-cyan">
+                                    <div className="qstat-icon-wrap">
+                                        <Clock size={15} />
+                                    </div>
+                                    <div className="qstat-body">
+                                        <span className="qstat-value">{dashboardStats.loading ? '—' : auditLogs.length}</span>
+                                        <span className="qstat-label">Audits Today</span>
+                                    </div>
+                                </div>
+                                <div className="hero-qstat qstat-amber">
+                                    <div className="qstat-icon-wrap">
+                                        <ShieldAlert size={15} />
+                                    </div>
+                                    <div className="qstat-body">
+                                        <span className="qstat-value">2</span>
+                                        <span className="qstat-label">Alerts</span>
+                                    </div>
+                                </div>
+                                <div className="hero-qstat qstat-purple">
+                                    <div className="qstat-icon-wrap">
+                                        <Activity size={15} />
+                                    </div>
+                                    <div className="qstat-body">
+                                        <span className="qstat-value">99.8%</span>
+                                        <span className="qstat-label">Uptime</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div className="hero-image-wrap">
+                            <img
+                                src="/images/Imasha/Admin/admin_Dashboard.png"
+                                alt="Admin Visual"
+                                className="hero-doctor-img"
+                                onError={(e) => { e.target.onerror = null; e.target.src = '/images/Priya/doctor-01.png'; }}
+                            />
+                        </div>
+                    </div>
+                    {/* ── End Hero Banner ── */}
+
                     <div className="admin-stats-grid">
-                        <div className="admin-stat-card stat-card-green">
-                            <div className="stat-header">
-                                <div className="stat-icon-wrap"><Users size={20} /></div>
-                                <span className="stat-trend trend-up">↑ 12%</span>
+                        {/* Card 1: Total Users */}
+                        <div className="admin-stat-card card-users">
+                            <div className="card-bg-glow" />
+                            <div className="card-top-row">
+                                <div className="card-icon-wrap"><Users size={18} /></div>
+                                <span className="card-status-pill">Active</span>
                             </div>
-                            <div className="stat-body">
-                                <p className="stat-value">{dashboardStats.loading ? '...' : dashboardStats.totalUsers}</p>
-                                <h3 className="stat-label">Total Users</h3>
+                            <div className="card-middle">
+                                <p className="card-value">{dashboardStats.loading ? '...' : dashboardStats.totalUsers}</p>
+                                <h3 className="card-label">TOTAL USERS</h3>
                             </div>
-                            <div className="stat-bar" />
+                            <div className="card-bottom">
+                                <div className="card-trend">
+                                    <span className="trend-val">↑ +12%</span>
+                                    <span className="trend-sub">vs last month</span>
+                                </div>
+                            </div>
+                            <img src="/images/Imasha/Admin/stats_1.png" alt="Users Bg" className="card-bg-img" />
                         </div>
-                        <div className="admin-stat-card stat-card-cyan">
-                            <div className="stat-header">
-                                <div className="stat-icon-wrap"><UserCheck size={20} /></div>
-                                <span className="stat-trend trend-stable">↑ 5.2%</span>
+
+                        {/* Card 2: Active Users */}
+                        <div className="admin-stat-card card-active">
+                            <div className="card-bg-glow" />
+                            <div className="card-top-row">
+                                <div className="card-icon-wrap"><UserCheck size={18} /></div>
+                                <span className="card-status-pill">Online</span>
                             </div>
-                            <div className="stat-body">
-                                <p className="stat-value">{dashboardStats.loading ? '...' : dashboardStats.totalActive}</p>
-                                <h3 className="stat-label">Active Users</h3>
+                            <div className="card-middle">
+                                <p className="card-value">{dashboardStats.loading ? '...' : dashboardStats.totalActive}</p>
+                                <h3 className="card-label">ACTIVE USERS</h3>
                             </div>
-                            <div className="stat-bar" />
+                            <div className="card-bottom">
+                                <div className="card-trend">
+                                    <span className="trend-val">↑ +5.2%</span>
+                                    <span className="trend-sub">this week</span>
+                                </div>
+                            </div>
+                            <img src="/images/Imasha/Admin/stats_2.png" alt="Users Bg" className="card-bg-img" />
                         </div>
-                        <div className="admin-stat-card stat-card-amber">
-                            <div className="stat-header">
-                                <div className="stat-icon-wrap"><Activity size={20} /></div>
-                                <span className="stat-trend trend-up">Optimal</span>
+
+                        {/* Card 3: Active Patients */}
+                        <div className="admin-stat-card card-patients">
+                            <div className="card-bg-glow" />
+                            <div className="card-top-row">
+                                <div className="card-icon-wrap"><Heart size={18} /></div>
+                                <span className="card-status-pill">Monitored</span>
                             </div>
-                            <div className="stat-body">
-                                <p className="stat-value">{dashboardStats.loading ? '...' : dashboardStats.totalPatients}</p>
-                                <h3 className="stat-label">Active Patients</h3>
+                            <div className="card-middle">
+                                <p className="card-value">{dashboardStats.loading ? '...' : dashboardStats.totalPatients}</p>
+                                <h3 className="card-label">ACTIVE PATIENTS</h3>
                             </div>
-                            <div className="stat-bar" />
+                            <div className="card-bottom">
+                                <div className="card-trend">
+                                    <span className="trend-val">↑ +3 Today</span>
+                                    <span className="trend-sub">under monitoring</span>
+                                </div>
+                            </div>
+                            <img src="/images/Imasha/Admin/stats_3.png" alt="Patients Bg" className="card-bg-img" />
                         </div>
-                        <div className="admin-stat-card stat-card-purple">
-                            <div className="stat-header">
-                                <div className="stat-icon-wrap"><ShieldAlert size={20} /></div>
-                                <span className="stat-trend trend-stable">Online</span>
+
+                        {/* Card 4: System Health */}
+                        <div className="admin-stat-card card-health">
+                            <div className="card-bg-glow" />
+                            <div className="card-top-row">
+                                <div className="card-icon-wrap"><ShieldCheck size={18} /></div>
+                                <span className="card-status-pill">Secured</span>
                             </div>
-                            <div className="stat-body">
-                                <p className="stat-value">99.8%</p>
-                                <h3 className="stat-label">System Health</h3>
+                            <div className="card-middle">
+                                <p className="card-value">99.8%</p>
+                                <h3 className="card-label">SYSTEM HEALTH</h3>
                             </div>
-                            <div className="stat-bar" />
+                            <div className="card-bottom">
+                                <div className="card-trend">
+                                    <span className="trend-val">↑ Optimal</span>
+                                    <span className="trend-sub">overall uptime</span>
+                                </div>
+                            </div>
+                            <img src="/images/Imasha/Admin/stats_4.png" alt="Health Bg" className="card-bg-img" />
                         </div>
                     </div>
 
