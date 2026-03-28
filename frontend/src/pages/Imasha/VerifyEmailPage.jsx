@@ -3,7 +3,6 @@ import { Link, useSearchParams, useNavigate } from 'react-router-dom';
 import { CheckCircle2, XCircle, ArrowRight, Loader2 } from 'lucide-react';
 import { toast } from 'react-hot-toast';
 
-import AuthLayout from '../../components/Imasha/AuthLayout';
 import DoctorCat from '../../components/Imasha/DoctorCat';
 import { useAuth } from '../../context/Imasha/AuthContext';
 
@@ -42,9 +41,8 @@ export default function VerifyEmailPage() {
     }, [token, confirmEmail]);
 
     return (
-        <AuthLayout>
-            <div className="Imasha-form-card Imasha-confirmation-card">
-                {/* Mascot */}
+        <div className="Imasha-form-card Imasha-confirmation-card">
+            {/* Mascot */}
                 <div className="Imasha-mascot-wrap">
                     <DoctorCat
                         isHappy={status === 'success'}
@@ -95,7 +93,6 @@ export default function VerifyEmailPage() {
                         </div>
                     </div>
                 )}
-            </div>
-        </AuthLayout>
+        </div>
     );
 }

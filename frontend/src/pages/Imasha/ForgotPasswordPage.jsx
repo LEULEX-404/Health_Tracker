@@ -3,7 +3,6 @@ import { Link } from 'react-router-dom';
 import { Mail, AlertCircle, CheckCircle2, ArrowLeft, Send } from 'lucide-react';
 import { toast } from 'react-hot-toast';
 
-import AuthLayout from '../../components/Imasha/AuthLayout';
 import DoctorCat from '../../components/Imasha/DoctorCat';
 import AuthFormInput from '../../components/Imasha/AuthFormInput';
 import { useAuth } from '../../context/Imasha/AuthContext';
@@ -41,8 +40,7 @@ export default function ForgotPasswordPage() {
 
     if (isSubmitted) {
         return (
-            <AuthLayout>
-                <div className="Imasha-form-card Imasha-confirmation-card">
+            <div className="Imasha-form-card Imasha-confirmation-card">
                     <div className="Imasha-mascot-wrap">
                         <DoctorCat isHappy={true} />
                     </div>
@@ -70,14 +68,12 @@ export default function ForgotPasswordPage() {
                         </Link>
                     </p>
                 </div>
-            </AuthLayout>
         );
     }
 
     return (
-        <AuthLayout>
-            <div className="Imasha-form-card">
-                <div className="Imasha-mascot-wrap">
+        <div className="Imasha-form-card">
+            <div className="Imasha-mascot-wrap">
                     <DoctorCat
                         isHiding={false}
                         isWatching={email.length > 0}
@@ -123,7 +119,6 @@ export default function ForgotPasswordPage() {
                         <ArrowLeft size={14} /> Back to Sign In
                     </Link>
                 </p>
-            </div>
-        </AuthLayout>
+        </div>
     );
 }
