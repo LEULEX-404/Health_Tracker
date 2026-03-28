@@ -2,9 +2,8 @@ import { useState, useEffect, useCallback } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Mail, ArrowRight } from 'lucide-react';
 import { toast } from 'react-hot-toast';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion } from 'framer-motion';
 
-import AuthLayout from '../../components/Imasha/AuthLayout';
 import DoctorCat from '../../components/Imasha/DoctorCat';
 import PasswordInput from '../../components/Imasha/PasswordInput';
 import AuthFormInput from '../../components/Imasha/AuthFormInput';
@@ -101,11 +100,11 @@ export default function LoginPage() {
     }, []);
 
     return (
-        <AuthLayout visualVariant="stable">
+        <>
             <motion.div 
                 initial={{ opacity: 0, x: 20 }}
                 animate={{ opacity: 1, x: 0 }}
-                transition={{ duration: 0.5 }}
+                transition={{ duration: 0.4 }}
                 className="Imasha-auth-toggle"
             >
                 <Link to="/login" className="Imasha-auth-toggle-btn active">Sign In</Link>
@@ -113,9 +112,9 @@ export default function LoginPage() {
             </motion.div>
 
             <motion.div 
-                initial={{ opacity: 0, scale: 0.95 }}
+                initial={{ opacity: 0, scale: 0.97 }}
                 animate={{ opacity: 1, scale: 1 }}
-                transition={{ duration: 0.5, delay: 0.1 }}
+                transition={{ duration: 0.4, delay: 0.08 }}
                 className="Imasha-form-card"
             >
                 {/* Mascot */}
@@ -199,6 +198,6 @@ export default function LoginPage() {
                     <Link to="/register" className="Imasha-auth-link">Create account</Link>
                 </p>
             </motion.div>
-        </AuthLayout>
+        </>
     );
 }
