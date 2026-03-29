@@ -2,7 +2,7 @@
 import {
     useState, useRef, useEffect, useCallback, useMemo, memo
 } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
     User, Mail, Phone, MapPin, Calendar,
@@ -204,8 +204,12 @@ function useProfileStats(user, token) {
 
 /* ── Main Component ─────────────────────────────────────── */
 export default function ProfilePage() {
+<<<<<<< Updated upstream
     const { user, token, logout } = useAuth();
     const navigate = useNavigate();
+=======
+    const { user, token, logout, updateUser } = useAuth();
+>>>>>>> Stashed changes
     const { isDark } = useTheme();
     const [activeTab, setActiveTab]     = useState('settings');
     const [isUpdating, setIsUpdating]   = useState(false);
@@ -218,6 +222,7 @@ export default function ProfilePage() {
         firstName: '', lastName: '', phone: '',
         address: '', dateOfBirth: '', gender: '',
     });
+<<<<<<< Updated upstream
     const [recentAppointments, setRecentAppointments] = useState([]);
     const [appointmentsLoading, setAppointmentsLoading] = useState(false);
 
@@ -252,6 +257,10 @@ export default function ProfilePage() {
         }
     }, [token, user?.email]);
 
+=======
+    const fileInputRef = useRef(null);
+
+>>>>>>> Stashed changes
     // Sync user → form once
     useEffect(() => {
         if (!user) return;
@@ -266,12 +275,6 @@ export default function ProfilePage() {
             gender:      user.gender      || '',
         });
     }, [user]);
-
-    useEffect(() => {
-        if (activeTab === 'appointments') {
-            loadRecentAppointments();
-        }
-    }, [activeTab, loadRecentAppointments]);
 
     // profile completeness score
     const profileScore = useMemo(() => {
@@ -339,6 +342,7 @@ export default function ProfilePage() {
         finally { setImageLoading(false); }
     };
 
+<<<<<<< Updated upstream
     const handleDeleteAppointment = async (appointmentId) => {
         const ok = window.confirm('Do you want to delete this appointment?');
         if (!ok) return;
@@ -357,6 +361,8 @@ export default function ProfilePage() {
         }
     };
 
+=======
+>>>>>>> Stashed changes
     const displayName = [user?.firstName, user?.lastName].filter(Boolean).join(' ') || 'User';
     const ActiveIcon  = TABS.find(t => t.id === activeTab)?.icon ?? Settings;
 
@@ -458,6 +464,7 @@ export default function ProfilePage() {
                         <h3 className="ims-profile__form-section-title">
                             <ClipboardList size={12} />Appointments
                         </h3>
+<<<<<<< Updated upstream
                         <Link to="/Appointment" className="ims-profile__save-btn" style={{ textDecoration: 'none', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', width: 'auto', padding: '0 14px', height: 36 }}>
                             Manage Appointments
                         </Link>
@@ -496,6 +503,40 @@ export default function ProfilePage() {
                             ))}
                         </div>
                     )}
+=======
+                        <Link
+                            to="/Appointment"
+                            className="ims-profile__save-btn"
+                            style={{
+                                textDecoration: 'none',
+                                display: 'inline-flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                width: 'auto',
+                                padding: '0 14px',
+                                height: 36,
+                                fontSize: '13px',
+                            }}
+                        >
+                            All doctor appointments
+                        </Link>
+                    </div>
+
+                    <div className="ims-profile__appointments-layout" style={{ display: 'flex', flexDirection: 'column', gap: '30px' }}>
+                        {/* Caregiver Bookings Section */}
+                        <div className="ims-profile__section">
+                            <h4 style={{ fontSize: '14px', marginBottom: '15px', color: 'var(--p-cyan)', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                <Sparkles size={14} /> Caregiver Services
+                            </h4>
+                            <PatientAppointmentsTab onBookingSuccess={triggerStatsRefresh} />
+                        </div>
+                    </div>
+                </motion.div>
+            );
+        }
+
+        /* ── Alerts ── */
+>>>>>>> Stashed changes
         if (activeTab === 'alerts') {
             return (
                 <motion.div
