@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { X, Save, Clock, LayoutList, Plus, Trash2 } from 'lucide-react';
 import './NutritionComponents.css';
 
@@ -55,7 +56,7 @@ export default function MealFormModal({ isOpen, onClose, onSubmit, initialData, 
     setLoading(false);
   };
 
-  return (
+  const modalContent = (
     <div className="n-overlay">
       <div className="n-modal" onClick={e => e.stopPropagation()}>
         {/* Header */}
@@ -159,4 +160,6 @@ export default function MealFormModal({ isOpen, onClose, onSubmit, initialData, 
       </div>
     </div>
   );
+
+  return createPortal(modalContent, document.body);
 }

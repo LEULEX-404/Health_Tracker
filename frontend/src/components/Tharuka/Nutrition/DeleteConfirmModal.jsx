@@ -1,4 +1,5 @@
 import React from 'react';
+import { createPortal } from 'react-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { AlertCircle, Trash2, X } from 'lucide-react';
 import './NutritionComponents.css';
@@ -6,7 +7,7 @@ import './NutritionComponents.css';
 export default function DeleteConfirmModal({ isOpen, onClose, onConfirm, title, message, loading }) {
   if (!isOpen) return null;
 
-  return (
+  const modalContent = (
     <AnimatePresence>
       <div className="n-overlay" onClick={onClose}>
         <motion.div 
@@ -50,4 +51,6 @@ export default function DeleteConfirmModal({ isOpen, onClose, onConfirm, title, 
       </div>
     </AnimatePresence>
   );
+
+  return createPortal(modalContent, document.body);
 }
