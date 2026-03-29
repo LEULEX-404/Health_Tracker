@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { createPortal } from 'react-dom';
 import { X, Save, Calendar, Clock, LayoutList, Plus, Trash2 } from 'lucide-react';
 import './NutritionComponents.css';
 
@@ -55,7 +56,7 @@ export default function ManualMealPlanModal({ isOpen, onClose, onSubmit }) {
     setForm(blank);
   };
 
-  return (
+  const modalContent = (
     <div className="n-overlay" onClick={onClose}>
       <div className="n-modal" onClick={e => e.stopPropagation()} style={{ maxWidth: 600 }}>
         <div className="n-modal-head">
@@ -146,4 +147,6 @@ export default function ManualMealPlanModal({ isOpen, onClose, onSubmit }) {
       </div>
     </div>
   );
+
+  return createPortal(modalContent, document.body);
 }

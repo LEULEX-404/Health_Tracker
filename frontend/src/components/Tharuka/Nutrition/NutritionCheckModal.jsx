@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { createPortal } from 'react-dom';
 import { X, Search, Trash2, Plus, Flame } from 'lucide-react';
 import { checkNutrition } from '../../../services/Tharuka/nutritionService';
 import toast from 'react-hot-toast';
@@ -73,7 +74,7 @@ export default function NutritionCheckModal({ isOpen, onClose, onLogResolvedMeal
     onClose();
   };
 
-  return (
+  const modalContent = (
     <div className="n-overlay" onClick={onClose}>
       <div className="n-modal" onClick={e => e.stopPropagation()}>
         {/* Header */}
@@ -177,4 +178,6 @@ export default function NutritionCheckModal({ isOpen, onClose, onLogResolvedMeal
       </div>
     </div>
   );
+
+  return createPortal(modalContent, document.body);
 }

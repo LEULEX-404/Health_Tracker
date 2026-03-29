@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
+import { createPortal } from 'react-dom';
 import { useAuth } from '../../../context/Imasha/AuthContext';
 import { getUserMealPlans, deleteMealPlan, suggestMealPlans, createMealPlan } from '../../../services/Tharuka/mealPlanService';
 import { getUserReminders, markReminderCompleted, markReminderSkipped } from '../../../services/Tharuka/mealReminderService';
@@ -444,44 +445,47 @@ const TYPE_COLORS = {
       />
 
       {/* AI Suggestion Type Selector */}
-      <AnimatePresence>
-        {isAISelectOpen && (
-          <div className="n-overlay" onClick={() => setIsAISelectOpen(false)}>
-            <motion.div 
-              className="n-modal n-ai-select-modal" 
-              initial={{ opacity: 0, scale: 0.9, y: 20 }}
-              animate={{ opacity: 1, scale: 1, y: 0 }}
-              exit={{ opacity: 0, scale: 0.9, y: 20 }}
-              onClick={e => e.stopPropagation()}
-              style={{ maxWidth: 400 }}
-            >
-              <div className="n-modal-head">
-                <div>
-                  <h2 style={{ fontSize: '1.4rem' }}>Generate AI Plan</h2>
-                  <p>Choose a category for your new AI-tailored plan</p>
+      {createPortal(
+        <AnimatePresence>
+          {isAISelectOpen && (
+            <div className="n-overlay" onClick={() => setIsAISelectOpen(false)}>
+              <motion.div 
+                className="n-modal n-ai-select-modal" 
+                initial={{ opacity: 0, scale: 0.9, y: 20 }}
+                animate={{ opacity: 1, scale: 1, y: 0 }}
+                exit={{ opacity: 0, scale: 0.9, y: 20 }}
+                onClick={e => e.stopPropagation()}
+                style={{ maxWidth: 400 }}
+              >
+                <div className="n-modal-head">
+                  <div>
+                    <h2 style={{ fontSize: '1.4rem' }}>Generate AI Plan</h2>
+                    <p>Choose a category for your new AI-tailored plan</p>
+                  </div>
+                  <button className="n-modal-close" onClick={() => setIsAISelectOpen(false)}><X size={20} /></button>
                 </div>
-                <button className="n-modal-close" onClick={() => setIsAISelectOpen(false)}><X size={20} /></button>
-              </div>
-              <div className="n-ai-options">
-                {[
-                  { id: 'breakfast', label: 'Breakfast', icon: Sunrise, desc: 'Energizing morning starts' },
-                  { id: 'lunch', label: 'Lunch', icon: Sun, desc: 'Balanced afternoon fuel' },
-                  { id: 'dinner', label: 'Dinner', icon: Sunset, desc: 'Nourishing end-of-day meals' },
-                  { id: 'snack', label: 'Snacks', icon: Coffee, desc: 'Healthy quick bites' }
-                ].map(opt => (
-                  <button key={opt.id} className="n-ai-opt-btn" onClick={() => handleAISelect(opt.id)}>
-                    <div className="n-ai-opt-icon"><opt.icon size={22} /></div>
-                    <div className="n-ai-opt-text">
-                      <strong>{opt.label}</strong>
-                      <span>{opt.desc}</span>
-                    </div>
-                  </button>
-                ))}
-              </div>
-            </motion.div>
-          </div>
-        )}
-      </AnimatePresence>
+                <div className="n-ai-options">
+                  {[
+                    { id: 'breakfast', label: 'Breakfast', icon: Sunrise, desc: 'Energizing morning starts' },
+                    { id: 'lunch', label: 'Lunch', icon: Sun, desc: 'Balanced afternoon fuel' },
+                    { id: 'dinner', label: 'Dinner', icon: Sunset, desc: 'Nourishing end-of-day meals' },
+                    { id: 'snack', label: 'Snacks', icon: Coffee, desc: 'Healthy quick bites' }
+                  ].map(opt => (
+                    <button key={opt.id} className="n-ai-opt-btn" onClick={() => handleAISelect(opt.id)}>
+                      <div className="n-ai-opt-icon"><opt.icon size={22} /></div>
+                      <div className="n-ai-opt-text">
+                        <strong>{opt.label}</strong>
+                        <span>{opt.desc}</span>
+                      </div>
+                    </button>
+                  ))}
+                </div>
+              </motion.div>
+            </div>
+          )}
+        </AnimatePresence>,
+        document.body
+      )}
 
       <DeleteConfirmModal 
         isOpen={isDeleteModalOpen}
