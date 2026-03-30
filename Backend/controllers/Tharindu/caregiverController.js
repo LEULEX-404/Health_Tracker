@@ -101,6 +101,46 @@ export const updateBookingStatus = async (req, res) => {
 };
 
 /**
+ * Update booking status (Admin action)
+ */
+export const updateBookingStatusByAdmin = async (req, res) => {
+    try {
+        const { bookingId } = req.params;
+        const { status } = req.body;
+
+        if (!["Approved", "Cancelled", "Rejected", "Completed", "Pending"].includes(status)) {
+            return res.status(400).json({ message: "Invalid status value" });
+        }
+
+        const booking = await CaregiverBooking.findById(bookingId);
+
+        if (!booking) {
+            return res.status(404).json({ message: "Booking not found" });
+        }
+
+        booking.status = status;
+        await booking.save();
+
+        const message = `Your caregiver booking request has been ${status.toLowerCase()} by the admin.`;
+        await sendNotification(booking.patientId, "inApp", message, {
+            bookingId: booking._id,
+            status,
+        });
+
+        const updatedBooking = await CaregiverBooking.findById(bookingId)
+            .populate("patientId", "firstName lastName email phone")
+            .populate("caregiverId", "firstName lastName email phone");
+
+        res.status(200).json({
+            success: true,
+            data: updatedBooking,
+        });
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+};
+
+/**
  * Delete a booking (Patient or Caregiver action)
  */
 export const deleteBooking = async (req, res) => {
