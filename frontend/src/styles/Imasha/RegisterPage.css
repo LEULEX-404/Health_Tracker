@@ -130,7 +130,85 @@
     display: flex;
     align-items: center;
     justify-content: center;
+    -webkit-user-select: none;
     user-select: none;
+    border-radius: 999px;
+    border: 1px solid var(--iauth-input-border);
+    background: rgba(0, 168, 125, 0.04);
+    color: var(--iauth-text);
+    font-weight: 700;
+    font-size: 0.85rem;
+    letter-spacing: 0.2px;
+    cursor: pointer;
+    transition: transform 0.18s ease, background 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.Imasha-health-chip:hover {
+    transform: translateY(-1px);
+    border-color: rgba(0, 168, 125, 0.45);
+    box-shadow: 0 10px 24px rgba(0, 168, 125, 0.12);
+}
+
+.Imasha-health-chip.active {
+    background: rgba(0, 168, 125, 0.14);
+    border-color: rgba(0, 168, 125, 0.7);
+    box-shadow: 0 12px 30px rgba(0, 168, 125, 0.18);
+}
+
+/* ── Gender pills (Step 2) ── */
+.Imasha-selection-group {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 0.6rem;
+    margin-top: 0.55rem;
+}
+
+.Imasha-gender-pill {
+    width: 100%;
+    border-radius: 999px;
+    border: 1px solid var(--iauth-input-border);
+    background: rgba(0, 168, 125, 0.04);
+    color: var(--iauth-text);
+    padding: 0.75rem 0.9rem;
+    font-weight: 800;
+    font-size: 0.9rem;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    transition: transform 0.18s ease, background 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.Imasha-gender-pill:hover {
+    transform: translateY(-1px);
+    border-color: rgba(0, 168, 125, 0.45);
+    box-shadow: 0 10px 24px rgba(0, 168, 125, 0.12);
+}
+
+.Imasha-gender-pill.active {
+    background: var(--iauth-green);
+    border-color: var(--iauth-green);
+    color: #fff;
+    box-shadow: 0 12px 32px rgba(0, 168, 125, 0.25);
+}
+
+.Iauth-dark .Imasha-gender-pill,
+.Iauth-dark .Imasha-health-chip {
+    background: rgba(255, 255, 255, 0.03);
+}
+
+.Iauth-dark .Imasha-gender-pill.active,
+.Iauth-dark .Imasha-health-chip.active {
+    background: rgba(0, 168, 125, 0.25);
+    border-color: rgba(57, 255, 20, 0.35);
+    box-shadow: 0 14px 34px rgba(0, 168, 125, 0.18);
+}
+
+@media (max-width: 520px) {
+    .Imasha-selection-group {
+        grid-template-columns: 1fr;
+    }
 }
 
 /* ── Register field group entry animation ── */
