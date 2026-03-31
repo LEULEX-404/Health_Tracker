@@ -48,7 +48,9 @@ export default function PatientAppointmentsTab({ onBookingSuccess }) {
       const cgData = await cgRes.json();
       if (!cgRes.ok) throw new Error(cgData.message || 'Failed to fetch available caregivers');
       if (cgData && cgData.data) {
-        setCaregivers(cgData.data);
+        // Client-side safety: also filter out the logged-in user
+        const filtered = cgData.data.filter(cg => cg._id !== (user?.id || user?._id));
+        setCaregivers(filtered);
       }
     } catch (e) {
       toast.error(e.message);
@@ -230,6 +232,30 @@ export default function PatientAppointmentsTab({ onBookingSuccess }) {
             exit={{ opacity: 0, y: -10 }}
             transition={{ duration: 0.2 }}
           >
+            {/* ── CAREGIVER ROLE GUARD ── */}
+            {user?.role === 'caregiver' && (
+              <div style={{
+                padding: '2.5rem',
+                borderRadius: '16px',
+                border: '1px dashed rgba(245,158,11,0.4)',
+                background: 'rgba(245,158,11,0.06)',
+                textAlign: 'center',
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'center',
+                gap: '0.75rem',
+                marginBottom: '1.5rem'
+              }}>
+                <div style={{ width: '52px', height: '52px', borderRadius: '50%', background: 'rgba(245,158,11,0.12)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                  <HeartHandshake size={26} color="#f59e0b" />
+                </div>
+                <h3 style={{ margin: 0, color: 'var(--admin-text)', fontSize: '1.1rem' }}>Booking Unavailable for Caregivers</h3>
+                <p style={{ margin: 0, color: 'var(--admin-text-muted)', maxWidth: '420px', lineHeight: 1.55, fontSize: '0.92rem' }}>
+                  As a caregiver, you cannot book appointments with yourself or other caregivers.
+                  Switch to a patient account if you need caregiver services.
+                </p>
+              </div>
+            )}
             {loading ? (
               <div style={{ minHeight: '400px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                 <Loader2 className="spin" size={32} color="var(--p-green)" />
@@ -274,8 +300,14 @@ export default function PatientAppointmentsTab({ onBookingSuccess }) {
                               <User size={18} />
                             </div>
                             <div>
-                              <div style={{ color: 'var(--admin-text-muted)', fontSize: '0.75rem' }}>Caregiver Name</div>
-                              <div style={{ color: 'var(--admin-text)', fontWeight: 600, fontSize: '0.95rem' }}>{book.caregiverId?.firstName} {book.caregiverId?.lastName}</div>
+                              <div style={{ color: 'var(--admin-text-muted)', fontSize: '0.75rem' }}>Your Caregiver</div>
+                              <div style={{ color: 'var(--admin-text)', fontWeight: 600, fontSize: '0.95rem' }}>
+                                {book.caregiverId
+                                  ? (book.caregiverId.firstName || book.caregiverId.lastName)
+                                    ? `${book.caregiverId.firstName ?? ''} ${book.caregiverId.lastName ?? ''}`.trim()
+                                    : book.caregiverId.name || 'Unknown Caregiver'
+                                  : 'Unknown Caregiver'}
+                              </div>
                             </div>
                           </div>
                         </div>
@@ -284,8 +316,8 @@ export default function PatientAppointmentsTab({ onBookingSuccess }) {
                   )}
                 </div>
 
-                {/* BOOK A NEW APPOINTMENT SECTION */}
-                <div style={{ background: 'var(--admin-card-bg)', border: '1px solid var(--admin-border)', borderRadius: '20px', padding: '2rem', display: 'flex', flexDirection: 'column', gap: '1.5rem', boxShadow: '0 4px 20px rgba(0,0,0,0.1)' }}>
+                {/* BOOK A NEW APPOINTMENT SECTION — hidden for caregivers */}
+                {user?.role !== 'caregiver' && <div style={{ background: 'var(--admin-card-bg)', border: '1px solid var(--admin-border)', borderRadius: '20px', padding: '2rem', display: 'flex', flexDirection: 'column', gap: '1.5rem', boxShadow: '0 4px 20px rgba(0,0,0,0.1)' }}>
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                     <h3 style={{ margin: 0, fontSize: '1.3rem', color: 'var(--admin-text)', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
                       <Sparkles size={20} color="var(--p-green)" /> Book a Caregiver
@@ -418,7 +450,7 @@ export default function PatientAppointmentsTab({ onBookingSuccess }) {
                       </form>
                     </motion.div>
                   )}
-                </div>
+                </div>}
 
               </div>
             )}
