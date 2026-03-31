@@ -939,6 +939,7 @@ export default function ProfilePage() {
                                         <div className="ims-profile__avatar-wrap">
                                             {user?.profileImage
                                                 ? <img 
+                                                    src={user.profileImage} 
                                                     fetchPriority="high"
                                                     loading="eager"
                                                     alt={displayName} 
