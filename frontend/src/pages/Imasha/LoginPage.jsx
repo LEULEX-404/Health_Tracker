@@ -101,15 +101,7 @@ export default function LoginPage() {
 
     return (
         <>
-            <motion.div 
-                initial={{ opacity: 0, x: 20 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ duration: 0.4 }}
-                className="Imasha-auth-toggle"
-            >
-                <Link to="/login" className="Imasha-auth-toggle-btn active">Sign In</Link>
-                <Link to="/register" className="Imasha-auth-toggle-btn">Sign Up</Link>
-            </motion.div>
+
 
             <motion.div 
                 initial={{ opacity: 0, scale: 0.97 }}

@@ -75,7 +75,6 @@
    LAYOUT: PERSISTENT SHELL
    ═══════════════════════════════════════════════════════════════════ */
 
-/* VISUAL PANEL (Green backdrop) */
 .Iauth-visual-panel {
   position: absolute;
   top: 0;
@@ -87,6 +86,7 @@
   overflow: visible;
   /* Let the curve be controlled by `.Iauth-visual-inner` */
   background: linear-gradient(145deg, #00A87D 0%, #005a42 100%);
+  transition: border-radius 0.6s cubic-bezier(0.25, 1, 0.5, 1);
   will-change: transform;
 }
 
@@ -117,6 +117,10 @@
 .Iauth-form-scroll {
   flex: 1;
   overflow-y: auto;
+  scroll-behavior: smooth;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior-y: contain;
+  touch-action: pan-y;
   padding: 4rem 2rem 5rem;
   display: flex;
   justify-content: center;
@@ -138,7 +142,6 @@
   max-width: 480px;
   display: flex;
   flex-direction: column;
-  will-change: transform, opacity;
 }
 
 /* Respect OS-level reduced motion preferences (big performance win) */
@@ -174,7 +177,7 @@
   flex-direction: column;
   padding: 1.25rem 2rem;
   /* Slashed padding to maximize image room */
-  transition: border-radius 0.72s cubic-bezier(0.43, 0.13, 0.23, 0.96), background 0.4s ease;
+  transition: border-radius 0.6s cubic-bezier(0.25, 1, 0.5, 1), background 0.4s ease;
   z-index: 10;
   /* overflow intentionally removed so floating cards can span the screen divider */
 }
