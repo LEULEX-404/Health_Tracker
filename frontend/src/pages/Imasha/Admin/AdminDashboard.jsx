@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { motion } from 'framer-motion';
 import { useAuth } from '../../../context/Imasha/AuthContext';
 import AdminSidebar from '../../../components/Imasha/Admin/AdminSidebar';
 import PatientsTable from './PatientsTable';
@@ -13,11 +14,28 @@ import { toast } from 'react-hot-toast';
 
 import '../../../styles/Imasha/AdminDashboard.css';
 
+const StatCardBackground = ({ src, alt }) => {
+    const [loaded, setLoaded] = useState(false);
+    return (
+        <motion.img
+            initial={{ opacity: 0 }}
+            animate={{ opacity: loaded ? 1 : 0 }}
+            transition={{ duration: 0.8 }}
+            onLoad={() => setLoaded(true)}
+            src={src}
+            alt={alt}
+            className="card-bg-img"
+            loading="lazy"
+        />
+    );
+};
+
 const AdminDashboard = () => {
     const { user, logout, token } = useAuth();
     const [theme, setTheme] = useState('dark');
     const [activeTab, setActiveTab] = useState('overview');
     const [isSidebarOpen, setIsSidebarOpen] = useState(true);
+    const [heroLoaded, setHeroLoaded] = useState(false);
 
     // Stats state
     const [dashboardStats, setDashboardStats] = useState({
@@ -159,8 +177,16 @@ const AdminDashboard = () => {
                         </div>
 
                         <div className="hero-image-wrap">
-                            <img
+                            <motion.img
+                                initial={{ opacity: 0, scale: 0.96 }}
+                                animate={{ opacity: heroLoaded ? 1 : 0, scale: heroLoaded ? 1 : 0.96 }}
+                                transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
+                                onLoad={() => setHeroLoaded(true)}
                                 src="/images/Imasha/Admin/admin_Dashboard.png"
+                                srcSet="/images/Imasha/Admin/admin_Dashboard.png 2000w"
+                                sizes="(max-width: 1024px) 100vw, 40vw"
+                                fetchPriority="high"
+                                loading="eager"
                                 alt="Admin Visual"
                                 className="hero-doctor-img"
                                 onError={(e) => { e.target.onerror = null; e.target.src = '/images/Priya/doctor-01.png'; }}
@@ -187,7 +213,7 @@ const AdminDashboard = () => {
                                     <span className="trend-sub">vs last month</span>
                                 </div>
                             </div>
-                            <img src="/images/Imasha/Admin/stats_1.png" alt="Users Bg" className="card-bg-img" />
+                            <StatCardBackground src="/images/Imasha/Admin/stats_1.png" alt="Users Bg" />
                         </div>
 
                         {/* Card 2: Active Users */}
@@ -207,7 +233,7 @@ const AdminDashboard = () => {
                                     <span className="trend-sub">this week</span>
                                 </div>
                             </div>
-                            <img src="/images/Imasha/Admin/stats_2.png" alt="Users Bg" className="card-bg-img" />
+                            <StatCardBackground src="/images/Imasha/Admin/stats_2.png" alt="Users Bg" />
                         </div>
 
                         {/* Card 3: Active Patients */}
@@ -227,7 +253,7 @@ const AdminDashboard = () => {
                                     <span className="trend-sub">under monitoring</span>
                                 </div>
                             </div>
-                            <img src="/images/Imasha/Admin/stats_3.png" alt="Patients Bg" className="card-bg-img" />
+                            <StatCardBackground src="/images/Imasha/Admin/stats_3.png" alt="Patients Bg" />
                         </div>
 
                         {/* Card 4: System Health */}
@@ -247,7 +273,7 @@ const AdminDashboard = () => {
                                     <span className="trend-sub">overall uptime</span>
                                 </div>
                             </div>
-                            <img src="/images/Imasha/Admin/stats_4.png" alt="Health Bg" className="card-bg-img" />
+                            <StatCardBackground src="/images/Imasha/Admin/stats_4.png" alt="Health Bg" />
                         </div>
                     </div>
 

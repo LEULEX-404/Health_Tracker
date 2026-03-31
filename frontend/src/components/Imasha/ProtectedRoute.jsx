@@ -17,7 +17,7 @@ export default function ProtectedRoute({ children, allowedRoles }) {
     }
 
     if (!token) {
-        return <Navigate to="/login" state={{ from: location }} replace />;
+        return <Navigate to="/restricted" state={{ from: location, reason: 'auth' }} replace />;
     }
 
     if (allowedRoles && user && !allowedRoles.includes(user.role)) {

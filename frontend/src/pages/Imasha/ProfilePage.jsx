@@ -938,7 +938,12 @@ export default function ProfilePage() {
                                     >
                                         <div className="ims-profile__avatar-wrap">
                                             {user?.profileImage
-                                                ? <img src={user.profileImage} alt={displayName} className="ims-profile__avatar" />
+                                                ? <img 
+                                                    fetchPriority="high"
+                                                    loading="eager"
+                                                    alt={displayName} 
+                                                    className="ims-profile__avatar" 
+                                                  />
                                                 : <div className="ims-profile__avatar-placeholder"><User size={32} /></div>
                                             }
                                             {imageLoading
@@ -1032,9 +1037,12 @@ export default function ProfilePage() {
                             >
                                 <img
                                     src="/images/stats/banner_background_v2.png"
+                                    srcSet="/images/stats/banner_background_v2.png 1200w"
+                                    sizes="(max-width: 1024px) 100vw, 75vw"
                                     alt="Background"
                                     className="ims-profile__banner-bg"
                                     loading="eager"
+                                    fetchPriority="high"
                                 />
                                 <div className="ims-profile__banner-overlay" />
 
