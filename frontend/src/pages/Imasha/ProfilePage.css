@@ -2123,3 +2123,305 @@
   opacity: 0.5;
   cursor: not-allowed;
 }
+
+/* ======================================================
+   HEALTH CONDITIONS CHIPS
+   ====================================================== */
+.ims-profile__conditions-group {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  gap: 0.65rem;
+}
+
+.ims-profile__conditions-current {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  margin: 0.25rem 0 0.8rem;
+  padding: 0.6rem 0.8rem;
+  border-radius: 12px;
+  background: rgba(0, 200, 151, 0.08);
+  border: 1px solid rgba(0, 200, 151, 0.2);
+}
+
+.ims-profile__conditions-current-label {
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #0f766e;
+}
+
+.ims-profile__conditions-current-value {
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: #0f172a;
+}
+
+.ims-profile__condition-chip {
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  background: rgba(0, 200, 151, 0.05);
+  color: #0f172a;
+  border-radius: 999px;
+  padding: 0.58rem 1.1rem;
+  text-transform: capitalize;
+  font-size: 0.8rem;
+  font-weight: 700;
+  letter-spacing: 0.2px;
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.ims-profile__chip-inner {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.ims-profile__chip-check {
+  color: #ffffff;
+  animation: chipCheckPop 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+}
+
+@keyframes chipCheckPop {
+  from { transform: scale(0.5); opacity: 0; }
+  to { transform: scale(1); opacity: 1; }
+}
+
+.ims-profile__condition-chip:hover {
+  transform: translateY(-1px);
+  border-color: rgba(0, 200, 151, 0.45);
+  box-shadow: 0 8px 20px rgba(0, 200, 151, 0.14);
+}
+
+.ims-profile__condition-chip.active {
+  background: linear-gradient(135deg, #00c897, #00b4d8);
+  border-color: transparent;
+  color: #fff;
+  box-shadow: 0 10px 24px rgba(0, 180, 216, 0.25);
+  transform: translateY(-1px) scale(1.02);
+}
+
+[data-theme="dark"] .ims-profile__condition-chip {
+  background: rgba(255, 255, 255, 0.04);
+  border-color: rgba(255, 255, 255, 0.1);
+  color: #e2e8f0;
+}
+
+[data-theme="dark"] .ims-profile__condition-chip.active {
+  background: rgba(0, 200, 151, 0.22);
+  border-color: rgba(0, 200, 151, 0.4);
+  color: #fff;
+  box-shadow: 0 10px 24px rgba(0, 200, 151, 0.18);
+}
+
+[data-theme="dark"] .ims-profile__conditions-current {
+  background: rgba(0, 200, 151, 0.12);
+  border-color: rgba(0, 200, 151, 0.28);
+}
+
+[data-theme="dark"] .ims-profile__conditions-current-label {
+  color: #34d399;
+}
+
+[data-theme="dark"] .ims-profile__conditions-current-value {
+  color: #e2e8f0;
+}
+
+/* ======================================================
+   PROFILE UPDATE MODAL
+   ====================================================== */
+.ims-profile__section-actions {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.ims-profile__modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background:
+    radial-gradient(ellipse at 20% 15%, rgba(0, 200, 151, 0.18) 0%, transparent 50%),
+    radial-gradient(ellipse at 80% 85%, rgba(0, 180, 216, 0.14) 0%, transparent 55%),
+    rgba(2, 10, 8, 0.58);
+  -webkit-backdrop-filter: blur(4px);
+  backdrop-filter: blur(10px);
+  z-index: 5000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+}
+
+.ims-profile__update-modal {
+  width: min(860px, 100%);
+  max-height: 90vh;
+  overflow: auto;
+  border-radius: 20px;
+  border: 1px solid rgba(255, 255, 255, 0.22);
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.96) 0%, rgba(248, 252, 251, 0.92) 100%);
+  box-shadow: 0 30px 80px rgba(0, 0, 0, 0.35), 0 0 0 1px rgba(0, 200, 151, 0.15);
+  padding: 1rem;
+  position: relative;
+  overflow-x: hidden;
+}
+
+.ims-profile__update-modal::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  background:
+    radial-gradient(circle at 10% 12%, rgba(0, 200, 151, 0.12) 0%, transparent 40%),
+    radial-gradient(circle at 90% 90%, rgba(0, 180, 216, 0.12) 0%, transparent 45%);
+}
+
+[data-theme="dark"] .ims-profile__update-modal {
+  background: linear-gradient(135deg, rgba(15, 23, 42, 0.92) 0%, rgba(17, 33, 46, 0.9) 100%);
+  border-color: rgba(0, 200, 151, 0.28);
+  box-shadow: 0 32px 90px rgba(0, 0, 0, 0.55), 0 0 0 1px rgba(0, 200, 151, 0.18);
+}
+
+.ims-profile__update-modal-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 1rem;
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  padding: 0.6rem 0.2rem 0.7rem;
+  background: linear-gradient(135deg, rgba(0, 200, 151, 0.16) 0%, rgba(0, 180, 216, 0.14) 100%);
+  border: 1px solid rgba(0, 180, 216, 0.22);
+  border-radius: 14px;
+  padding-inline: 0.8rem;
+}
+
+.ims-profile__update-modal-head h3 {
+  margin: 0;
+  font-family: 'Space Grotesk', sans-serif;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 1.2rem;
+  font-weight: 800;
+  color: #0b3b37;
+}
+
+[data-theme="dark"] .ims-profile__update-modal-head {
+  background: linear-gradient(135deg, rgba(0, 200, 151, 0.2) 0%, rgba(59, 130, 246, 0.14) 100%);
+  border-color: rgba(52, 211, 153, 0.28);
+}
+
+[data-theme="dark"] .ims-profile__update-modal-head h3 {
+  color: #eafff9;
+}
+
+.ims-profile__modal-close {
+  width: 34px;
+  height: 34px;
+  border-radius: 10px;
+  border: 1px solid var(--glass-border, rgba(0, 0, 0, 0.08));
+  background: transparent;
+  color: var(--text-primary);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+
+.ims-profile__update-sections {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 0.6rem;
+  margin-bottom: 1rem;
+}
+
+.ims-profile__update-sections button {
+  border: 1px solid var(--glass-border, rgba(0, 0, 0, 0.08));
+  background: rgba(0, 200, 151, 0.04);
+  color: var(--text-primary);
+  border-radius: 12px;
+  padding: 0.65rem 0.8rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.ims-profile__update-sections button.active {
+  background: linear-gradient(135deg, #00c897, #00b4d8);
+  color: #fff;
+  border-color: transparent;
+  box-shadow: 0 10px 24px rgba(0, 180, 216, 0.25);
+}
+
+.ims-profile__update-modal-body {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  position: relative;
+  z-index: 1;
+}
+
+/* View mode fields (in page) are locked; modal handles editing */
+.ims-profile__settings .ims-profile__input-wrapper input:disabled,
+.ims-profile__settings .ims-profile__input-wrapper select:disabled {
+  cursor: not-allowed !important;
+  opacity: 0.75;
+}
+
+.ims-profile__settings .ims-profile__input-wrapper:has(input:disabled),
+.ims-profile__settings .ims-profile__input-wrapper:has(select:disabled) {
+  background: rgba(0, 0, 0, 0.02) !important;
+  border-style: dashed !important;
+}
+
+/* Colorful modal icons */
+.ims-profile__update-modal .ims-profile__input-icon {
+  opacity: 1;
+}
+.ims-profile__update-modal .ims-profile__input-container[data-field="firstName"] .ims-profile__input-icon,
+.ims-profile__update-modal .ims-profile__input-container[data-field="lastName"] .ims-profile__input-icon {
+  color: #3b82f6;
+}
+.ims-profile__update-modal .ims-profile__input-container[data-field="phone"] .ims-profile__input-icon,
+.ims-profile__update-modal .ims-profile__input-container[data-field="emergencyContactPhone"] .ims-profile__input-icon {
+  color: #14b8a6;
+}
+.ims-profile__update-modal .ims-profile__input-container[data-field="dateOfBirth"] .ims-profile__input-icon {
+  color: #8b5cf6;
+}
+.ims-profile__update-modal .ims-profile__input-container[data-field="address"] .ims-profile__input-icon,
+.ims-profile__update-modal .ims-profile__input-container[data-field="city"] .ims-profile__input-icon,
+.ims-profile__update-modal .ims-profile__input-container[data-field="country"] .ims-profile__input-icon {
+  color: #f59e0b;
+}
+.ims-profile__update-modal .ims-profile__input-container[data-field="occupation"] .ims-profile__input-icon {
+  color: #ec4899;
+}
+.ims-profile__update-modal .ims-profile__input-container[data-field="emergencyContactName"] .ims-profile__input-icon {
+  color: #22c55e;
+}
+.ims-profile__update-modal .ims-profile__input-container[data-field="emergencyContactEmail"] .ims-profile__input-icon {
+  color: #ef4444;
+}
+
+.ims-profile__update-modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.65rem;
+}
+
+.ims-profile__modal-cancel {
+  height: 46px;
+  padding: 0 1.2rem;
+  border-radius: 12px;
+  border: 1px solid var(--glass-border, rgba(0, 0, 0, 0.08));
+  background: transparent;
+  color: var(--text-primary);
+  font-weight: 700;
+  cursor: pointer;
+}

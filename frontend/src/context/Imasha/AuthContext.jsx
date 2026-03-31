@@ -1,5 +1,6 @@
 import { createContext, useContext, useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { toast } from 'react-hot-toast';
 import {
     loginUser,
     registerUser,
@@ -42,6 +43,7 @@ export function AuthProvider({ children }) {
         localStorage.setItem('pn_token', accessToken);
         setToken(accessToken);
         setUser(userData);
+        toast.success('Login successful. Welcome back!');
         const redirectTo = (userData?.role === 'patient' && !userData?.hasCompletedOnboarding)
             ? '/onboarding'
             : ROLE_REDIRECTS[userData?.role] || '/login';
@@ -60,6 +62,7 @@ export function AuthProvider({ children }) {
         localStorage.removeItem('pn_token');
         setToken(null);
         setUser(null);
+        toast.success('Logged out successfully.');
         navigate('/login');
     }, [token, navigate]);
 

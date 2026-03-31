@@ -2,6 +2,7 @@
 import {
     useState, useRef, useEffect, useCallback, useMemo, memo
 } from 'react';
+import { createPortal } from 'react-dom';
 import { Link, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
@@ -10,7 +11,7 @@ import {
     ClipboardList, Settings, ChevronRight,
     Loader2, ShieldCheck, CheckCircle2,
     TrendingUp, Zap, Star, Clock, Heart, Sparkles,
-    IdCard, Briefcase, Globe, Home, BriefcaseIcon, PhoneCall
+    IdCard, Briefcase, Globe, Home, BriefcaseIcon, PhoneCall, X
 } from 'lucide-react';
 import { useAuth } from '../../context/Imasha/AuthContext';
 import { useTheme } from '../../context/Tharuka/ThemeContext';
@@ -30,6 +31,12 @@ const TABS = [
     { id: 'appointments', label: 'Appointments',  icon: ClipboardList },
     { id: 'health',       label: 'Health Data',   icon: Activity },
     { id: 'alerts',       label: 'Alerts',        icon: Bell },
+];
+
+const HEALTH_CONDITIONS = [
+    'diabetes', 'hypertension', 'obesity', 'heart_disease',
+    'kidney_disease', 'celiac', 'lactose_intolerant',
+    'high_cholesterol', 'anemia', 'osteoporosis', 'other',
 ];
 
 /* ── Animation presets ──────────────────────────────────── */
@@ -92,6 +99,7 @@ const ProfileField = memo(({
     <motion.div
         variants={FADE_UP}
         className={`ims-profile__input-container${fullWidth ? ' full' : ''} type-${type}`}
+        data-field={name}
         style={{ position: 'relative', zIndex: type === 'date' ? 50 : 1 }}
     >
         <label><Icon size={13} />{label}</label>
@@ -294,6 +302,8 @@ export default function ProfilePage() {
     const { isDark } = useTheme();
     const [activeTab, setActiveTab]           = useState('settings');
     const [isUpdating, setIsUpdating]         = useState(false);
+    const [isUpdateModalOpen, setIsUpdateModalOpen] = useState(false);
+    const [updateSection, setUpdateSection] = useState('personal');
     const [imageLoading, setImageLoading]     = useState(false);
     const [refreshTrigger, setRefreshTrigger] = useState(0);
 
@@ -307,11 +317,23 @@ export default function ProfilePage() {
     const [formData, setFormData] = useState({
         firstName: '', lastName: '', phone: '',
         address: '', dateOfBirth: '', gender: '',
+        city: '', country: '', occupation: '',
+        emergencyContactName: '', emergencyContactPhone: '', emergencyContactEmail: '',
+        healthConditions: [],
     });
     const [recentAppointments, setRecentAppointments]     = useState([]);
     const [appointmentsLoading, setAppointmentsLoading]   = useState(false);
 
     const fileInputRef = useRef(null);
+
+    useEffect(() => {
+        if (!isUpdateModalOpen) return;
+        const prev = document.body.style.overflow;
+        document.body.style.overflow = 'hidden';
+        return () => {
+            document.body.style.overflow = prev;
+        };
+    }, [isUpdateModalOpen]);
 
     const loadRecentAppointments = useCallback(async () => {
         if (!token || !user?.email) return;
@@ -360,6 +382,7 @@ export default function ProfilePage() {
             emergencyContactName: user.emergencyContactName || '',
             emergencyContactPhone: user.emergencyContactPhone || '',
             emergencyContactEmail: user.emergencyContactEmail || '',
+            healthConditions: Array.isArray(user.healthConditions) ? user.healthConditions : [],
         });
     }, [user]);
 
@@ -393,6 +416,18 @@ export default function ProfilePage() {
         setFormData(prev => ({ ...prev, [name]: value }));
     }, []);
 
+    const toggleHealthCondition = useCallback((condition) => {
+        setFormData((prev) => {
+            const current = Array.isArray(prev.healthConditions) ? prev.healthConditions : [];
+            return {
+                ...prev,
+                healthConditions: current.includes(condition)
+                    ? current.filter((c) => c !== condition)
+                    : [...current, condition],
+            };
+        });
+    }, []);
+
     const handleUpdateProfile = async (e) => {
         e.preventDefault();
         setIsUpdating(true);
@@ -410,6 +445,7 @@ export default function ProfilePage() {
             if (res.ok) {
                 toast.success('Profile updated successfully!');
                 if (updateUser) updateUser(data.data);
+                setIsUpdateModalOpen(false);
             } else {
                 toast.error(data.message || 'Update failed');
             }
@@ -467,6 +503,70 @@ export default function ProfilePage() {
     const displayName = [user?.firstName, user?.lastName].filter(Boolean).join(' ') || 'User';
     const ActiveIcon  = TABS.find(t => t.id === activeTab)?.icon ?? Settings;
 
+    const renderModalSectionContent = () => {
+        if (updateSection === 'personal') {
+            return (
+                <div className="ims-profile__form-grid">
+                    <ProfileField label="First Name" icon={User} name="firstName" value={formData.firstName} onChange={handleInputChange} placeholder="First name" />
+                    <ProfileField label="Last Name" icon={User} name="lastName" value={formData.lastName} onChange={handleInputChange} placeholder="Last name" />
+                    <ProfileField label="Phone Number" icon={Phone} name="phone" value={formData.phone} onChange={handleInputChange} placeholder="Phone number" />
+                    <ProfileField label="Date of Birth" icon={Calendar} name="dateOfBirth" type="date" value={formData.dateOfBirth} onChange={handleInputChange} placement="top" />
+                    <ProfileField
+                        label="Gender" icon={ShieldCheck} name="gender" type="gender"
+                        value={formData.gender} onChange={handleInputChange}
+                        options={[
+                            { value: 'male', label: 'Male' },
+                            { value: 'female', label: 'Female' },
+                            { value: 'other', label: 'Other / Prefer not to say' },
+                        ]}
+                    />
+                </div>
+            );
+        }
+
+        if (updateSection === 'location') {
+            return (
+                <div className="ims-profile__form-grid">
+                    <ProfileField label="Address" icon={Home} name="address" value={formData.address} onChange={handleInputChange} placeholder="Street address" />
+                    <ProfileField label="City" icon={MapPin} name="city" value={formData.city} onChange={handleInputChange} placeholder="City" />
+                    <ProfileField label="Country" icon={Globe} name="country" value={formData.country} onChange={handleInputChange} placeholder="Country" />
+                    <ProfileField label="Occupation" icon={BriefcaseIcon} name="occupation" value={formData.occupation} onChange={handleInputChange} placeholder="Occupation" />
+                </div>
+            );
+        }
+
+        if (updateSection === 'health') {
+            return (
+                <div className="ims-profile__conditions-group">
+                    {HEALTH_CONDITIONS.map((condition) => {
+                        const active = formData.healthConditions?.includes(condition);
+                        return (
+                            <button
+                                key={condition}
+                                type="button"
+                                className={`ims-profile__condition-chip ${active ? 'active' : ''}`}
+                                onClick={() => toggleHealthCondition(condition)}
+                            >
+                                <div className="ims-profile__chip-inner">
+                                    {active && <CheckCircle2 size={14} className="ims-profile__chip-check" />}
+                                    <span>{condition.replace(/_/g, ' ')}</span>
+                                </div>
+                            </button>
+                        );
+                    })}
+                </div>
+            );
+        }
+
+        return (
+            <div className="ims-profile__form-grid">
+                <ProfileField label="Contact Name" icon={User} name="emergencyContactName" value={formData.emergencyContactName} onChange={handleInputChange} placeholder="Contact name" />
+                <ProfileField label="Phone" icon={Phone} name="emergencyContactPhone" value={formData.emergencyContactPhone} onChange={handleInputChange} placeholder="Phone number" />
+                <ProfileField label="Email" icon={Mail} name="emergencyContactEmail" value={formData.emergencyContactEmail} onChange={handleInputChange} placeholder="Email address" />
+            </div>
+        );
+    };
+
     /* ── Tab content ─────────────────────────────────────── */
     const renderTabContent = () => {
 
@@ -481,7 +581,17 @@ export default function ProfilePage() {
                     exit={{ opacity: 0, y: -10 }}
                     className="ims-profile__settings"
                 >
-                        <form onSubmit={handleUpdateProfile} className="ims-profile__form-clinical">
+                        <form className="ims-profile__form-clinical">
+                            <div className="ims-profile__section-actions">
+                                <button
+                                    type="button"
+                                    className="ims-profile__save-btn"
+                                    onClick={() => setIsUpdateModalOpen(true)}
+                                >
+                                    <Settings size={16} />
+                                    <span>Edit Profile Sections</span>
+                                </button>
+                            </div>
                             {/* Section 1: Personal Information */}
                             <div className="ims-profile__settings-card">
                                 <h3 className="ims-profile__settings-card-title">
@@ -491,17 +601,17 @@ export default function ProfilePage() {
                                     <ProfileField
                                         label="First Name" icon={User}
                                         name="firstName" value={formData.firstName}
-                                        onChange={handleInputChange} placeholder="First name"
+                                        onChange={handleInputChange} placeholder="First name" disabled
                                     />
                                     <ProfileField
                                         label="Last Name" icon={User}
                                         name="lastName" value={formData.lastName}
-                                        onChange={handleInputChange} placeholder="Last name"
+                                        onChange={handleInputChange} placeholder="Last name" disabled
                                     />
                                     <ProfileField
                                         label="Phone Number" icon={Phone}
                                         name="phone" value={formData.phone}
-                                        onChange={handleInputChange} placeholder="Phone number"
+                                        onChange={handleInputChange} placeholder="Phone number" disabled
                                     />
                                     <ProfileField
                                         label="Date of Birth" icon={Calendar}
@@ -509,12 +619,14 @@ export default function ProfilePage() {
                                         value={formData.dateOfBirth}
                                         onChange={handleInputChange}
                                         placement="bottom"
+                                        disabled
                                     />
                                     <ProfileField
                                         label="Gender" icon={ShieldCheck}
                                         name="gender" type="gender"
                                         value={formData.gender}
                                         onChange={handleInputChange}
+                                        disabled
                                         options={[
                                             { value: 'male',   label: 'Male' },
                                             { value: 'female', label: 'Female' },
@@ -535,29 +647,64 @@ export default function ProfilePage() {
                                         name="address" value={formData.address}
                                         onChange={handleInputChange}
                                         placeholder="Street address"
+                                        disabled
                                     />
                                     <ProfileField
                                         label="City" icon={MapPin}
                                         name="city" value={formData.city}
                                         onChange={handleInputChange}
                                         placeholder="City"
+                                        disabled
                                     />
                                     <ProfileField
                                         label="Country" icon={Globe}
                                         name="country" value={formData.country}
                                         onChange={handleInputChange}
                                         placeholder="Country"
+                                        disabled
                                     />
                                     <ProfileField
                                         label="Occupation" icon={BriefcaseIcon}
                                         name="occupation" value={formData.occupation}
                                         onChange={handleInputChange}
                                         placeholder="Occupation"
+                                        disabled
                                     />
                                 </div>
                             </div>
 
                             {/* Section 3: Emergency Contact */}
+                            <div className="ims-profile__settings-card">
+                                <h3 className="ims-profile__settings-card-title">
+                                    <Heart size={16} /> HEALTH CONDITIONS
+                                </h3>
+                                <div className="ims-profile__conditions-current">
+                                    <span className="ims-profile__conditions-current-label">Current health profile</span>
+                                    <span className="ims-profile__conditions-current-value">
+                                        {formData.healthConditions?.length
+                                            ? `${formData.healthConditions.length} condition${formData.healthConditions.length > 1 ? 's' : ''} selected`
+                                            : 'No conditions selected'}
+                                    </span>
+                                </div>
+                                <div className="ims-profile__conditions-group">
+                                    {HEALTH_CONDITIONS.map((condition) => {
+                                        const active = formData.healthConditions?.includes(condition);
+                                        return (
+                                            <button
+                                                key={condition}
+                                                type="button"
+                                                className={`ims-profile__condition-chip ${active ? 'active' : ''}`}
+                                                onClick={() => {}}
+                                                disabled
+                                            >
+                                                {condition.replace(/_/g, ' ')}
+                                            </button>
+                                        );
+                                    })}
+                                </div>
+                            </div>
+
+                            {/* Section 4: Emergency Contact */}
                             <div className="ims-profile__settings-card">
                                 <h3 className="ims-profile__settings-card-title emergency">
                                     <PhoneCall size={16} /> EMERGENCY CONTACT
@@ -568,36 +715,25 @@ export default function ProfilePage() {
                                         name="emergencyContactName" value={formData.emergencyContactName}
                                         onChange={handleInputChange}
                                         placeholder="Contact name"
+                                        disabled
                                     />
                                     <ProfileField
                                         label="Phone" icon={Phone}
                                         name="emergencyContactPhone" value={formData.emergencyContactPhone}
                                         onChange={handleInputChange}
                                         placeholder="Phone number"
+                                        disabled
                                     />
                                     <ProfileField
                                         label="Email" icon={Mail}
                                         name="emergencyContactEmail" value={formData.emergencyContactEmail}
                                         onChange={handleInputChange}
                                         placeholder="Email address"
+                                        disabled
                                     />
                                 </div>
                             </div>
 
-                            <div className="ims-profile__form-footer">
-                                <motion.button
-                                    whileHover={{ scale: 1.04, y: -3 }}
-                                    whileTap={{ scale: 0.97 }}
-                                    type="submit"
-                                    className="ims-profile__save-btn"
-                                    disabled={isUpdating}
-                                >
-                                    {isUpdating
-                                        ? <><Loader2 className="spin" size={16} /><span>Saving…</span></>
-                                        : <><Save size={16} /><span>Save Changes</span></>
-                                    }
-                                </motion.button>
-                            </div>
                         </form>
                 </motion.div>
             );
@@ -1061,6 +1197,64 @@ export default function ProfilePage() {
                 </div>
                 </motion.main>
             </AnimatePresence>
+
+            {createPortal(
+                <AnimatePresence>
+                    {isUpdateModalOpen && (
+                        <motion.div
+                            className="ims-profile__modal-backdrop"
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                            exit={{ opacity: 0 }}
+                            onClick={() => setIsUpdateModalOpen(false)}
+                        >
+                            <motion.div
+                                className="ims-profile__update-modal"
+                                initial={{ opacity: 0, y: 18, scale: 0.98 }}
+                                animate={{ opacity: 1, y: 0, scale: 1 }}
+                                exit={{ opacity: 0, y: 14, scale: 0.98 }}
+                                transition={{ duration: 0.24 }}
+                                onClick={(e) => e.stopPropagation()}
+                            >
+                                <div className="ims-profile__update-modal-head">
+                                    <h3><Sparkles size={16} /> Edit Profile</h3>
+                                    <button
+                                        type="button"
+                                        className="ims-profile__modal-close"
+                                        onClick={() => setIsUpdateModalOpen(false)}
+                                        aria-label="Close modal"
+                                    >
+                                        <X size={16} />
+                                    </button>
+                                </div>
+
+                                <div className="ims-profile__update-sections">
+                                    <button type="button" className={updateSection === 'personal' ? 'active' : ''} onClick={() => setUpdateSection('personal')}>Personal</button>
+                                    <button type="button" className={updateSection === 'location' ? 'active' : ''} onClick={() => setUpdateSection('location')}>Location</button>
+                                    <button type="button" className={updateSection === 'health' ? 'active' : ''} onClick={() => setUpdateSection('health')}>Health</button>
+                                    <button type="button" className={updateSection === 'emergency' ? 'active' : ''} onClick={() => setUpdateSection('emergency')}>Emergency</button>
+                                </div>
+
+                                <form onSubmit={handleUpdateProfile} className="ims-profile__update-modal-body">
+                                    {renderModalSectionContent()}
+                                    <div className="ims-profile__update-modal-actions">
+                                        <button type="button" className="ims-profile__modal-cancel" onClick={() => setIsUpdateModalOpen(false)}>
+                                            Cancel
+                                        </button>
+                                        <button type="submit" className="ims-profile__save-btn" disabled={isUpdating}>
+                                            {isUpdating
+                                                ? <><Loader2 className="spin" size={16} /><span>Saving…</span></>
+                                                : <><Save size={16} /><span>Save Changes</span></>
+                                            }
+                                        </button>
+                                    </div>
+                                </form>
+                            </motion.div>
+                        </motion.div>
+                    )}
+                </AnimatePresence>,
+                document.body
+            )}
 
             <Footer />
         </>

@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo, useRef } from 'react';
-import { useLocation, Outlet } from 'react-router-dom';
-import { motion, AnimatePresence, useReducedMotion } from 'framer-motion';
+import { useLocation, Outlet, Link } from 'react-router-dom';
+import { motion, AnimatePresence, useReducedMotion, useScroll, useTransform } from 'framer-motion';
 import Logo from '../Tharuka/Common/Logo';
 import healthGroupImg from '../../assets/Imasha/health_group.png';
 import { Activity, Shield, Zap, TrendingUp, Sun, Moon } from 'lucide-react';
@@ -33,33 +33,33 @@ function VisualContent({ reduceMotion }) {
             <PulseRings />
 
             <div className="Iauth-visual-content">
-                <div className="Iauth-visual-logo"><Logo /></div>
+                <motion.div layout transition={MORPH_TRANSITION} className="Iauth-visual-logo"><Logo /></motion.div>
 
-                <h2 className="Iauth-visual-title">
+                <motion.h2 layout transition={MORPH_TRANSITION} className="Iauth-visual-title">
                     Your Health, <span className="Iauth-visual-accent">Intelligently</span> Connected
-                </h2>
-                <p className="Iauth-visual-sub">
+                </motion.h2>
+                <motion.p layout transition={MORPH_TRANSITION} className="Iauth-visual-sub">
                     AI-powered health tracking, real-time wellness monitoring<br />
                     and personalized remote care — all unified.
-                </p>
+                </motion.p>
 
-                <div className="Iauth-composition">
+                <motion.div layout transition={MORPH_TRANSITION} className="Iauth-composition">
                     <div className="Iauth-composition-aura" />
-                    
+
                     <div className="Iauth-img-wrapper" style={{ position: 'relative', display: 'inline-flex' }}>
-                        <motion.img 
-                            src={healthGroupImg} 
-                            alt="Health Community" 
-                            className="Iauth-hgroup" 
-                            animate={reduceMotion ? undefined : ({ y: [0, -12, 0], scale: [1, 1.02, 1] })} 
-                            transition={reduceMotion ? undefined : ({ duration: 6, repeat: Infinity, ease: 'easeInOut' })}
+                        <motion.img
+                            layout
+                            transition={MORPH_TRANSITION}
+                            src={healthGroupImg}
+                            alt="Health Community"
+                            className="Iauth-hgroup"
                         />
 
                         {/* Floating Glass Cards tightly bound to the image */}
-                        <motion.div 
+                        <motion.div
+                            layout
+                            transition={MORPH_TRANSITION}
                             className="Iauth-glass-card Iauth-card-tr"
-                            animate={reduceMotion ? undefined : ({ y: [0, 10, 0] })}
-                            transition={reduceMotion ? undefined : ({ duration: 5, repeat: Infinity, ease: 'easeInOut', delay: 1 })}
                         >
                             <div className="Iauth-glass-icon"><Activity size={18} /></div>
                             <div>
@@ -67,11 +67,11 @@ function VisualContent({ reduceMotion }) {
                                 <p>Health Score</p>
                             </div>
                         </motion.div>
-                        
-                        <motion.div 
+
+                        <motion.div
+                            layout
+                            transition={MORPH_TRANSITION}
                             className="Iauth-glass-card Iauth-card-bl"
-                            animate={reduceMotion ? undefined : ({ y: [0, -10, 0] })}
-                            transition={reduceMotion ? undefined : ({ duration: 5.5, repeat: Infinity, ease: 'easeInOut', delay: 2.5 })}
                         >
                             <div className="Iauth-glass-icon"><Zap size={18} /></div>
                             <div>
@@ -80,10 +80,10 @@ function VisualContent({ reduceMotion }) {
                             </div>
                         </motion.div>
 
-                        <motion.div 
+                        <motion.div
+                            layout
+                            transition={MORPH_TRANSITION}
                             className="Iauth-glass-card Iauth-card-br"
-                            animate={reduceMotion ? undefined : ({ y: [0, 8, 0] })}
-                            transition={reduceMotion ? undefined : ({ duration: 4.8, repeat: Infinity, ease: 'easeInOut', delay: 0.5 })}
                         >
                             <div className="Iauth-glass-icon"><TrendingUp size={18} /></div>
                             <div>
@@ -92,47 +92,59 @@ function VisualContent({ reduceMotion }) {
                             </div>
                         </motion.div>
                     </div>
-                </div>
+                </motion.div>
 
-                <div className="Iauth-badges">
+                <motion.div layout transition={MORPH_TRANSITION} className="Iauth-badges">
                     <span className="Iauth-badge"><Shield size={11} /> HIPAA</span>
                     <span className="Iauth-badge"><Shield size={11} /> SOC 2</span>
                     <span className="Iauth-badge"><Shield size={11} /> ISO 27001</span>
-                </div>
+                </motion.div>
             </div>
         </div>
     );
 }
 
-/* ─── Smooth easing ─── */
-const SLIDE = {
-    duration: 0.62,
-    ease: [0.43, 0.13, 0.23, 0.96],
+/* ─── Smooth Morph Animation (High Performance) ─── */
+const MORPH_TRANSITION = {
+    duration: 0.6,
+    ease: [0.25, 1, 0.5, 1], // Smooth, premium decipher-style cubic-bezier
 };
 
 const FORM_SWAP = {
-    enter: (direction) => ({
-        opacity: 0,
-        x: direction * 42,
-        scale: 0.985,
+    enter: ({ direction, isMobile }) => ({
+        opacity: isMobile ? 1 : 0,
+        x: isMobile ? `${direction * 100}%` : direction * 40,
+        scale: isMobile ? 1 : 0.98,
     }),
-    center: {
+    center: ({ isMobile }) => ({
         opacity: 1,
         x: 0,
         scale: 1,
-        transition: { duration: 0.38, ease: [0.22, 1, 0.36, 1] },
-    },
-    exit: (direction) => ({
-        opacity: 0,
-        x: direction * -42,
-        scale: 0.985,
-        transition: { duration: 0.24, ease: [0.4, 0, 0.2, 1] },
+        transition: {
+            duration: 0.5,
+            ease: [0.25, 1, 0.5, 1],
+            delay: isMobile ? 0 : 0.05
+        },
+    }),
+    exit: ({ direction, isMobile }) => ({
+        opacity: isMobile ? 1 : 0,
+        x: isMobile ? `${direction * -100}%` : direction * -40,
+        scale: isMobile ? 1 : 0.98,
+        transition: {
+            duration: isMobile ? 0.5 : 0.3,
+            ease: isMobile ? [0.25, 1, 0.5, 1] : [0.4, 0, 0.2, 1]
+        },
     }),
 };
 
 export default function AuthShell() {
     const location = useLocation();
     const reduceMotion = useReducedMotion();
+
+    // Bind scroll offet to top toggle layer
+    const scrollRef = useRef(null);
+    const { scrollY } = useScroll({ container: scrollRef });
+    const topY = useTransform(scrollY, (v) => -v);
 
     // Sign In (/login) → visual LEFT (x:0),   form RIGHT (x:0)
     // Sign Up (/register) → visual RIGHT (x:100%), form LEFT (x:-100%)
@@ -141,7 +153,7 @@ export default function AuthShell() {
     const [swapDir, setSwapDir] = useState(1);
 
     const [isMobile, setIsMobile] = useState(window.innerWidth <= 1024);
-    
+
     useEffect(() => {
         const handleResize = () => setIsMobile(window.innerWidth <= 1024);
         window.addEventListener('resize', handleResize);
@@ -176,10 +188,34 @@ export default function AuthShell() {
                 className="Iauth-visual-panel"
                 initial={false}
                 animate={{ x: isMobile ? '0%' : (isLogin ? '0%' : '100%') }}
-                transition={reduceMotion ? { duration: 0.01 } : SLIDE}
+                transition={reduceMotion ? { duration: 0.01 } : MORPH_TRANSITION}
                 style={{ willChange: 'transform' }}
             >
                 <VisualContent reduceMotion={reduceMotion} />
+            </motion.div>
+
+            {/* ═══ TOP TOGGLE LAYER (Floats above visual panel on swap) ═══ */}
+            <motion.div
+                className="Iauth-top-layer"
+                initial={false}
+                animate={{ x: isMobile ? '0%' : (isLogin ? '0%' : '-100%') }}
+                transition={reduceMotion ? { duration: 0.01 } : MORPH_TRANSITION}
+                style={{
+                    position: 'absolute',
+                    top: 0, left: isMobile ? '0%' : '50%', width: isMobile ? '100%' : '50%', height: '100%',
+                    zIndex: 10, pointerEvents: 'none',
+                    display: 'flex', flexDirection: 'column',
+                    padding: isMobile ? '6rem 1rem 0' : '4rem 2rem 0',
+                    alignItems: 'center',
+                    y: topY
+                }}
+            >
+                <div style={{ width: '100%', maxWidth: '480px', pointerEvents: 'auto' }}>
+                    <div className="Imasha-auth-toggle">
+                        <Link to="/login" className={`Imasha-auth-toggle-btn ${isLogin ? 'active' : ''}`}>Sign In</Link>
+                        <Link to="/register" className={`Imasha-auth-toggle-btn ${!isLogin ? 'active' : ''}`}>Sign Up</Link>
+                    </div>
+                </div>
             </motion.div>
 
             {/* ═══ FORM PANEL ═══
@@ -189,7 +225,7 @@ export default function AuthShell() {
                 className="Iauth-form-panel"
                 initial={false}
                 animate={{ x: isMobile ? '0%' : (isLogin ? '0%' : '-100%') }}
-                transition={reduceMotion ? { duration: 0.01 } : SLIDE}
+                transition={reduceMotion ? { duration: 0.01 } : MORPH_TRANSITION}
                 style={{ willChange: 'transform' }}
             >
                 {/* Mobile logo (hidden on desktop) */}
@@ -217,11 +253,11 @@ export default function AuthShell() {
                 </motion.button>
 
                 {/* Page content — slides on route change (real swap) */}
-                <div className="Iauth-form-scroll">
-                    <AnimatePresence mode="wait">
+                <div className="Iauth-form-scroll" ref={scrollRef} style={{ paddingTop: isMobile ? '12rem' : '10rem' }}>
+                    <AnimatePresence mode={isMobile ? "popLayout" : "wait"}>
                         <motion.div
                             key={location.pathname}
-                            custom={swapDir}
+                            custom={{ direction: swapDir, isMobile }}
                             variants={FORM_SWAP}
                             initial="enter"
                             animate="center"
@@ -229,7 +265,7 @@ export default function AuthShell() {
                             className="Iauth-form-content"
                             style={{ willChange: 'transform, opacity' }}
                         >
-                            <Outlet />
+                            <Outlet context={{ isMobile }} />
                         </motion.div>
                     </AnimatePresence>
                 </div>

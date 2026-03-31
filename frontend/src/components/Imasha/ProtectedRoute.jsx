@@ -5,7 +5,8 @@ import { useAuth } from '../../context/Imasha/AuthContext';
 /**
  * ProtectedRoute component that checks if a user is authenticated.
  * If authenticated, it renders the children.
- * If not, it redirects to the new premium "Restricted" page inside the Auth shell.
+ * If not authenticated, it redirects to login.
+ * If authenticated but role is not allowed, it redirects to restricted.
  */
 export default function ProtectedRoute({ children, allowedRoles }) {
     const { token, loading, user } = useAuth();
@@ -16,7 +17,7 @@ export default function ProtectedRoute({ children, allowedRoles }) {
     }
 
     if (!token) {
-        return <Navigate to="/restricted" state={{ reason: 'auth', from: location }} replace />;
+        return <Navigate to="/login" state={{ from: location }} replace />;
     }
 
     if (allowedRoles && user && !allowedRoles.includes(user.role)) {
