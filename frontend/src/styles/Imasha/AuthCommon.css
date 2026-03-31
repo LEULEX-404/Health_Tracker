@@ -438,6 +438,22 @@
   overflow: visible;
 }
 
+.Iauth-visual-loading::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+    background-size: 200% 100%;
+    animation: Iauth-shimmer 2s infinite linear;
+    pointer-events: none;
+    z-index: 10;
+}
+
+@keyframes Iauth-shimmer {
+    0% { background-position: -200% 0; }
+    100% { background-position: 200% 0; }
+}
+
 .Iauth-hgroup {
   width: 100%;
   max-width: 1200px;

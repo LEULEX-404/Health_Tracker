@@ -19,8 +19,10 @@ function PulseRings() {
 
 /* ─── Visual Panel — health_group.png ─── */
 function VisualContent({ reduceMotion }) {
+    const [imageLoaded, setImageLoaded] = useState(false);
+
     return (
-        <div className="Iauth-visual-inner">
+        <div className={`Iauth-visual-inner ${!imageLoaded ? 'Iauth-visual-loading' : ''}`}>
             {/* Background Effects */}
             <div className="Iauth-sonar-container">
                 <div className="Iauth-sonar-ring" />
@@ -49,8 +51,15 @@ function VisualContent({ reduceMotion }) {
                     <div className="Iauth-img-wrapper" style={{ position: 'relative', display: 'inline-flex' }}>
                         <motion.img
                             layout
-                            transition={MORPH_TRANSITION}
+                            transition={{ ...MORPH_TRANSITION, opacity: { duration: 0.8 } }}
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: imageLoaded ? 1 : 0 }}
+                            onLoad={() => setImageLoaded(true)}
                             src={healthGroupImg}
+                            srcSet={`${healthGroupImg} 1200w`}
+                            sizes="(max-width: 1024px) 100vw, 50vw"
+                            fetchPriority="high"
+                            loading="eager"
                             alt="Health Community"
                             className="Iauth-hgroup"
                         />
