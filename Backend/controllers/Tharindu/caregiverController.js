@@ -47,7 +47,11 @@ export const requestBooking = async (req, res) => {
  */
 export const getAvailableCaregivers = async (req, res) => {
     try {
-        const caregivers = await User.find({ role: "caregiver" })
+        // Exclude the requesting user so caregivers cannot see/book themselves
+        const caregivers = await User.find({
+            role: "caregiver",
+            _id: { $ne: req.user._id }
+        })
             .select("firstName lastName email phone profilePicture")
             .sort({ firstName: 1 });
 
@@ -71,8 +75,8 @@ export const getMyBookings = async (req, res) => {
         const query = role === "caregiver" ? { caregiverId: userId } : { patientId: userId };
 
         const bookings = await CaregiverBooking.find(query)
-            .populate("patientId", "name email phone")
-            .populate("caregiverId", "name email phone")
+            .populate("patientId", "firstName lastName name email phone")
+            .populate("caregiverId", "firstName lastName name email phone")
             .sort({ createdAt: -1 });
 
         res.status(200).json({

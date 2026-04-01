@@ -755,7 +755,7 @@ export default function ProfilePage() {
                             <ClipboardList size={12} />Appointments &amp; Bookings
                         </h3>
                         <Link
-                            to="/Appointment"
+                            to={user?.role === 'caregiver' ? '/caregiver-dashboard' : '/Appointment'}
                             className="ims-profile__save-btn"
                             style={{
                                 textDecoration: 'none',
@@ -768,7 +768,7 @@ export default function ProfilePage() {
                                 fontSize: '13px',
                             }}
                         >
-                            View All History
+                            {user?.role === 'caregiver' ? 'Go to Dashboard' : 'View All History'}
                         </Link>
                     </div>
 
