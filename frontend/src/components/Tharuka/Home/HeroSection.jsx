@@ -3,6 +3,8 @@ import { motion, AnimatePresence, useReducedMotion } from 'framer-motion';
 import { useTranslation } from 'react-i18next';
 import { PlayCircle, ArrowRight, Activity, Utensils } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import { LazyLoadImage } from 'react-lazy-load-image-component';
+import 'react-lazy-load-image-component/src/effects/opacity.css';
 import MagneticWrapper from '../Common/MagneticWrapper';
 import './HeroSection.css';
 
@@ -58,7 +60,7 @@ export default function HeroSection() {
 
     const interval = setInterval(() => {
       setActivePose((prev) => (prev + 1) % poseImages.length);
-    }, 3500); // Transition every 3.5s
+    }, 6000); // Transition every 6s
 
     return () => clearInterval(interval);
   }, [prefersReducedMotion]);
@@ -123,8 +125,8 @@ export default function HeroSection() {
             
             <div className="pn-hero__trust">
               <div className="pn-hero__avatars">
-                <img src="/images/Tharuka/caregiver_real.png" alt="User" onError={(e) => { e.target.src = '/images/Tharuka/fitness_tracking.png'; }} />
-                <img src="/images/Tharuka/fitness_tracking.png" alt="User 2" />
+                <LazyLoadImage src="/images/Tharuka/caregiver_real.png" alt="User" effect="opacity" onError={(e) => { e.target.src = '/images/Tharuka/fitness_tracking.png'; }} />
+                <LazyLoadImage src="/images/Tharuka/fitness_tracking.png" alt="User 2" effect="opacity" />
                 <div className="pn-hero__avatar-more">200+</div>
               </div>
               <span>Trust built with Specialists</span>
@@ -153,23 +155,19 @@ export default function HeroSection() {
               <motion.div 
                 key={activePose} 
                 className="pn-hero__pose-group"
-                initial={{ opacity: 0, scale: 1.05, filter: 'brightness(3) contrast(1.5) hue-rotate(90deg)' }}
+                initial={{ opacity: 0 }}
                 animate={{ 
                   opacity: 1, 
-                  scale: 1, 
-                  filter: 'brightness(1) contrast(1) hue-rotate(0deg)',
                   y: prefersReducedMotion ? 0 : [0, -6, 0] // Subtle breathing
                 }}
-                exit={{ opacity: 0, scale: 0.95, filter: 'brightness(3) contrast(1.5) hue-rotate(-90deg)' }}
+                exit={{ opacity: 0 }}
                 transition={{ 
-                  duration: 0.6, 
-                  type: 'spring', 
-                  bounce: 0.4,
+                  opacity: { duration: 1.2, ease: "easeInOut" },
                   y: { duration: 4, repeat: Infinity, ease: 'easeInOut' }
                 }}
               >
-                <img src={docPoseImages[activePose]} alt="Doctor" className="pn-hero__pose-img pn-hero__pose-img--doctor" />
-                <img src={poseImages[activePose]} alt="Health Professional" className="pn-hero__pose-img pn-hero__pose-img--main" />
+                <img src={docPoseImages[activePose]} alt="Doctor" className="pn-hero__pose-img pn-hero__pose-img--doctor" fetchPriority="high" />
+                <img src={poseImages[activePose]} alt="Health Professional" className="pn-hero__pose-img pn-hero__pose-img--main" fetchPriority="high" />
               </motion.div>
             </AnimatePresence>
           </div>

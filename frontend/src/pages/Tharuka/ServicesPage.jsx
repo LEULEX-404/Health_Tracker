@@ -234,14 +234,6 @@ export default function ServicesPage() {
       <BackgroundEffect />
       <Header />
       <main className="page-wrapper pn-svc-page">
-        <div className="pn-svc-stars" aria-hidden="true" />
-        <div className="pn-svc-stars pn-svc-stars--two" aria-hidden="true" />
-        <div className="pn-svc-sonar" aria-hidden="true">
-          <span className="pn-svc-sonar__wave pn-svc-sonar__wave--one" />
-          <span className="pn-svc-sonar__wave pn-svc-sonar__wave--two" />
-          <span className="pn-svc-sonar__wave pn-svc-sonar__wave--three" />
-          <span className="pn-svc-sonar__wave pn-svc-sonar__wave--four" />
-        </div>
         <div className="pn-svc-bg pn-svc-bg--one" />
         <div className="pn-svc-bg pn-svc-bg--two" />
         <div className="pn-svc-grid-overlay" />
@@ -283,7 +275,7 @@ export default function ServicesPage() {
                 transition={{ duration: 0.75, delay: 0.15 }}
               >
                 <div className="pn-hero-image-wrap">
-                  <img src="/images/Tharuka/services/service_main.png" alt="PulseNova services" className="pn-hero-image" />
+                  <img src="/images/Tharuka/services/service_main.png" alt="PulseNova services" className="pn-hero-image" fetchPriority="high" />
                   <motion.div className="pn-floating-card" animate={{ y: [0, -12, 0] }} transition={{ repeat: Infinity, duration: 2.2, ease: "easeInOut" }}>
                     <HeartPulse size={18} />
                     <div>
@@ -340,8 +332,8 @@ export default function ServicesPage() {
                     className="pn-hero-stat-card"
                     key={s.label}
                     style={{ '--stat-c': s.color, '--stat-bg': s.bg }}
-                    whileHover={{ scale: 1.03, y: -4 }}
-                    transition={{ type: 'spring', stiffness: 250, damping: 20 }}
+                    whileHover={{ y: -3 }}
+                    transition={{ duration: 0.2 }}
                   >
                     <div className="pn-hero-stat-icon">
                       <Icon size={18} />
@@ -371,14 +363,14 @@ export default function ServicesPage() {
                   <motion.div
                     key={svc.id}
                     className="pn-svc-card"
-                    initial={{ opacity:0, y:42, scale: 0.97 }}
-                    whileInView={{ opacity:1, y:0, scale: 1 }}
-                    viewport={{ once:true, amount: 0.2 }}
-                    transition={{ duration:0.55, delay: (i % 3) * 0.1 }}
-                    whileHover={{ y: -8, scale: 1.01 }}
+                    initial={{ opacity:0, y:20 }}
+                    whileInView={{ opacity:1, y:0 }}
+                    viewport={{ once:true, amount: 0.1 }}
+                    transition={{ duration: 0.4, delay: i * 0.05 }}
+                    whileHover={{ y: -4 }}
                   >
                     <div className="pn-svc-card__image-wrap">
-                      <img src={svc.image} alt={svc.title} className="pn-svc-card__image" />
+                      <img src={svc.image} alt={svc.title} className="pn-svc-card__image" loading="lazy" decoding="async" />
                       <div className="pn-svc-card__overlay" />
                     </div>
                     {svc.badge && <div className="pn-svc-card__badge">{svc.badge}</div>}
@@ -447,11 +439,11 @@ export default function ServicesPage() {
                 <motion.div
                   key={plan.name}
                   className={`pn-price-card ${plan.highlight ? 'pn-price-card--highlight' : ''}`}
-                  initial={{ opacity:0, y:40 }}
-                  whileInView={{ opacity:1, y:0, scale: 1 }}
-                  viewport={{ once:true }}
-                  transition={{ duration:0.5, delay: i * 0.12 }}
-                  whileHover={{ y: -6 }}
+                  initial={{ opacity:0, y:20 }}
+                  whileInView={{ opacity:1, y:0 }}
+                  viewport={{ once:true, amount: 0.1 }}
+                  transition={{ duration:0.4, delay: i * 0.08 }}
+                  whileHover={{ y: -4 }}
                 >
                   {plan.highlight && <div className="pn-price-card__top-badge">Most Popular</div>}
                   <h4 className="pn-price-card__name">{plan.name}</h4>
@@ -501,11 +493,11 @@ export default function ServicesPage() {
                   key={i}
                   className={`pn-svc-page__faq-item ${openFaq === i ? 'open' : ''}`}
                   style={{ '--faq-c': f.color }}
-                  initial={{ opacity: 0, y: 16 }}
+                  initial={{ opacity: 0, y: 10 }}
                   whileInView={{ opacity: 1, y: 0 }}
-                  viewport={{ once: true, amount: 0.2 }}
-                  transition={{ duration: 0.4, delay: i * 0.05 }}
-                  whileHover={{ y: -3, scale: 1.005 }}
+                  viewport={{ once: true, amount: 0.1 }}
+                  transition={{ duration: 0.3, delay: i * 0.05 }}
+                  whileHover={{ y: -2 }}
                 >
                   <button className="pn-svc-page__faq-q" onClick={() => setOpenFaq(openFaq === i ? null : i)}>
                     <div className="pn-svc-page__faq-q-left">

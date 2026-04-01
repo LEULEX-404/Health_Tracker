@@ -11,6 +11,8 @@ import {
   Zap, Database, ShieldOff, Droplets,
   CheckCircle2, Activity
 } from 'lucide-react';
+import { LazyLoadImage } from 'react-lazy-load-image-component';
+import 'react-lazy-load-image-component/src/effects/opacity.css';
 import './ServicesSection.css';
 
 const SERVICES = [
@@ -367,12 +369,11 @@ function ServiceRow({ svc, index }) {
       >
         <span className="pns-img-panel__step-mark">0{index + 1}</span>
 
-        <img
+        <LazyLoadImage
           src={svc.img}
           alt={svc.titleLine1}
           className="pns-img-panel__img"
-          loading="lazy"
-          decoding="async"
+          effect="opacity"
         />
 
         {svc.floats.map(f => (
