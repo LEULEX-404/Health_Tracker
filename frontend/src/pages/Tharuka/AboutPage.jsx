@@ -24,6 +24,8 @@ import Header from '../../components/Tharuka/Header/Header';
 import Footer from '../../components/Tharuka/Footer/Footer';
 import ScrollToTop from '../../components/Tharuka/Common/ScrollToTop';
 import BackgroundEffect from '../../components/Tharuka/Common/BackgroundEffect';
+import { LazyLoadImage } from 'react-lazy-load-image-component';
+import 'react-lazy-load-image-component/src/effects/opacity.css';
 import './AboutPage.css';
 
 const BADGES = ['AI-Powered', 'HIPAA Certified', '40+ Countries', 'Clinically Validated'];
@@ -241,12 +243,11 @@ export default function AboutPage() {
               </motion.div>
 
               <motion.div className="pn-about-story-media" initial={{ opacity: 0, x: 24 }} whileInView={{ opacity: 1, x: 0 }} viewport={{ once: true }}>
-                <img
+                <LazyLoadImage
                   src="/images/Tharuka/aboutus/about_story.png"
                   alt="PulseNova story"
                   className="pn-about-cutout pn-about-cutout--story"
-                  loading="lazy"
-                  decoding="async"
+                  effect="opacity"
                 />
                 <div className="pn-about-story-cards">
                   {STORY_CARDS.map((c) => {
@@ -358,12 +359,11 @@ export default function AboutPage() {
                 })}
               </div>
               <div className="pn-about-why-media">
-                <img
+                <LazyLoadImage
                   src="/images/Tharuka/aboutus/about_why.png"
                   alt="Why PulseNova"
                   className="pn-about-cutout pn-about-cutout--why"
-                  loading="lazy"
-                  decoding="async"
+                  effect="opacity"
                 />
                 <div className="pn-about-float-card pn-about-float-card--why-a" style={{'--float-c': '#10b981'}}>
                   <HeartPulse size={16} />
@@ -445,12 +445,11 @@ export default function AboutPage() {
                 </div>
               </div>
               <div className="pn-about-cta-media">
-                <img
+                <LazyLoadImage
                   src="/images/Tharuka/aboutus/about_cta.png"
                   alt="Join PulseNova"
                   className="pn-about-cutout pn-about-cutout--cta"
-                  loading="lazy"
-                  decoding="async"
+                  effect="opacity"
                 />
                 <div className="pn-about-float-card pn-about-float-card--cta-a" style={{'--float-c': '#fef08a'}}>
                   <Star size={16} />
