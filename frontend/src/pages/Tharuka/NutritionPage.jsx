@@ -102,7 +102,7 @@ export default function NutritionPage() {
       <BackgroundEffect />
       <Header />
 
-      <main className="page-wrapper pn-page" style={{ position: 'relative', zIndex: 1, overflow: 'hidden' }}>
+      <main className="page-wrapper pn-page nu-page" style={{ position: 'relative', zIndex: 1, overflow: 'hidden' }}>
 
         {/* Floating neon icons behind main content */}
         <div className="pn-float-neon pn-fn-1"><Apple size={36} /></div>
@@ -115,19 +115,19 @@ export default function NutritionPage() {
         <div className="pn-float-neon pn-fn-8"><Grape size={30} /></div>
 
         {/* ── Hero Banner ─────────────────────────────────────── */}
-        <div className="pn-hero-banner">
+        <div className="nu-hero-banner">
           <img
             src={HeroBanner}
             alt="Healthy meals"
-            className="pn-hero-img"
+            className="nu-hero-img"
             loading="eager"
             decoding="async"
           />
-          <div className="pn-hero-overlay" />
+          <div className="nu-hero-overlay" />
 
-          <div className="pn-hero-text container">
+          <div className="nu-hero-text container">
             <motion.div
-              className="pn-hero-badge"
+              className="nu-hero-badge"
               initial={{ opacity: 0, scale: 0.9 }}
               animate={{ opacity: 1, scale: 1 }}
               transition={{ duration: 0.35 }}
@@ -135,7 +135,7 @@ export default function NutritionPage() {
               <Zap size={13} /> AI-Powered Nutrition
             </motion.div>
             <motion.h1
-              className="pn-hero-title"
+              className="nu-hero-title"
               initial={{ opacity: 0, y: 16 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.4, delay: 0.08 }}
@@ -143,7 +143,7 @@ export default function NutritionPage() {
               Nutrition &amp; Meal Plans
             </motion.h1>
             <motion.p
-              className="pn-hero-sub"
+              className="nu-hero-sub"
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.4, delay: 0.16 }}
@@ -151,14 +151,14 @@ export default function NutritionPage() {
               Monitor dietary trends, get clinical advice, and manage AI‑tailored meal regimens.
             </motion.p>
             <motion.div
-              className="pn-hero-stats"
+              className="nu-hero-stats"
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={{ delay: 0.24 }}
             >
-              <span className="pn-hstat"><TrendingUp size={14} /> Weekly Analysis</span>
-              <span className="pn-hstat"><HeartPulse size={14} /> Doctor Directives</span>
-              <span className="pn-hstat"><Zap size={14} /> AI Meal Plans</span>
+              <span className="nu-hstat"><TrendingUp size={14} /> Weekly Analysis</span>
+              <span className="nu-hstat"><HeartPulse size={14} /> Doctor Directives</span>
+              <span className="nu-hstat"><Zap size={14} /> AI Meal Plans</span>
             </motion.div>
           </div>
         </div>

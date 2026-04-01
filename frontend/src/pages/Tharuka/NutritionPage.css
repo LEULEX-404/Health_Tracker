@@ -1,7 +1,7 @@
 /* NutritionPage.css — page-level layout ONLY, dark mode aware */
 
 /* ── Page Layout & PulseNova Energy Field ──────────────────── */
-.pn-page {
+.nu-page {
   position:   relative;
   background: #f8fafc;
   min-height: 100vh;
@@ -9,14 +9,14 @@
   overflow-x: hidden;
 }
 
-[data-theme="dark"] .pn-page {
+[data-theme="dark"] .nu-page {
   background: #040712;
   background-attachment: fixed;
 }
 
 /* Layered Energy Mesh */
-[data-theme="dark"] .pn-page::before,
-[data-theme="dark"] .pn-page::after {
+[data-theme="dark"] .nu-page::before,
+[data-theme="dark"] .nu-page::after {
   content: '';
   position: fixed;
   inset: 0;
@@ -24,17 +24,17 @@
   z-index: -1;
 }
 
-[data-theme="dark"] .pn-page::before {
+[data-theme="dark"] .nu-page::before {
   background: 
     radial-gradient(at 0% 0%, rgba(0, 200, 151, 0.12) 0px, transparent 50%),
     radial-gradient(at 100% 0%, rgba(57, 255, 20, 0.08) 0px, transparent 50%),
     radial-gradient(at 50% 100%, rgba(0, 180, 216, 0.12) 0px, transparent 50%);
   filter: blur(80px);
-  animation: pn-mesh-shift 20s ease-in-out infinite alternate;
+  animation: nu-mesh-shift 20s ease-in-out infinite alternate;
 }
 
 /* Circuit Board Trace Pattern */
-[data-theme="dark"] .pn-page::after {
+[data-theme="dark"] .nu-page::after {
   background-image: 
     linear-gradient(rgba(0, 200, 151, 0.05) 1px, transparent 1px),
     linear-gradient(90deg, rgba(0, 200, 151, 0.05) 1px, transparent 1px),
@@ -61,7 +61,7 @@
   50%       { transform: translateY(1px) scaleY(1.2); }
 }
 
-@keyframes pn-mesh-shift {
+@keyframes nu-mesh-shift {
   0%   { transform: scale(1) translate(0, 0); }
   100% { transform: scale(1.1) translate(5%, 5%); }
 }
@@ -87,7 +87,7 @@
 }
 
 /* ── Hero Banner ───────────────────────────────────────────── */
-.pn-hero-banner {
+.nu-hero-banner {
   position:   relative;
   height:     280px;
   overflow:   hidden;
@@ -95,9 +95,9 @@
   transform:  translateZ(0); /* Hardware Acceleration */
 }
 @media (max-width: 768px) {
-  .pn-hero-banner { height: 220px; }
+  .nu-hero-banner { height: 220px; }
 }
-.pn-hero-img {
+.nu-hero-img {
   width:       100%;
   height:      100%;
   object-fit:  cover;
@@ -105,7 +105,7 @@
   display:     block;
   will-change: transform;
 }
-.pn-hero-overlay {
+.nu-hero-overlay {
   position:   absolute;
   inset:      0;
   background: linear-gradient(
@@ -142,8 +142,8 @@
 }
 
 /* Hero text */
-.pn-hero-text  { position: absolute; inset: 0; display: flex; flex-direction: column; justify-content: center; padding: 24px 0; }
-.pn-hero-badge {
+.nu-hero-text  { position: absolute; inset: 0; display: flex; flex-direction: column; justify-content: center; padding: 24px 0; }
+.nu-hero-badge {
   display:       inline-flex;
   align-items:   center;
   gap:           6px;
@@ -160,7 +160,7 @@
   width:         fit-content;
   backdrop-filter: blur(4px);
 }
-.pn-hero-title {
+.nu-hero-title {
   font-size:     clamp(1.6rem, 4vw, 2.4rem);
   font-weight:   800;
   color:         white;
@@ -168,7 +168,7 @@
   line-height:   1.15;
   text-shadow:   0 2px 12px rgba(0,0,0,0.4);
 }
-.pn-hero-sub {
+.nu-hero-sub {
   font-size:  0.95rem;
   color:      rgba(255,255,255,0.78);
   max-width:  520px;
@@ -176,12 +176,12 @@
   margin:     0 0 16px;
 }
 @media (max-width: 768px) {
-  .pn-hero-title { font-size: 1.8rem; }
-  .pn-hero-sub   { font-size: 0.85rem; margin-bottom: 12px; }
-  .pn-hero-text  { padding: 16px; }
+  .nu-hero-title { font-size: 1.8rem; }
+  .nu-hero-sub   { font-size: 0.85rem; margin-bottom: 12px; }
+  .nu-hero-text  { padding: 16px; }
 }
-.pn-hero-stats { display: flex; gap: 10px; flex-wrap: wrap; }
-.pn-hstat {
+.nu-hero-stats { display: flex; gap: 10px; flex-wrap: wrap; }
+.nu-hstat {
   display:       inline-flex;
   align-items:   center;
   gap:           5px;
@@ -342,10 +342,10 @@
   .pn-tabs { width: 100%; padding: 4px; gap: 2px; }
   .pn-tab { flex: 1; justify-content: center; font-size: 0.8rem; padding: 10px 8px; gap: 5px; }
   
-  .pn-hero-stats { display: none; } /* Hide stats on mobile to save space */
+  .nu-hero-stats { display: none; } /* Hide stats on mobile to save space */
 }
 
 @media (max-width: 480px) {
-  .pn-hero-banner { height: 180px; }
-  .pn-hero-title  { font-size: 1.6rem; }
+  .nu-hero-banner { height: 180px; }
+  .nu-hero-title  { font-size: 1.6rem; }
 }
