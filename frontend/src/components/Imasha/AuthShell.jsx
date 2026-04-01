@@ -2,7 +2,8 @@ import { useState, useEffect, useMemo, useRef } from 'react';
 import { useLocation, Outlet, Link } from 'react-router-dom';
 import { motion, AnimatePresence, useReducedMotion, useScroll, useTransform } from 'framer-motion';
 import Logo from '../Tharuka/Common/Logo';
-import healthGroupImg from '../../assets/Imasha/health_group.png';
+import healthMain1 from '../../assets/Imasha/health_main_1.png';
+import healthMain2 from '../../assets/Imasha/health_main_2.png';
 import { Activity, Shield, Zap, TrendingUp, Sun, Moon } from 'lucide-react';
 
 
@@ -17,12 +18,13 @@ function PulseRings() {
     );
 }
 
-/* ─── Visual Panel — health_group.png ─── */
-function VisualContent({ reduceMotion }) {
-    const [imageLoaded, setImageLoaded] = useState(false);
+/* ─── Visual Panel — Dual Image Content ─── */
+function VisualContent({ reduceMotion, isLogin }) {
+    const [img1Loaded, setImg1Loaded] = useState(false);
+    const [img2Loaded, setImg2Loaded] = useState(false);
 
     return (
-        <div className={`Iauth-visual-inner ${!imageLoaded ? 'Iauth-visual-loading' : ''}`}>
+        <div className={`Iauth-visual-inner ${(!isLogin && !img2Loaded) || (isLogin && !img1Loaded) ? 'Iauth-visual-loading' : ''}`}>
             {/* Background Effects */}
             <div className="Iauth-sonar-container">
                 <div className="Iauth-sonar-ring" />
@@ -48,23 +50,23 @@ function VisualContent({ reduceMotion }) {
                 <motion.div layout transition={MORPH_TRANSITION} className="Iauth-composition">
                     <div className="Iauth-composition-aura" />
 
-                    <div className="Iauth-img-wrapper" style={{ position: 'relative', display: 'inline-flex' }}>
-                        <motion.img
-                            layout
-                            transition={{ ...MORPH_TRANSITION, opacity: { duration: 0.8 } }}
-                            initial={{ opacity: 0 }}
-                            animate={{ opacity: imageLoaded ? 1 : 0 }}
-                            onLoad={() => setImageLoaded(true)}
-                            src={healthGroupImg}
-                            srcSet={`${healthGroupImg} 1200w`}
-                            sizes="(max-width: 1024px) 100vw, 50vw"
-                            fetchPriority="high"
-                            loading="eager"
-                            alt="Health Community"
-                            className="Iauth-hgroup"
-                        />
+                    <div className="Iauth-img-container">
+                        <AnimatePresence mode="wait">
+                            <motion.img
+                                key={isLogin ? 'login-img' : 'register-img'}
+                                layout
+                                transition={MORPH_TRANSITION}
+                                initial={{ opacity: 0, scale: 0.9, rotate: isLogin ? -2 : 2 }}
+                                animate={{ opacity: 1, scale: 1, rotate: 0 }}
+                                exit={{ opacity: 0, scale: 0.9, rotate: isLogin ? 2 : -2 }}
+                                onLoad={() => isLogin ? setImg1Loaded(true) : setImg2Loaded(true)}
+                                src={isLogin ? healthMain1 : healthMain2}
+                                alt={isLogin ? "Health Healthcare" : "Wellness Monitoring"}
+                                className="Iauth-hgroup"
+                            />
+                        </AnimatePresence>
 
-                        {/* Floating Glass Cards tightly bound to the image */}
+                        {/* Floating Glass Cards — now close to the image boundaries */}
                         <motion.div
                             layout
                             transition={MORPH_TRANSITION}
@@ -200,7 +202,7 @@ export default function AuthShell() {
                 transition={reduceMotion ? { duration: 0.01 } : MORPH_TRANSITION}
                 style={{ willChange: 'transform' }}
             >
-                <VisualContent reduceMotion={reduceMotion} />
+                <VisualContent reduceMotion={reduceMotion} isLogin={isLogin} />
             </motion.div>
 
             {/* ═══ TOP TOGGLE LAYER (Floats above visual panel on swap) ═══ */}
