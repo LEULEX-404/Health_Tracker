@@ -96,9 +96,8 @@ function getPhoneValidationMessage(phone) {
 }
 
 export default function FindSpecialistPage() {
-  const { token, user } = useAuth();
+  const { token } = useAuth();
   const navigate = useNavigate();
-  const authToken = token || localStorage.getItem('pn_token') || '';
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [specialists, setSpecialists] = useState([]);
@@ -127,7 +126,7 @@ export default function FindSpecialistPage() {
         setLoading(true);
         setError('');
         const res = await fetch(API_BASE, {
-          headers: authToken ? { Authorization: `Bearer ${authToken}` } : {},
+          headers: token ? { Authorization: `Bearer ${token}` } : {},
           credentials: 'include',
         });
         const data = await res.json();
@@ -149,7 +148,7 @@ export default function FindSpecialistPage() {
     return () => {
       isMounted = false;
     };
-  }, [authToken]);
+  }, [token]);
 
   const filteredSpecialists = useMemo(
     () =>
@@ -163,16 +162,15 @@ export default function FindSpecialistPage() {
   );
 
   function openBookingForm(doc) {
-    if (!authToken) {
+    if (!token) {
       toast.error('Please log in to book an appointment.');
-      navigate('/login');
       return;
     }
 
     setSelectedDoctor(doc);
     setForm({
-      patientName: [user?.firstName, user?.lastName].filter(Boolean).join(' ').trim(),
-      patientEmail: user?.email || '',
+      patientName: '',
+      patientEmail: '',
       patientPhone: '',
       time: '',
       date: '',
@@ -213,9 +211,8 @@ export default function FindSpecialistPage() {
 
   async function submitAppointment(e) {
     e.preventDefault();
-    if (!authToken) {
+    if (!token) {
       toast.error('Please log in to book an appointment.');
-      navigate('/login');
       return;
     }
     if (!selectedDoctor?.id) {
@@ -267,7 +264,7 @@ export default function FindSpecialistPage() {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          Authorization: `Bearer ${authToken}`,
+          Authorization: `Bearer ${token}`,
         },
         credentials: 'include',
         body: JSON.stringify(payload),

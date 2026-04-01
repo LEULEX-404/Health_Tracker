@@ -1,33 +1,24 @@
 import nodemailer from "nodemailer";
 import dotenv from "dotenv";
-dotenv.config({ path: "./.env" });
+dotenv.config();
 
 async function testEmail() {
     console.log("Testing Email with Gmail Service helper...");
-    const senderEmail = (process.env.EMAIL_USER || process.env.EMAIL_FROM || "").trim();
-    const fromAddress = senderEmail
-        ? `"HealthSync" <${senderEmail}>`
-        : '"HealthSync" <no-reply@healthsync.com>';
 
     const transporter = nodemailer.createTransport({
-        host: (process.env.EMAIL_HOST || 'smtp.gmail.com').trim(),
-        port: Number(process.env.EMAIL_PORT) || 587,
-        secure: process.env.EMAIL_SECURE === 'true' || Number(process.env.EMAIL_PORT) === 465,
+        service: 'gmail',
         auth: {
-            user: (process.env.EMAIL_USER || '').trim(),
-            pass: (process.env.EMAIL_PASSWORD || '').trim(),
+            user: process.env.EMAIL_USER,
+            pass: process.env.EMAIL_PASSWORD,
         },
-        requireTLS: process.env.EMAIL_SECURE !== 'true',
         tls: {
-            rejectUnauthorized: false,
-            servername: (process.env.EMAIL_HOST || 'smtp.gmail.com').trim(),
-        },
-        family: 4,
+            rejectUnauthorized: false
+        }
     });
 
     try {
         const info = await transporter.sendMail({
-            from: fromAddress,
+            from: process.env.EMAIL_FROM,
             to: process.env.EMAIL_USER,
             subject: "Health Tracker: Gmail Service Test",
             text: "If you see this, the Gmail Service helper worked!",

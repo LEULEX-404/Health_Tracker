@@ -1,227 +1,85 @@
 import nodemailer from "nodemailer";
-import dotenv from "dotenv";
-import path from "path";
-import { fileURLToPath } from "url";
 import EmailLog from "../../models/Priya/EmailLog.js";
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
-dotenv.config({ path: path.resolve(__dirname, "../../.env") });
-
-function createBookingEmailContent({ name, doctorName, date, time }) {
-    const subject = "Doctor Appointment Request Received - HealthSync";
-    const text = `Dear ${name},\n\nYour doctor booking request has been received successfully.\n\nDoctor: ${doctorName}\nDate: ${date}\nTime: ${time}\n\nWe will send another email after the admin confirms or cancels your appointment.\n\nThank you for choosing HealthSync.\n\nBest regards,\nHealthSync Team`;
-    const html = `
-        <div style="font-family: Arial, sans-serif; color: #333;">
-            <h2>Doctor Appointment Request Received</h2>
-            <p>Dear <strong>${name}</strong>,</p>
-            <p>Your doctor booking request has been received successfully.</p>
-            <div style="background: #f3f4f6; padding: 15px; border-radius: 8px; margin: 20px 0;">
-                <p style="margin: 5px 0;"><strong>Doctor:</strong> ${doctorName}</p>
-                <p style="margin: 5px 0;"><strong>Date:</strong> ${date}</p>
-                <p style="margin: 5px 0;"><strong>Time:</strong> ${time}</p>
-            </div>
-            <p>We will send another email after the admin confirms or cancels your appointment.</p>
-            <p>Thank you for choosing HealthSync.</p>
-            <p>Best regards,<br>HealthSync Team</p>
-        </div>
-    `;
-
-    return { subject, text, html };
-}
-
-function createStatusEmailContent({ name, doctorName, date, time, status }) {
-    const normalizedStatus = String(status || "").trim();
-    const statusLower = normalizedStatus.toLowerCase();
-    const subject = `Appointment ${normalizedStatus} - HealthSync`;
-    const text = `Dear ${name},\n\nYour appointment has been ${statusLower} by the admin.\n\nDoctor: ${doctorName}\nDate: ${date}\nTime: ${time}\n\nThank you,\nHealthSync Team`;
-    const html = `
-        <div style="font-family: Arial, sans-serif; color: #333;">
-            <h2>Appointment ${normalizedStatus}</h2>
-            <p>Dear <strong>${name}</strong>,</p>
-            <p>Your appointment has been <strong>${statusLower}</strong> by the admin.</p>
-            <div style="background: #f3f4f6; padding: 15px; border-radius: 8px; margin: 20px 0;">
-                <p style="margin: 5px 0;"><strong>Doctor:</strong> ${doctorName}</p>
-                <p style="margin: 5px 0;"><strong>Date:</strong> ${date}</p>
-                <p style="margin: 5px 0;"><strong>Time:</strong> ${time}</p>
-            </div>
-            <p>Thank you,<br>HealthSync Team</p>
-        </div>
-    `;
-
-    return { subject, text, html };
-}
-
-function getFromAddress() {
-    const senderEmail = (process.env.EMAIL_USER || process.env.EMAIL_FROM || "").trim();
-    const senderName = (process.env.EMAIL_FROM_NAME || "HealthSync").trim();
-
-    if (!senderEmail) {
-        return '"HealthSync" <no-reply@healthsync.com>';
-    }
-
-    return `"${senderName}" <${senderEmail}>`;
-}
-
-function getEmailConfig() {
-    const host = (process.env.EMAIL_HOST || "smtp.gmail.com").trim();
-    const port = Number(process.env.EMAIL_PORT) || 587;
-    const user = (process.env.EMAIL_USER || "").trim();
-    const pass = (process.env.EMAIL_PASSWORD || "").trim();
-    const secure = process.env.EMAIL_SECURE === "true" || port === 465;
-    const isGmail = /gmail/i.test(host);
-
-    return { host, port, user, pass, secure, isGmail };
-}
-
-function buildTransporter({ host, port, user, pass, secure, service }) {
-    return nodemailer.createTransport({
-        service,
-        host,
-        port,
-        secure,
-        auth: {
-            user,
-            pass,
-        },
-        requireTLS: service ? undefined : !secure,
-        tls: {
-            rejectUnauthorized: false,
-            servername: host || undefined,
-        },
-        family: 4,
-        connectionTimeout: 30000,
-        greetingTimeout: 30000,
-        socketTimeout: 45000,
-    });
-}
-
 function getTransporter() {
-    const { host, port, user, pass, secure } = getEmailConfig();
-
-    if (!user || !pass) return null;
-
-    return buildTransporter({
-        host,
-        port,
-        user,
-        pass,
-        secure,
-    });
-}
-
-function getFallbackTransporter() {
-    const { host, user, pass, isGmail } = getEmailConfig();
-
-    if (!user || !pass) return null;
-
-    return buildTransporter({
-        host: isGmail ? undefined : host,
-        port: isGmail ? undefined : 465,
-        user,
-        pass,
-        secure: true,
-        service: isGmail ? "gmail" : undefined,
-    });
-}
-
-function isTransientSocketError(err) {
-    const message = String(err?.message || "").toLowerCase();
-    const code = String(err?.code || "").toUpperCase();
-
-    return (
-        message.includes("unexpected socket close") ||
-        message.includes("connection closed") ||
-        message.includes("timeout") ||
-        code === "ECONNECTION" ||
-        code === "ETIMEDOUT" ||
-        code === "ESOCKET"
-    );
-}
-
-async function sendMailWithRetry(transporter, mailOptions) {
-    try {
-        return await transporter.sendMail(mailOptions);
-    } catch (err) {
-        if (!isTransientSocketError(err)) throw err;
-
-        const retryTransporter = getTransporter();
-        if (!retryTransporter) throw err;
-
-        try {
-            return await retryTransporter.sendMail(mailOptions);
-        } catch (retryErr) {
-            if (!isTransientSocketError(retryErr)) throw retryErr;
-
-            const fallbackTransporter = getFallbackTransporter();
-            if (!fallbackTransporter) throw retryErr;
-
-            return await fallbackTransporter.sendMail(mailOptions);
-        }
+    if (process.env.EMAIL_USER && process.env.EMAIL_PASSWORD) {
+        return nodemailer.createTransport({
+            host: process.env.EMAIL_HOST || 'smtp.gmail.com',
+            port: Number(process.env.EMAIL_PORT) || 587,
+            secure: process.env.EMAIL_SECURE === 'true',
+            auth: {
+                user: process.env.EMAIL_USER,
+                pass: process.env.EMAIL_PASSWORD,
+            },
+        });
     }
+    return null;
 }
 
+/**
+ * Send a real "booking received" email to the patient when they confirm a booking.
+ * Call this after creating an appointment. Returns { sent: true } or { sent: false, error }.
+ */
 export const sendBookingReceivedToPatient = async (apt) => {
     const to = apt.patientEmail || apt.email;
-    if (!to || !to.trim()) return { sent: false, error: "No patient email" };
-
-    const name = apt.patientName || apt.fullName || "Patient";
-    const doctorName = apt.doctor || "";
-    const date = apt.date || "";
-    const time = apt.time || "";
-    const { subject, text, html } = createBookingEmailContent({
-        name,
-        doctorName,
-        date,
-        time,
-    });
+    if (!to || !to.trim()) return { sent: false, error: 'No patient email' };
+    const name = apt.patientName || apt.fullName || 'Patient';
+    const doctorName = apt.doctor || '';
+    const date = apt.date || '';
+    const time = apt.time || '';
     const transporter = getTransporter();
-
     if (!transporter) {
-        console.warn("Booking email not sent (EMAIL not configured). Set EMAIL_USER and EMAIL_PASSWORD in .env for real emails.");
-        return { sent: false, error: "SMTP not configured" };
+        console.warn('Booking email not sent (EMAIL not configured). Set EMAIL_USER and EMAIL_PASSWORD in .env for real emails.');
+        return { sent: false, error: 'SMTP not configured' };
     }
-
     const mailOptions = {
-        from: getFromAddress(),
+        from: process.env.EMAIL_FROM || '"HealthSync" <no-reply@healthsync.com>',
         to: to.trim(),
-        subject,
-        text,
-        html,
+        subject: 'Booking Successful - HealthSync',
+        text: `Dear ${name},\n\nBooking Successful. After booking confirmed by doctor we will send the details to your email.\n\nYour appointment request: ${doctorName} – ${date} at ${time}.\n\nThank you for choosing HealthSync.\n\nBest regards,\nHealthSync Team`,
+        html: `
+            <div style="font-family: Arial, sans-serif; color: #333;">
+                <h2>Booking Successful</h2>
+                <p>Dear <strong>${name}</strong>,</p>
+                <p>Booking Successful. After booking confirmed by doctor we will send the details to your email.</p>
+                <div style="background: #f3f4f6; padding: 15px; border-radius: 8px; margin: 20px 0;">
+                    <p style="margin: 5px 0;"><strong>Doctor:</strong> ${doctorName}</p>
+                    <p style="margin: 5px 0;"><strong>Date:</strong> ${date}</p>
+                    <p style="margin: 5px 0;"><strong>Time:</strong> ${time}</p>
+                </div>
+                <p>Thank you for choosing HealthSync.</p>
+                <p>Best regards,<br>HealthSync Team</p>
+            </div>
+        `,
     };
-
     try {
-        const info = await sendMailWithRetry(transporter, mailOptions);
-        console.log("Booking email sent to %s: %s", to, info.messageId);
-
+        const info = await transporter.sendMail(mailOptions);
+        console.log('Booking email sent to %s: %s', to, info.messageId);
         try {
             await EmailLog.create({
                 to: to.trim(),
-                subject,
-                status: "sent",
-                messageId: info.messageId || "",
-                meta: { doctorName, date, time },
+                subject: mailOptions.subject,
+                status: 'sent',
+                messageId: info.messageId || '',
+                meta: { doctorName, date, time }
             });
         } catch (logErr) {
-            console.warn("Failed to write email log:", logErr.message);
+            console.warn('Failed to write email log:', logErr.message);
         }
-
         return { sent: true, messageId: info.messageId };
     } catch (err) {
-        console.error("Error sending booking email:", err);
-
+        console.error('Error sending booking email:', err);
         try {
             await EmailLog.create({
                 to: to.trim(),
-                subject,
-                status: "failed",
+                subject: mailOptions.subject,
+                status: 'failed',
                 error: err.message,
-                meta: { doctorName, date, time },
+                meta: { doctorName, date, time }
             });
         } catch (logErr) {
-            console.warn("Failed to write email log:", logErr.message);
+            console.warn('Failed to write email log:', logErr.message);
         }
-
         return { sent: false, error: err.message };
     }
 };
@@ -235,137 +93,129 @@ export const sendBookingSuccessEmail = async (req, res) => {
 
     try {
         const transporter = getTransporter();
-        const { subject, text, html } = createBookingEmailContent({
-            name: fullName || "Patient",
-            doctorName,
-            date: preferredDate,
-            time: timeSlot,
-        });
         const mailOptions = {
-            from: getFromAddress(),
-            to: email.trim(),
-            subject,
-            text,
-            html,
+            from: process.env.EMAIL_FROM || '"HealthSync" <no-reply@healthsync.com>',
+            to: email,
+            subject: 'Booking Successful - HealthSync',
+            text: `Dear ${fullName || 'Patient'},\n\nBooking Successful. After booking confirmed by doctor we will send the details to your email.\n\nYour appointment: ${doctorName} – ${preferredDate} at ${timeSlot}.\n\nThank you for choosing HealthSync.\n\nBest regards,\nHealthSync Team`,
+            html: `
+                <div style="font-family: Arial, sans-serif; color: #333;">
+                    <h2>Booking Successful</h2>
+                    <p>Dear <strong>${fullName || 'Patient'}</strong>,</p>
+                    <p>Booking Successful. After booking confirmed by doctor we will send the details to your email.</p>
+                    <div style="background: #f3f4f6; padding: 15px; border-radius: 8px; margin: 20px 0;">
+                        <p style="margin: 5px 0;"><strong>Doctor:</strong> ${doctorName}</p>
+                        <p style="margin: 5px 0;"><strong>Date:</strong> ${preferredDate}</p>
+                        <p style="margin: 5px 0;"><strong>Time:</strong> ${timeSlot}</p>
+                    </div>
+                    <p>Thank you for choosing HealthSync.</p>
+                    <p>Best regards,<br>HealthSync Team</p>
+                </div>
+            `,
         };
 
         if (transporter) {
-            const info = await sendMailWithRetry(transporter, mailOptions);
+            const info = await transporter.sendMail(mailOptions);
             console.log("Message sent: %s", info.messageId);
-
             try {
                 await EmailLog.create({
                     to: email.trim(),
-                    subject,
-                    status: "sent",
-                    messageId: info.messageId || "",
-                    meta: { doctorName, preferredDate, timeSlot },
+                    subject: mailOptions.subject,
+                    status: 'sent',
+                    messageId: info.messageId || '',
+                    meta: { doctorName, preferredDate, timeSlot }
                 });
             } catch (logErr) {
-                console.warn("Failed to write email log:", logErr.message);
+                console.warn('Failed to write email log:', logErr.message);
             }
-
-            return res.status(200).json({ message: "Email sent successfully", success: true });
-        }
-
-        console.warn("EMAIL not configured. Set EMAIL_USER and EMAIL_PASSWORD in .env to send real emails.");
-
-        try {
-            await EmailLog.create({
-                to: email.trim(),
-                subject,
-                status: "failed",
-                error: "EMAIL not configured",
-                meta: { doctorName, preferredDate, timeSlot },
+            res.status(200).json({ message: "Email sent successfully", success: true });
+        } else {
+            console.warn("EMAIL not configured. Set EMAIL_USER and EMAIL_PASSWORD in .env to send real emails.");
+            try {
+                await EmailLog.create({
+                    to: email.trim(),
+                    subject: mailOptions.subject,
+                    status: 'failed',
+                    error: 'EMAIL not configured',
+                    meta: { doctorName, preferredDate, timeSlot }
+                });
+            } catch (logErr) {
+                console.warn('Failed to write email log:', logErr.message);
+            }
+            res.status(200).json({
+                message: "Email not sent (SMTP not configured)",
+                success: false,
+                warning: "EMAIL credentials missing in .env"
             });
-        } catch (logErr) {
-            console.warn("Failed to write email log:", logErr.message);
         }
-
-        return res.status(200).json({
-            message: "Email not sent (SMTP not configured)",
-            success: false,
-            warning: "EMAIL credentials missing in .env",
-        });
     } catch (error) {
         console.error("Error sending email:", error);
-
         try {
             await EmailLog.create({
                 to: email.trim(),
-                subject: "Doctor Appointment Request Received - HealthSync",
-                status: "failed",
+                subject: 'Booking Successful - HealthSync',
+                status: 'failed',
                 error: error.message,
-                meta: { doctorName, preferredDate, timeSlot },
+                meta: { doctorName, preferredDate, timeSlot }
             });
         } catch (logErr) {
-            console.warn("Failed to write email log:", logErr.message);
+            console.warn('Failed to write email log:', logErr.message);
         }
-
-        return res.status(500).json({ message: "Failed to send email", error: error.message });
+        res.status(500).json({ message: "Failed to send email", error: error.message });
     }
 };
 
+/**
+ * Send status update email for appointment confirmation/cancellation.
+ */
 export const sendBookingStatusToPatient = async (apt, status) => {
     const to = apt.patientEmail || apt.email;
-    if (!to || !to.trim()) return { sent: false, error: "No patient email" };
-
-    const name = apt.patientName || apt.fullName || "Patient";
-    const doctorName = apt.doctor || "";
-    const date = apt.date || "";
-    const time = apt.time || "";
-    const { subject, text, html } = createStatusEmailContent({ name, doctorName, date, time, status });
+    if (!to || !to.trim()) return { sent: false, error: 'No patient email' };
+    const name = apt.patientName || apt.fullName || 'Patient';
+    const doctorName = apt.doctor || '';
+    const date = apt.date || '';
+    const time = apt.time || '';
     const transporter = getTransporter();
-
     if (!transporter) {
-        console.warn("Status email not sent (EMAIL not configured). Set EMAIL_USER and EMAIL_PASSWORD in .env for real emails.");
-        return { sent: false, error: "EMAIL not configured" };
+        console.warn('Status email not sent (EMAIL not configured). Set EMAIL_USER and EMAIL_PASSWORD in .env for real emails.');
+        return { sent: false, error: 'EMAIL not configured' };
     }
 
+    const subject = `Appointment ${status} - HealthSync`;
+    const text = `Dear ${name},\n\nYour appointment has been ${status.toLowerCase()}.\n\nDoctor: ${doctorName}\nDate: ${date}\nTime: ${time}\n\nThank you,\nHealthSync Team`;
+    const html = `
+        <div style="font-family: Arial, sans-serif; color: #333;">
+            <h2>Appointment ${status}</h2>
+            <p>Dear <strong>${name}</strong>,</p>
+            <p>Your appointment has been <strong>${status.toLowerCase()}</strong>.</p>
+            <div style="background: #f3f4f6; padding: 15px; border-radius: 8px; margin: 20px 0;">
+                <p style="margin: 5px 0;"><strong>Doctor:</strong> ${doctorName}</p>
+                <p style="margin: 5px 0;"><strong>Date:</strong> ${date}</p>
+                <p style="margin: 5px 0;"><strong>Time:</strong> ${time}</p>
+            </div>
+            <p>Thank you,<br>HealthSync Team</p>
+        </div>
+    `;
+
     try {
-        const info = await sendMailWithRetry(transporter, {
-            from: getFromAddress(),
+        const info = await transporter.sendMail({
+            from: process.env.EMAIL_FROM || '"HealthSync" <no-reply@healthsync.com>',
             to: to.trim(),
             subject,
             text,
             html,
         });
-        console.log("Status email sent to %s: %s", to, info.messageId);
-
-        try {
-            await EmailLog.create({
-                to: to.trim(),
-                subject,
-                status: "sent",
-                messageId: info.messageId || "",
-                meta: { doctorName, date, time, appointmentStatus: status },
-            });
-        } catch (logErr) {
-            console.warn("Failed to write status email log:", logErr.message);
-        }
-
+        console.log('Status email sent to %s: %s', to, info.messageId);
         return { sent: true, messageId: info.messageId };
     } catch (err) {
-        console.error("Error sending status email:", err);
-
-        try {
-            await EmailLog.create({
-                to: to.trim(),
-                subject,
-                status: "failed",
-                error: err.message,
-                meta: { doctorName, date, time, appointmentStatus: status },
-            });
-        } catch (logErr) {
-            console.warn("Failed to write status email log:", logErr.message);
-        }
-
+        console.error('Error sending status email:', err);
         return { sent: false, error: err.message };
     }
 };
 
+
 export default {
     sendBookingReceivedToPatient,
     sendBookingSuccessEmail,
-    sendBookingStatusToPatient,
+    sendBookingStatusToPatient
 };

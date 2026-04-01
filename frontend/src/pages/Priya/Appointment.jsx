@@ -144,21 +144,21 @@ export default function AppointmentPage() {
   }
 
   async function deleteAppointment(id) {
-    const ok = window.confirm('Do you want to cancel this appointment?');
+    const ok = window.confirm('Do you want to delete this appointment?');
     if (!ok) return;
 
     try {
-      const res = await fetch(`${APPOINTMENTS_API}/${id}/cancel`, {
-        method: 'PUT',
+      const res = await fetch(`${APPOINTMENTS_API}/${id}`, {
+        method: 'DELETE',
         headers: { Authorization: `Bearer ${token}` },
         credentials: 'include',
       });
       const data = await res.json();
-      if (!res.ok) throw new Error(data?.message || 'Failed to cancel appointment');
-      toast.success('Appointment cancelled');
+      if (!res.ok) throw new Error(data?.message || 'Failed to delete appointment');
+      toast.success('Appointment deleted');
       loadAppointments();
     } catch (err) {
-      toast.error(err.message || 'Failed to cancel appointment');
+      toast.error(err.message || 'Failed to delete appointment');
     }
   }
 

@@ -148,17 +148,3 @@ export const rejectAppointment = async (token, appointmentId) => {
     const response = await axios.put(`${API_URL}/admin/appointments/${appointmentId}/reject`, {}, getAuthHeader(token));
     return response.data;
 };
-
-export const getAdminCaregiverBookings = async (token) => {
-    const response = await axios.get(`${API_URL}/tharindu/bookings/admin/all`, getAuthHeader(token));
-    return response.data;
-};
-
-export const updateAdminCaregiverBookingStatus = async (token, bookingId, status) => {
-    const response = await axios.patch(
-        `${API_URL}/tharindu/bookings/admin/status/${bookingId}`,
-        { status },
-        getAuthHeader(token)
-    );
-    return response.data;
-};

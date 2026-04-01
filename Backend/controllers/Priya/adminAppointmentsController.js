@@ -64,19 +64,11 @@ export const confirmAppointment = async (req, res) => {
             }
         });
 
-        let emailSent = false;
-        let emailError = null;
         if (appointment.patientEmail) {
-            const emailResult = await sendBookingStatusToPatient(appointment, 'Confirmed');
-            emailSent = !!emailResult?.sent;
-            emailError = emailResult?.error || null;
+            await sendBookingStatusToPatient(appointment, 'Confirmed');
         }
 
-        return res.json({
-            ...appointment.toObject(),
-            emailSent,
-            emailError,
-        });
+        return res.json(appointment);
     } catch (error) {
         return res.status(400).json({ message: 'Failed to confirm appointment.' });
     }
@@ -116,19 +108,11 @@ export const cancelAppointmentByAdmin = async (req, res) => {
             }
         });
 
-        let emailSent = false;
-        let emailError = null;
         if (appointment.patientEmail) {
-            const emailResult = await sendBookingStatusToPatient(appointment, 'Cancelled');
-            emailSent = !!emailResult?.sent;
-            emailError = emailResult?.error || null;
+            await sendBookingStatusToPatient(appointment, 'Cancelled');
         }
 
-        return res.json({
-            ...appointment.toObject(),
-            emailSent,
-            emailError,
-        });
+        return res.json(appointment);
     } catch (error) {
         return res.status(400).json({ message: 'Failed to cancel appointment.' });
     }

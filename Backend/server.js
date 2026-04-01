@@ -7,7 +7,7 @@ import path from "path";
 import { fileURLToPath } from "url";
 import { connectDB } from './database.js';
 import { PORT, NODE_ENV, CLIENT_URL, ADMIN_DASHBOARD_URL, COOKIE_SECRET } from './config.js';
-import { priyaSwaggerSpec } from "./swagger/priya-swagger.js";
+import priyaOpenApi from "./docs/priya-openapi.js";
 import authRoutes from './routes/Imasha/authRoutes.js';
 import userRoutes from './routes/Imasha/userRoutes.js';
 import userReportRoutes from './routes/Imasha/reportRoutes.js';
@@ -33,7 +33,6 @@ import mealReminderRoutes from "./routes/Tharuka/mealReminderRoutes.js";
 import alertRoutes from "./routes/Tharindu/alertRoutes.js";
 import alertSettingsRoutes from "./routes/Tharindu/alertSettingsRoutes.js";
 import notificationRoutes from "./routes/Tharindu/notificationRoutes.js";
-import bookingEmailController from "./controllers/Priya/bookingEmailController.js";
 
 // ─────────────────────────────────────────────
 // SERVICES
@@ -153,8 +152,8 @@ app.get('/health', (req, res) => {
 
 app.use(
     "/api-docs/priya",
-    swaggerUi.serveFiles(priyaSwaggerSpec),
-    swaggerUi.setup(priyaSwaggerSpec, {
+    swaggerUi.serve,
+    swaggerUi.setup(priyaOpenApi, {
         customCss: ".swagger-ui .topbar { display: none }",
         customSiteTitle: "Priya Module API",
     })
@@ -163,14 +162,10 @@ app.use(
 
 
 // Swagger UI for Tharindu module APIs (Alerts, Notifications, Bookings)
-app.use(
-    '/api-docs/tharindu',
-    swaggerUi.serveFiles(tharinduOpenApi),
-    swaggerUi.setup(tharinduOpenApi, {
-        customCss: '.swagger-ui .topbar { display: none }',
-        customSiteTitle: 'Tharindu Module API',
-    })
-);
+app.use('/api-docs/tharindu', swaggerUi.serve, swaggerUi.setup(tharinduOpenApi, {
+    customCss: '.swagger-ui .topbar { display: none }',
+    customSiteTitle: 'Tharindu Module API',
+}));
 // Root endpoint
 app.get('/', (req, res) => {
     res.status(200).json({
@@ -307,12 +302,18 @@ import caregiverRoutes from "./routes/Tharindu/caregiverRoutes.js";
 app.use('/api/appointments', appointmentsRoutes);
 app.use('/api/tharindu/bookings', caregiverRoutes);
 app.use('/api/email-logs', emailLogRoutes);
+app.use('/api/appointments', appointmentsRoutes);
 app.use('/api/exercise', exerciseRoutes);
 app.use('/api/admin/appointments', adminAppointmentsRoutes);
-app.post('/api/send-booking-email', bookingEmailController.sendBookingSuccessEmail);
 
 // ==========================================
 // ERROR HANDLING MIDDLEWARE
+try {
+    const bookingEmailController = require('./controllers/bookingEmailController');
+    app.post('/api/send-booking-email', bookingEmailController.sendBookingSuccessEmail);
+} catch (error) {
+    console.warn('bookingEmailController not found. /api/send-booking-email is disabled.');
+}
 // ==========================================
 
 // 404 handler (must be after all routes)

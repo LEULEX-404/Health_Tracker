@@ -205,12 +205,8 @@ function useProfileStats(user, token) {
 /* ── Main Component ─────────────────────────────────────── */
 export default function ProfilePage() {
 <<<<<<< Updated upstream
-<<<<<<< Updated upstream
     const { user, token, logout } = useAuth();
     const navigate = useNavigate();
-=======
-    const { user, token, logout, updateUser } = useAuth();
->>>>>>> Stashed changes
 =======
     const { user, token, logout, updateUser } = useAuth();
 >>>>>>> Stashed changes
@@ -226,7 +222,6 @@ export default function ProfilePage() {
         firstName: '', lastName: '', phone: '',
         address: '', dateOfBirth: '', gender: '',
     });
-<<<<<<< Updated upstream
 <<<<<<< Updated upstream
     const [recentAppointments, setRecentAppointments] = useState([]);
     const [appointmentsLoading, setAppointmentsLoading] = useState(false);
@@ -262,10 +257,6 @@ export default function ProfilePage() {
         }
     }, [token, user?.email]);
 
-=======
-    const fileInputRef = useRef(null);
-
->>>>>>> Stashed changes
 =======
     const fileInputRef = useRef(null);
 
@@ -352,7 +343,6 @@ export default function ProfilePage() {
     };
 
 <<<<<<< Updated upstream
-<<<<<<< Updated upstream
     const handleDeleteAppointment = async (appointmentId) => {
         const ok = window.confirm('Do you want to delete this appointment?');
         if (!ok) return;
@@ -371,8 +361,6 @@ export default function ProfilePage() {
         }
     };
 
-=======
->>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
     const displayName = [user?.firstName, user?.lastName].filter(Boolean).join(' ') || 'User';
@@ -542,10 +530,6 @@ export default function ProfilePage() {
                             </h4>
                             <PatientAppointmentsTab onBookingSuccess={triggerStatsRefresh} />
                         </div>
-<<<<<<< Updated upstream
-=======
-
->>>>>>> Stashed changes
                     </div>
                 </motion.div>
             );
