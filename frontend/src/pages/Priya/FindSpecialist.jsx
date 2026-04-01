@@ -42,22 +42,19 @@ function matchSpecialist(doc, query) {
 }
 
 function getAppointmentDateBounds() {
-  const today = new Date();
-  today.setHours(0, 0, 0, 0);
+  const now = new Date();
+  const day = now.getDay();
+  const toMonday = day === 0 ? -6 : 1 - day;
+  const startCurrentWeek = new Date(now);
+  startCurrentWeek.setDate(now.getDate() + toMonday);
+  startCurrentWeek.setHours(0, 0, 0, 0);
 
-  const endAllowed = new Date(today);
-  endAllowed.setDate(today.getDate() + 14);
-
-  const formatLocalDate = (date) => {
-    const year = date.getFullYear();
-    const month = String(date.getMonth() + 1).padStart(2, '0');
-    const day = String(date.getDate()).padStart(2, '0');
-    return `${year}-${month}-${day}`;
-  };
+  const endNextWeek = new Date(startCurrentWeek);
+  endNextWeek.setDate(startCurrentWeek.getDate() + 13);
 
   return {
-    min: formatLocalDate(today),
-    max: formatLocalDate(endAllowed),
+    min: startCurrentWeek.toISOString().slice(0, 10),
+    max: endNextWeek.toISOString().slice(0, 10),
   };
 }
 
@@ -73,7 +70,7 @@ function isValidEmail(email) {
 
 function isValidPhone(phone) {
   const digits = (phone || '').replace(/\D/g, '');
-  return /^(070|071|072|074|075|076|077|078)\d{7}$/.test(digits);
+  return /^(070|071|072|074|076|077|078)\d{7}$/.test(digits);
 }
 
 function normalizePhone(phone) {
@@ -83,8 +80,8 @@ function normalizePhone(phone) {
 function getPhoneValidationMessage(phone) {
   const digits = normalizePhone(phone);
   if (!digits) return '';
-  if (digits.length >= 3 && !/^(070|071|072|074|075|076|077|078)/.test(digits)) {
-    return 'Phone must start with 070, 071, 072, 074, 075, 076, 077, or 078.';
+  if (digits.length >= 3 && !/^(070|071|072|074|076|077|078)/.test(digits)) {
+    return 'Phone must start with 070, 071, 072, 074, 076, 077, or 078.';
   }
   if (digits.length < 10) {
     return 'Phone must contain exactly 10 digits.';
@@ -238,7 +235,7 @@ export default function FindSpecialistPage() {
     }
 
     if (!form.date || !isDateInAllowedRange(form.date)) {
-      toast.error('Date must be from today up to the next 2 weeks.');
+      toast.error('Date must be within the current week or next week.');
       return;
     }
 
@@ -531,7 +528,7 @@ export default function FindSpecialistPage() {
                   </div>
 
                   <p className="pr-booking-note">
-                    Allowed dates: from today up to the next 2 weeks.
+                    Allowed dates: current week and next week only.
                   </p>
 
                   <div className="pr-booking-slots">
