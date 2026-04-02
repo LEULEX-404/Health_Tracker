@@ -9,7 +9,7 @@ import {
     Camera, LogOut, Save, Bell, Activity,
     ClipboardList, Settings, ChevronRight,
     Loader2, ShieldCheck, CheckCircle2,
-    TrendingUp, Zap, Star, Clock, Heart, Sparkles
+    TrendingUp, Zap, Star, Clock, Heart, Sparkles, Stethoscope
 } from 'lucide-react';
 import { useAuth } from '../../context/Imasha/AuthContext';
 import { useTheme } from '../../context/Tharuka/ThemeContext';
@@ -344,16 +344,16 @@ export default function ProfilePage() {
         if (!ok) return;
 
         try {
-            const res = await fetch(`http://localhost:5000/api/appointments/${appointmentId}`, {
+            const res = await fetch(`${import.meta.env.VITE_API_URL}/appointments/${appointmentId}`, {
                 method: 'DELETE',
                 headers: { Authorization: `Bearer ${token}` },
             });
             const data = await res.json();
-            if (!res.ok) throw new Error(data?.message || 'Failed to delete appointment');
-            toast.success('Appointment deleted');
+            if (!res.ok) throw new Error(data?.message || 'Failed to cancel appointment');
+            toast.success('Appointment cancelled');
             loadRecentAppointments();
         } catch (error) {
-            toast.error(error.message || 'Failed to delete appointment');
+            toast.error(error.message || 'Failed to cancel appointment');
         }
     };
 
@@ -458,44 +458,81 @@ export default function ProfilePage() {
                         <h3 className="ims-profile__form-section-title">
                             <ClipboardList size={12} />Appointments
                         </h3>
-                        <Link to="/Appointment" className="ims-profile__save-btn" style={{ textDecoration: 'none', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', width: 'auto', padding: '0 14px', height: 36 }}>
-                            Manage Appointments
+                        <Link
+                            to="/Appointment"
+                            className="ims-profile__save-btn"
+                            style={{
+                                textDecoration: 'none',
+                                display: 'inline-flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                width: 'auto',
+                                padding: '0 14px',
+                                height: 36,
+                                fontSize: '13px',
+                            }}
+                        >
+                            View All History
                         </Link>
                     </div>
 
-                    {appointmentsLoading ? (
-                        <div className="ims-profile__placeholder-content">
-                            <p>Loading appointments...</p>
+                    <div className="ims-profile__appointments-layout" style={{ display: 'flex', flexDirection: 'column', gap: '30px' }}>
+
+                        {/* Caregiver Bookings Section */}
+                        <div className="ims-profile__section">
+                            <h4 style={{ fontSize: '14px', marginBottom: '15px', color: 'var(--p-cyan)', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                <Sparkles size={14} /> Caregiver Services
+                            </h4>
+                            <PatientAppointmentsTab onBookingSuccess={triggerStatsRefresh} />
                         </div>
-                    ) : recentAppointments.length === 0 ? (
-                        <div className="ims-profile__placeholder-content">
-                            <p>No appointments found yet.</p>
-                        </div>
-                    ) : (
-                        <div className="ims-profile__form-grid">
-                            {recentAppointments.slice(0, 6).map((apt) => (
-                                <div key={apt._id} className="ims-profile__appointment-card full">
-                                    <div className="ims-profile__appointment-left">
-                                        <img
-                                            src={apt.avatar || '/images/Priya/doctor-01.png'}
-                                            alt={apt.doctor || 'Doctor'}
-                                            className="ims-profile__appointment-avatar"
-                                        />
-                                        <div>
-                                            <label>{apt.doctor || 'Doctor'}</label>
-                                            <div style={{ color: 'var(--text-secondary)', fontSize: 13 }}>Date: {apt.date || '-'}</div>
-                                            <div style={{ color: 'var(--text-secondary)', fontSize: 13 }}>Time: {apt.time || '-'}</div>
-                                            <div style={{ color: 'var(--text-secondary)', fontSize: 13 }}>Status: {apt.status || 'Pending'}</div>
-                                        </div>
-                                    </div>
-                                    <div className="ims-profile__appointment-actions">
-                                        <button type="button" onClick={() => navigate('/Appointment')}>Edit</button>
-                                        <button type="button" onClick={() => handleDeleteAppointment(apt._id)}>Cancel</button>
-                                    </div>
+
+                        <div className="ims-profile__divider" style={{ margin: '10px 0' }} />
+
+                        {/* Recent Doctor Appointments */}
+                        <div className="ims-profile__section">
+                            <h4 style={{ fontSize: '14px', marginBottom: '15px', opacity: 0.8 }}>Recent Doctor Appointments</h4>
+                            {appointmentsLoading ? (
+                                <div className="ims-profile__placeholder-content">
+                                    <p>Loading appointments...</p>
                                 </div>
-                            ))}
+                            ) : recentAppointments.length === 0 ? (
+                                <div className="ims-profile__placeholder-content">
+                                    <p>No recent doctor appointments found.</p>
+                                </div>
+                            ) : (
+                                <div className="ims-profile__form-grid">
+                                    {recentAppointments.slice(0, 4).map((apt) => (
+                                        <div key={apt._id} className="ims-profile__appointment-card full">
+                                            <div className="ims-profile__appointment-left">
+                                                <img
+                                                    src={apt.avatar || '/images/Priya/doctor-01.png'}
+                                                    alt={apt.doctor || 'Doctor'}
+                                                    className="ims-profile__appointment-avatar"
+                                                />
+                                                <div>
+                                                    <label>{apt.doctor || 'Doctor'}</label>
+                                                    <div style={{ color: 'var(--text-secondary)', fontSize: 13 }}>{apt.date || '-'} at {apt.time || '-'}</div>
+                                                    <div className={`ims-profile__status-tag ${apt.status?.toLowerCase() || 'pending'}`}>
+                                                        {apt.status || 'Scheduled'}
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div className="ims-profile__appointment-actions">
+                                                <button type="button" onClick={() => navigate('/Appointment')}>Manage</button>
+                                                <button type="button" className="cancel-btn" onClick={() => handleDeleteAppointment(apt._id)}>Cancel</button>
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+                            )}
                         </div>
-                    )}
+
+                    </div>
+                </motion.div>
+            );
+        }
+
+        /* ── Alerts ── */
         if (activeTab === 'alerts') {
             return (
                 <motion.div

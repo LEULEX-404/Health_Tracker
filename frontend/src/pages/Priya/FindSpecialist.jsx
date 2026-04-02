@@ -42,15 +42,18 @@ function matchSpecialist(doc, query) {
 }
 
 function getAppointmentDateBounds() {
-  const now = new Date();
-  const day = now.getDay();
-  const toMonday = day === 0 ? -6 : 1 - day;
-  const startCurrentWeek = new Date(now);
-  startCurrentWeek.setDate(now.getDate() + toMonday);
-  startCurrentWeek.setHours(0, 0, 0, 0);
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
 
-  const endNextWeek = new Date(startCurrentWeek);
-  endNextWeek.setDate(startCurrentWeek.getDate() + 13);
+  const endAllowed = new Date(today);
+  endAllowed.setDate(today.getDate() + 14);
+
+  const formatLocalDate = (date) => {
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
+  };
 
   return {
     min: startCurrentWeek.toISOString().slice(0, 10),
@@ -93,7 +96,7 @@ function getPhoneValidationMessage(phone) {
 }
 
 export default function FindSpecialistPage() {
-  const { token } = useAuth();
+  const { token, user } = useAuth();
   const navigate = useNavigate();
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('all');
@@ -165,14 +168,15 @@ export default function FindSpecialistPage() {
     }
 
     setSelectedDoctor(doc);
+    const fullName = [user?.firstName, user?.lastName].filter(Boolean).join(' ').trim();
     setForm({
-      patientName: '',
-      patientEmail: '',
-      patientPhone: '',
+      patientName: fullName,
+      patientEmail: user?.email || '',
+      patientPhone: normalizePhone(user?.phone || ''),
       time: '',
       date: '',
     });
-    setPhoneError('');
+    setPhoneError(getPhoneValidationMessage(user?.phone || ''));
     setBookingOpen(true);
   }
 
@@ -235,7 +239,7 @@ export default function FindSpecialistPage() {
     }
 
     if (!form.date || !isDateInAllowedRange(form.date)) {
-      toast.error('Date must be within the current week or next week.');
+      toast.error('Date must be from today up to the next 2 weeks.');
       return;
     }
 
@@ -428,7 +432,7 @@ export default function FindSpecialistPage() {
                     className="pr-booking-submit"
                     onClick={() => {
                       closeBookingForm();
-                      navigate('/Appointment');
+                      navigate('/appointment');
                     }}
                   >
                     View Appointments
@@ -528,7 +532,7 @@ export default function FindSpecialistPage() {
                   </div>
 
                   <p className="pr-booking-note">
-                    Allowed dates: current week and next week only.
+                    Allowed dates: from today up to the next 2 weeks.
                   </p>
 
                   <div className="pr-booking-slots">

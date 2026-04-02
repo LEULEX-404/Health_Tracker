@@ -1,5 +1,5 @@
 import Appointment from "../../models/Priya/Appointment.js";
-import { sendBookingReceivedToPatient } from "./bookingEmailController.js";
+import { sendBookingReceivedToPatient, sendBookingStatusToPatient } from "./bookingEmailController.js";
 import Doctor from "../../models/Imasha/Doctor.js";
 
 const DEFAULT_AVATAR = 'https://i.pravatar.cc/150?img=12';
@@ -17,18 +17,14 @@ function normalizeDoctorName(name) {
 }
 
 function getBookingDateBounds() {
-    const now = new Date();
-    const day = now.getDay();
-    const toMonday = day === 0 ? -6 : 1 - day;
-    const startCurrentWeek = new Date(now);
-    startCurrentWeek.setDate(now.getDate() + toMonday);
-    startCurrentWeek.setHours(0, 0, 0, 0);
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
 
-    const endNextWeek = new Date(startCurrentWeek);
-    endNextWeek.setDate(startCurrentWeek.getDate() + 13);
+    const endNextWeek = new Date(today);
+    endNextWeek.setDate(today.getDate() + 7);
     endNextWeek.setHours(23, 59, 59, 999);
 
-    return { startCurrentWeek, endNextWeek };
+    return { today, endNextWeek };
 }
 
 function isDateWithinBookingWindow(dateStr) {
@@ -36,13 +32,13 @@ function isDateWithinBookingWindow(dateStr) {
     const date = new Date(`${dateStr}T00:00:00`);
     if (Number.isNaN(date.getTime())) return false;
 
-    const { startCurrentWeek, endNextWeek } = getBookingDateBounds();
-    return date >= startCurrentWeek && date <= endNextWeek;
+    const { today, endNextWeek } = getBookingDateBounds();
+    return date >= today && date <= endNextWeek;
 }
 
 function isValidSriLankaMobile(phone) {
     const digits = String(phone || '').replace(/\D/g, '');
-    return /^(070|071|072|074|076|077|078)\d{7}$/.test(digits);
+    return /^(070|071|072|074|075|076|077|078)\d{7}$/.test(digits);
 }
 
 function shouldUseStoredAvatar(avatar) {
@@ -185,10 +181,10 @@ const createAppointment = async (req, res) => {
         }
         const normalizedPatientPhone = normalizeMobile(patientPhone || req.body.phone || '');
         if (!isValidSriLankaMobile(normalizedPatientPhone)) {
-            return res.status(400).json({ message: 'patientPhone must be 10 digits and start with 070, 071, 072, 074, 076, 077, or 078.' });
+            return res.status(400).json({ message: 'patientPhone must be 10 digits and start with 070, 071, 072, 074, 076, 077, 075 or 078.' });
         }
         if (!isDateWithinBookingWindow(date)) {
-            return res.status(400).json({ message: 'Date must be within current week or next week.' });
+            return res.status(400).json({ message: 'Date must be from today through next week.' });
         }
 
         const matchedDoctor = await findDoctorByAppointmentInput({ doctorId, doctorName: doctor });
@@ -206,8 +202,12 @@ const createAppointment = async (req, res) => {
             specialty: req.body.specialty || resolved.specialty,
             status: req.body.status || 'Pending',
             avatar: req.body.avatar || resolved.avatar,
-            patientName: patientName || req.body.fullName || '',
-            patientEmail: patientEmail || req.body.email || '',
+            patientName:
+                patientName ||
+                req.body.fullName ||
+                [req.user?.firstName, req.user?.lastName].filter(Boolean).join(' ').trim() ||
+                '',
+            patientEmail: patientEmail || req.body.email || req.user?.email || '',
             patientPhone: normalizedPatientPhone
         });
 
@@ -249,10 +249,10 @@ const updateAppointment = async (req, res) => {
             updates.patientPhone = normalizeMobile(updates.patientPhone);
         }
         if (updates.patientPhone !== undefined && !isValidSriLankaMobile(updates.patientPhone)) {
-            return res.status(400).json({ message: 'patientPhone must be 10 digits and start with 070, 071, 072, 074, 076, 077, or 078.' });
+            return res.status(400).json({ message: 'patientPhone must be 10 digits and start with 070, 071, 072, 074, 076, 077, 075 or 078.' });
         }
         if (updates.date && !isDateWithinBookingWindow(updates.date)) {
-            return res.status(400).json({ message: 'Date must be within current week or next week.' });
+            return res.status(400).json({ message: 'Date must be from today through next week.' });
         }
         if (updates.doctorId || updates.doctor) {
             const matchedDoctor = await findDoctorByAppointmentInput({
@@ -313,8 +313,26 @@ const cancelAppointment = async (req, res) => {
             return res.status(404).json({ message: 'Appointment not found.' });
         }
 
+        let emailSent = false;
+        let emailError = null;
+        if (appointment.patientEmail && appointment.patientEmail.trim()) {
+            try {
+                const result = await sendBookingStatusToPatient(appointment, 'Cancelled');
+                emailSent = !!result?.sent;
+                if (!result?.sent) {
+                    emailError = result?.error || 'Failed to send cancellation email';
+                }
+            } catch (error) {
+                emailError = error?.message || 'Failed to send cancellation email';
+            }
+        }
+
         const cancelledObj = appointment.toObject ? appointment.toObject() : appointment;
-        return res.json(enrichAppointmentObject(cancelledObj));
+        return res.json({
+            ...enrichAppointmentObject(cancelledObj),
+            emailSent,
+            emailError,
+        });
     } catch (error) {
         return res.status(400).json({ message: 'Invalid appointment id.' });
     }

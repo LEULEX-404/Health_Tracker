@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
+import { Stethoscope } from 'lucide-react';
 import { toast } from 'react-hot-toast';
 import Header from '../../components/Tharuka/Header/Header';
 import Footer from '../../components/Tharuka/Footer/Footer';
@@ -7,8 +8,8 @@ import ScrollToTop from '../../components/Tharuka/Common/ScrollToTop';
 import { useAuth } from '../../context/Imasha/AuthContext';
 import '../../styles/Priya/Appointment.css';
 
-const APPOINTMENTS_API = 'http://localhost:5000/api/appointments';
-const BACKEND_ORIGIN = 'http://localhost:5000';
+const APPOINTMENTS_API = `${import.meta.env.VITE_API_URL}/appointments`;
+const BACKEND_ORIGIN = import.meta.env.VITE_API_URL.replace('/api', '');
 const FALLBACK_DOCTOR_IMAGE = '/images/Priya/doctor-01.png';
 
 function resolveAvatarSrc(src) {
@@ -46,7 +47,7 @@ function getPhoneValidationMessage(phone) {
   return '';
 }
 
-export default function AppointmentPage() {
+export default function AppointmentPage({ embedded = false }) {
   const { token, user } = useAuth();
   const [loading, setLoading] = useState(true);
   const [appointments, setAppointments] = useState([]);
@@ -143,22 +144,22 @@ export default function AppointmentPage() {
     }
   }
 
-  async function deleteAppointment(id) {
-    const ok = window.confirm('Do you want to delete this appointment?');
+  async function cancelAppointment(id) {
+    const ok = window.confirm('Do you want to cancel this appointment?');
     if (!ok) return;
 
     try {
-      const res = await fetch(`${APPOINTMENTS_API}/${id}`, {
-        method: 'DELETE',
+      const res = await fetch(`${APPOINTMENTS_API}/${id}/cancel`, {
+        method: 'PUT',
         headers: { Authorization: `Bearer ${token}` },
         credentials: 'include',
       });
       const data = await res.json();
-      if (!res.ok) throw new Error(data?.message || 'Failed to delete appointment');
-      toast.success('Appointment deleted');
+      if (!res.ok) throw new Error(data?.message || 'Failed to cancel appointment');
+      toast.success('Appointment cancelled');
       loadAppointments();
     } catch (err) {
-      toast.error(err.message || 'Failed to delete appointment');
+      toast.error(err.message || 'Failed to cancel appointment');
     }
   }
 
@@ -185,96 +186,161 @@ export default function AppointmentPage() {
     });
   }, [sorted, doctorFilter, activeTab, today]);
 
+  const appointmentsModule = (
+    <>
+      <div className={`pr-appointment-head${embedded ? ' pr-appointment-head--embedded' : ''}`}>
+        <div>
+          <h1>{embedded ? 'Doctor Appointments' : 'My Appointments'}</h1>
+          <p>Manage and track your medical consultations</p>
+        </div>
+        <Link
+          to="/find-specialist"
+          className={`pr-appointment-new-btn${embedded ? ' pr-appointment-new-btn--embedded' : ''}`}
+        >
+          + Schedule New
+        </Link>
+      </div>
+
+      {loading ? (
+        <p className="pr-appointment-empty">Loading appointments...</p>
+      ) : sorted.length === 0 ? (
+        <p className="pr-appointment-empty">No appointments found.</p>
+      ) : (
+        <div className="pr-appointment-panel">
+          <div className="pr-appointment-toolbar">
+            <div className="pr-appointment-tabs">
+              <button
+                type="button"
+                className={activeTab === 'upcoming' ? 'active' : ''}
+                onClick={() => setActiveTab('upcoming')}
+              >
+                Upcoming
+              </button>
+              <button
+                type="button"
+                className={activeTab === 'past' ? 'active' : ''}
+                onClick={() => setActiveTab('past')}
+              >
+                Past History
+              </button>
+            </div>
+
+            <input
+              className="pr-appointment-filter"
+              type="search"
+              placeholder="Filter by doctor..."
+              value={doctorFilter}
+              onChange={(e) => setDoctorFilter(e.target.value)}
+            />
+          </div>
+
+          {visibleAppointments.length === 0 ? (
+            <p className="pr-appointment-empty">No appointments in this section.</p>
+          ) : (
+            <div className="pr-appointment-grid">
+              {visibleAppointments.map((apt) => (
+                <article key={apt._id} className="pr-appointment-card">
+                  <div className="pr-appointment-card-top">
+                    <div className="pr-appointment-doctor">
+                      <div
+                        className="pr-appointment-doctor-image"
+                        aria-label={apt.doctor || 'Doctor'}
+                        style={{
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          background: 'rgba(0, 180, 216, 0.12)',
+                          color: 'var(--p-cyan)',
+                        }}
+                      >
+                        <Stethoscope size={20} />
+                      </div>
+                      <div>
+                        <h3>{apt.doctor || 'Doctor'}</h3>
+                        <p className="pr-appointment-sub">{apt.specialty || 'Consultation'}</p>
+                      </div>
+                    </div>
+
+                    <div className="pr-appointment-actions">
+                      <button type="button" onClick={() => startEdit(apt)}>Edit</button>
+                      <button type="button" className="danger" onClick={() => cancelAppointment(apt._id)}>
+                        Cancel
+                      </button>
+                    </div>
+                  </div>
+
+                  <div className="pr-appointment-meta">
+                    <p><strong>Date:</strong> {apt.date || '-'}</p>
+                    <p><strong>Time:</strong> {apt.time || '-'}</p>
+                    <p><strong>Status:</strong> {apt.status || 'Pending'}</p>
+                  </div>
+
+                </article>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
+    </>
+  );
+
+  if (embedded) {
+    return (
+      <div className="pr-appointment-shell">
+        <div className="pr-appointment-panel-wrap">
+          {appointmentsModule}
+          {editingId && editingAppointment ? (
+            <div className="pr-appointment-modal-overlay" onClick={cancelEdit}>
+              <aside className="pr-appointment-modal" onClick={(e) => e.stopPropagation()}>
+                <div className="pr-appointment-modal-head">
+                  <h2>Edit Appointment</h2>
+                  <button type="button" onClick={cancelEdit}>x</button>
+                </div>
+                <p className="pr-appointment-modal-sub">
+                  {editingAppointment.doctor || 'Doctor'} • {editingAppointment.date || '-'} • {editingAppointment.time || '-'}
+                </p>
+                <div className="pr-appointment-edit">
+                  <label htmlFor="editPatientName">Patient Name</label>
+                  <input
+                    id="editPatientName"
+                    value={editForm.patientName}
+                    onChange={(e) => setEditForm((prev) => ({ ...prev, patientName: e.target.value }))}
+                    placeholder="Patient name"
+                  />
+                  <label htmlFor="editPatientPhone">Patient Phone</label>
+                  <input
+                    id="editPatientPhone"
+                    value={editForm.patientPhone}
+                    onChange={(e) => {
+                      const nextPhone = normalizePhone(e.target.value);
+                      setEditForm((prev) => ({ ...prev, patientPhone: nextPhone }));
+                      setEditPhoneError(getPhoneValidationMessage(nextPhone));
+                    }}
+                    placeholder="0771234567"
+                    inputMode="numeric"
+                    maxLength={10}
+                    aria-invalid={editPhoneError ? 'true' : 'false'}
+                  />
+                  {editPhoneError ? <p className="pr-field-error">{editPhoneError}</p> : null}
+                  <div className="pr-appointment-modal-actions">
+                    <button type="button" className="primary" onClick={() => saveEdit(editingId)}>Save Changes</button>
+                    <button type="button" onClick={cancelEdit}>Close</button>
+                  </div>
+                </div>
+              </aside>
+            </div>
+          ) : null}
+        </div>
+      </div>
+    );
+  }
+
   return (
     <>
       <Header />
       <main className="pr-appointment-page">
         <section className="container pr-appointment-shell">
-          <div className="pr-appointment-head">
-            <div>
-              <h1>My Appointments</h1>
-              <p>Manage and track your medical consultations</p>
-            </div>
-            <Link to="/find-specialist" className="pr-appointment-new-btn">
-              + Schedule New
-            </Link>
-          </div>
-
-          {loading ? (
-            <p className="pr-appointment-empty">Loading appointments...</p>
-          ) : sorted.length === 0 ? (
-            <p className="pr-appointment-empty">No appointments found.</p>
-          ) : (
-            <div className="pr-appointment-panel">
-              <div className="pr-appointment-toolbar">
-                <div className="pr-appointment-tabs">
-                  <button
-                    type="button"
-                    className={activeTab === 'upcoming' ? 'active' : ''}
-                    onClick={() => setActiveTab('upcoming')}
-                  >
-                    Upcoming
-                  </button>
-                  <button
-                    type="button"
-                    className={activeTab === 'past' ? 'active' : ''}
-                    onClick={() => setActiveTab('past')}
-                  >
-                    Past History
-                  </button>
-                </div>
-
-                <input
-                  className="pr-appointment-filter"
-                  type="search"
-                  placeholder="Filter by doctor..."
-                  value={doctorFilter}
-                  onChange={(e) => setDoctorFilter(e.target.value)}
-                />
-              </div>
-
-              {visibleAppointments.length === 0 ? (
-                <p className="pr-appointment-empty">No appointments in this section.</p>
-              ) : (
-                <div className="pr-appointment-grid">
-                  {visibleAppointments.map((apt) => (
-                    <article key={apt._id} className="pr-appointment-card">
-                      <div className="pr-appointment-card-top">
-                        <div className="pr-appointment-doctor">
-                          <img
-                            src={resolveAvatarSrc(apt.avatar)}
-                            alt={apt.doctor || 'Doctor'}
-                            className="pr-appointment-doctor-image"
-                            onError={(e) => {
-                              e.currentTarget.src = FALLBACK_DOCTOR_IMAGE;
-                            }}
-                          />
-                          <div>
-                            <h3>{apt.doctor || 'Doctor'}</h3>
-                            <p className="pr-appointment-sub">{apt.specialty || 'Consultation'}</p>
-                          </div>
-                        </div>
-
-                        <div className="pr-appointment-actions">
-                          <button type="button" onClick={() => startEdit(apt)}>Edit</button>
-                          <button type="button" className="danger" onClick={() => deleteAppointment(apt._id)}>
-                            Cancel
-                          </button>
-                        </div>
-                      </div>
-
-                      <div className="pr-appointment-meta">
-                        <p><strong>Date:</strong> {apt.date || '-'}</p>
-                        <p><strong>Time:</strong> {apt.time || '-'}</p>
-                        <p><strong>Status:</strong> {apt.status || 'Pending'}</p>
-                      </div>
-
-                    </article>
-                  ))}
-                </div>
-              )}
-            </div>
-          )}
+          {appointmentsModule}
         </section>
       </main>
       {editingId && editingAppointment ? (
