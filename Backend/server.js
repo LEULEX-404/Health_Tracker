@@ -7,7 +7,6 @@ import path from "path";
 import { fileURLToPath } from "url";
 import { connectDB } from './database.js';
 import { PORT, NODE_ENV, CLIENT_URL, ADMIN_DASHBOARD_URL, COOKIE_SECRET } from './config.js';
-import priyaOpenApi from "./docs/priya-openapi.js";
 import authRoutes from './routes/Imasha/authRoutes.js';
 import userRoutes from './routes/Imasha/userRoutes.js';
 import userReportRoutes from './routes/Imasha/reportRoutes.js';
@@ -47,6 +46,7 @@ import { startMonitoringSchedulers } from "./services/Tharindu/monitoringSchedul
 
 import User from "./models/Imasha/User.js";
 import swaggerUi from "swagger-ui-express";
+import priyaSwaggerSpec from "./swagger/priya-swagger.js";
 import { tharukaSwaggerSpec } from "./swagger/tharuka-swagger.js";
 import imashaOpenApi from './docs/imasha-openapi.js';
 import tharinduOpenApi from './docs/tharindu-openapi.js';
@@ -152,8 +152,8 @@ app.get('/health', (req, res) => {
 
 app.use(
     "/api-docs/priya",
-    swaggerUi.serve,
-    swaggerUi.setup(priyaOpenApi, {
+    swaggerUi.serveFiles(priyaSwaggerSpec),
+    swaggerUi.setup(priyaSwaggerSpec, {
         customCss: ".swagger-ui .topbar { display: none }",
         customSiteTitle: "Priya Module API",
     })
@@ -162,10 +162,14 @@ app.use(
 
 
 // Swagger UI for Tharindu module APIs (Alerts, Notifications, Bookings)
-app.use('/api-docs/tharindu', swaggerUi.serve, swaggerUi.setup(tharinduOpenApi, {
-    customCss: '.swagger-ui .topbar { display: none }',
-    customSiteTitle: 'Tharindu Module API',
-}));
+app.use(
+    '/api-docs/tharindu',
+    swaggerUi.serveFiles(tharinduOpenApi),
+    swaggerUi.setup(tharinduOpenApi, {
+        customCss: '.swagger-ui .topbar { display: none }',
+        customSiteTitle: 'Tharindu Module API',
+    })
+);
 // Root endpoint
 app.get('/', (req, res) => {
     res.status(200).json({

@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../../context/Imasha/AuthContext';
+import AppointmentPage from '../Priya/Appointment';
 import { Calendar, Stethoscope, HeartHandshake, Loader2, Clock, MapPin, User, ChevronRight, CheckCircle2, AlertCircle, Phone, Sparkles, X, FileText } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import toast from 'react-hot-toast';
@@ -211,15 +212,8 @@ export default function PatientAppointmentsTab({ onBookingSuccess }) {
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -10 }}
             transition={{ duration: 0.2 }}
-            style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', minHeight: '400px', textAlign: 'center', background: 'var(--admin-card-bg)', borderRadius: '16px', border: '1px dashed var(--admin-border)' }}
           >
-            <div style={{ width: '64px', height: '64px', borderRadius: '50%', background: 'rgba(0,180,216,0.1)', color: 'var(--p-cyan)', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '1rem' }}>
-              <Stethoscope size={32} />
-            </div>
-            <h3 style={{ margin: '0 0 0.5rem 0', color: 'var(--admin-text)', fontSize: '1.3rem' }}>Doctor Appointments Module</h3>
-            <p style={{ color: 'var(--admin-text-muted)', maxWidth: '400px', margin: 0, lineHeight: 1.5 }}>
-              This section is coming soon. You'll be able to book full consultations with verified medical professionals here.
-            </p>
+            <AppointmentPage embedded />
           </motion.div>
         )}
 
