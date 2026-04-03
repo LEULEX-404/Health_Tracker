@@ -1,9 +1,9 @@
 import { useState, useEffect, useCallback } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { Mail } from 'lucide-react';
+import { Mail, ArrowRight } from 'lucide-react';
 import { toast } from 'react-hot-toast';
+import { motion } from 'framer-motion';
 
-import AuthLayout from '../../components/Imasha/AuthLayout';
 import DoctorCat from '../../components/Imasha/DoctorCat';
 import PasswordInput from '../../components/Imasha/PasswordInput';
 import AuthFormInput from '../../components/Imasha/AuthFormInput';
@@ -100,13 +100,15 @@ export default function LoginPage() {
     }, []);
 
     return (
-        <AuthLayout>
-            <div className="Imasha-auth-toggle">
-                <Link to="/login" className="Imasha-auth-toggle-btn active">Sign In</Link>
-                <Link to="/register" className="Imasha-auth-toggle-btn">Sign Up</Link>
-            </div>
+        <>
 
-            <div className="Imasha-form-card">
+
+            <motion.div 
+                initial={{ opacity: 0, scale: 0.97 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ duration: 0.4, delay: 0.08 }}
+                className="Imasha-form-card"
+            >
                 {/* Mascot */}
                 <div className="Imasha-mascot-wrap">
                     <DoctorCat
@@ -118,8 +120,8 @@ export default function LoginPage() {
 
                 {/* Header */}
                 <div className="Imasha-form-header">
-                    <h1 className="Imasha-form-title">Welcome back</h1>
-                    <p className="Imasha-form-subtitle">Sign in to your PulseNova account</p>
+                    <h1 className="Imasha-form-title">Welcome Back</h1>
+                    <p className="Imasha-form-subtitle">Monitor your vital signs and health metrics with AI</p>
                 </div>
 
                 {/* Form */}
@@ -135,7 +137,7 @@ export default function LoginPage() {
                             placeholder="your@email.com"
                             required
                             autoComplete="email"
-                            icon={<Mail size={16} />}
+                            icon={<Mail size={18} />}
                             error={touched.email ? errors.email : ''}
                         />
 
@@ -153,7 +155,7 @@ export default function LoginPage() {
                     </div>
 
                     <div className="Imasha-forgot-row">
-                        <Link to="/forgot-password" className="Imasha-auth-link">
+                        <Link to="/forgot-password" style={{ color: 'var(--auth-primary)', fontSize: '0.85rem', fontWeight: 600, textDecoration: 'none' }}>
                             Forgot password?
                         </Link>
                     </div>
@@ -163,7 +165,9 @@ export default function LoginPage() {
                             <span className="Imasha-btn-loading">
                                 <span className="Imasha-spinner" /> Signing in…
                             </span>
-                        ) : 'Sign In →'}
+                        ) : (
+                            <>Sign In <ArrowRight size={18} /></>
+                        )}
                     </button>
 
                     <div className="Imasha-divider"><span>or continue with</span></div>
@@ -185,7 +189,7 @@ export default function LoginPage() {
                     Don&apos;t have an account?{' '}
                     <Link to="/register" className="Imasha-auth-link">Create account</Link>
                 </p>
-            </div>
-        </AuthLayout>
+            </motion.div>
+        </>
     );
 }

@@ -291,81 +291,265 @@ async function getMealPlansByHealthCondition(userId, healthCondition) {
   return plans;
 }
 
-async function suggestMealPlansForUser(userId) {
+async function suggestMealPlansForUser(userId, requestedMealType) {
   const user = await User.findById(userId).lean();
   if (!user || !user.healthConditions) {
     return [];
   }
 
+  // Determine current meal type based on time
+  // 9 PM to 9 AM: Breakfast
+  // 9 AM to 2 PM: Lunch
+  // 2 PM to 9 PM: Dinner
+  const now = new Date();
+  const hours = now.getHours();
+  // FORCE requestedMealType to be used if provided, otherwise default to time-based
+  let currentMealType = (requestedMealType || "").toLowerCase().trim();
+  
+  if (!currentMealType || !["breakfast", "lunch", "dinner", "snack"].includes(currentMealType)) {
+    if (hours >= 9 && hours < 14) {
+      currentMealType = "lunch";
+    } else if (hours >= 14 && hours < 21) {
+      currentMealType = "dinner";
+    } else {
+      currentMealType = "breakfast";
+    }
+  }
+  
+  console.log(`[AI Engine] User: ${userId}, Requested: ${requestedMealType}, Using: ${currentMealType}`);
 
-  // AI Meal Generation Engine: Always generate fresh plans for the user
+  // AI Meal Generation Engine
   const AI_TEMPLATES = [
+    // Diabetes
     {
       condition: "diabetes",
-      planName: "AI: Low-GI Diabetes Care Plan",
+      planName: "AI: Diabetes Morning Boost",
+      mealType: "breakfast",
+      items: [
+        { name: "oats", quantity: 50, unit: "g", calories: 190, protein: 7, carbohydrates: 32, fat: 3, fiber: 5 },
+        { name: "almonds", quantity: 15, unit: "g", calories: 85, protein: 3, carbohydrates: 3, fat: 7, fiber: 2 },
+      ],
+      targetCalories: 275, targetProtein: 10, targetCarbohydrates: 35, targetFat: 10,
+      scheduledDays: [1, 2, 3, 4, 5], scheduledTime: "08:00",
+      notes: "AI Recommended: High-fiber start to manage blood glucose."
+    },
+    {
+      condition: "diabetes",
+      planName: "AI: Low-GI Diabetes Lunch",
       mealType: "lunch",
       items: [
         { name: "red rice", quantity: 150, unit: "g", calories: 283, protein: 6.8, carbohydrates: 60, fat: 2.3, fiber: 5.3 },
         { name: "chicken curry", quantity: 150, unit: "g", calories: 225, protein: 22.5, carbohydrates: 7.5, fat: 12, fiber: 2.3 },
-        { name: "dhal curry", quantity: 100, unit: "g", calories: 120, protein: 8, carbohydrates: 15, fat: 4, fiber: 6 },
       ],
-      targetCalories: 628, targetProtein: 37.3, targetCarbohydrates: 82.5, targetFat: 18.3,
-      scheduledDays: [1, 3, 5],
-      scheduledTime: "13:00",
-      notes: "AI Recommended: Focuses on complex carbohydrates to avoid blood sugar spikes."
+      targetCalories: 508, targetProtein: 29.3, targetCarbohydrates: 67.5, targetFat: 14.3,
+      scheduledDays: [1, 3, 5], scheduledTime: "13:00",
+      notes: "AI Recommended: Balanced GI for stable afternoon energy."
+    },
+    {
+      condition: "diabetes",
+      planName: "AI: Diabetes Evening Balance",
+      mealType: "dinner",
+      items: [
+        { name: "quinoa", quantity: 100, unit: "g", calories: 120, protein: 4, carbohydrates: 21, fat: 2, fiber: 3 },
+        { name: "grilled fish", quantity: 150, unit: "g", calories: 180, protein: 25, carbohydrates: 0, fat: 8, fiber: 0 },
+      ],
+      targetCalories: 300, targetProtein: 29, targetCarbohydrates: 21, targetFat: 10,
+      scheduledDays: [0, 2, 4, 6], scheduledTime: "19:30",
+      notes: "AI Recommended: Lean protein focused dinner."
+    },
+    // Hypertension
+    {
+      condition: "hypertension",
+      planName: "AI: Heart-Healthy Breakfast",
+      mealType: "breakfast",
+      items: [
+        { name: "banana", quantity: 1, unit: "item", calories: 105, protein: 1.3, carbohydrates: 27, fat: 0.4, fiber: 3.1 },
+        { name: "yogurt", quantity: 200, unit: "g", calories: 120, protein: 10, carbohydrates: 8, fat: 4, fiber: 0 },
+      ],
+      targetCalories: 225, targetProtein: 11.3, targetCarbohydrates: 35, targetFat: 4.4,
+      scheduledDays: [1, 3, 5], scheduledTime: "07:30",
+      notes: "AI Recommended: Potassium-rich breakfast for blood pressure."
     },
     {
       condition: "hypertension",
-      planName: "AI: Low Sodium Heart Plan",
+      planName: "AI: Low-Sodium Lunch",
+      mealType: "lunch",
+      items: [
+        { name: "grilled chicken breast", quantity: 150, unit: "g", calories: 248, protein: 46, carbohydrates: 0, fat: 6, fiber: 0 },
+        { name: "steamed broccoli", quantity: 200, unit: "g", calories: 70, protein: 5, carbohydrates: 14, fat: 1, fiber: 6 },
+      ],
+      targetCalories: 318, targetProtein: 51, targetCarbohydrates: 14, targetFat: 7,
+      scheduledDays: [0, 2, 4, 6], scheduledTime: "12:30",
+      notes: "AI Recommended: High protein, low salt lunch."
+    },
+    {
+      condition: "hypertension",
+      planName: "AI: Relaxing Heart Dinner",
       mealType: "dinner",
       items: [
-        { name: "white rice", quantity: 150, unit: "g", calories: 195, protein: 4, carbohydrates: 42, fat: 0.5, fiber: 0.6 },
-        { name: "fish", quantity: 150, unit: "g", calories: 307, protein: 33, carbohydrates: 0, fat: 18, fiber: 0 },
-        { name: "vegetable salad", quantity: 200, unit: "g", calories: 50, protein: 2, carbohydrates: 10, fat: 0, fiber: 4 },
+        { name: "baked salmon", quantity: 150, unit: "g", calories: 312, protein: 30, carbohydrates: 0, fat: 20, fiber: 0 },
+        { name: "leafy greens", quantity: 200, unit: "g", calories: 40, protein: 3, carbohydrates: 6, fat: 0, fiber: 4 },
       ],
-      targetCalories: 552, targetProtein: 39, targetCarbohydrates: 52, targetFat: 18.5,
-      scheduledDays: [0, 2, 4, 6],
-      scheduledTime: "19:30",
-      notes: "AI Recommended: Balanced dinner with lean protein and low sodium."
+      targetCalories: 352, targetProtein: 33, targetCarbohydrates: 6, targetFat: 20,
+      scheduledDays: [1, 2, 4, 5], scheduledTime: "20:00",
+      notes: "AI Recommended: Omega-3 focused dinner for heart health."
+    },
+    // Obesity
+    {
+      condition: "obesity",
+      planName: "AI: Metabolic Start Breakfast",
+      mealType: "breakfast",
+      items: [
+        { name: "egg whites", quantity: 4, unit: "items", calories: 68, protein: 14, carbohydrates: 1, fat: 0.2, fiber: 0 },
+        { name: "whole grain toast", quantity: 1, unit: "slice", calories: 80, protein: 4, carbohydrates: 15, fat: 1, fiber: 3 },
+      ],
+      targetCalories: 148, targetProtein: 18, targetCarbohydrates: 16, targetFat: 1.2,
+      scheduledDays: [1, 2, 3, 4, 5], scheduledTime: "08:00",
+      notes: "AI Recommended: Low calorie, high protein satiety starter."
     },
     {
       condition: "obesity",
-      planName: "AI: Calorie Deficit Plan",
+      planName: "AI: Lean Burn Lunch",
+      mealType: "lunch",
+      items: [
+        { name: "turkey breast", quantity: 150, unit: "g", calories: 200, protein: 42, carbohydrates: 0, fat: 2, fiber: 0 },
+        { name: "large mixed salad", quantity: 300, unit: "g", calories: 60, protein: 3, carbohydrates: 12, fat: 0, fiber: 5 },
+      ],
+      targetCalories: 260, targetProtein: 45, targetCarbohydrates: 12, targetFat: 2,
+      scheduledDays: [0, 1, 2, 3, 4, 5, 6], scheduledTime: "13:30",
+      notes: "AI Recommended: Volume eating for weight management."
+    },
+    {
+      condition: "obesity",
+      planName: "AI: Light Night Dinner",
+      mealType: "dinner",
+      items: [
+        { name: "tofu", quantity: 200, unit: "g", calories: 150, protein: 16, carbohydrates: 4, fat: 8, fiber: 2 },
+        { name: "vegetable stir-fry", quantity: 250, unit: "g", calories: 100, protein: 4, carbohydrates: 15, fat: 2, fiber: 6 },
+      ],
+      targetCalories: 250, targetProtein: 20, targetCarbohydrates: 19, targetFat: 10,
+      scheduledDays: [0, 2, 4, 6], scheduledTime: "19:00",
+      notes: "AI Recommended: Plant-based light dinner."
+    },
+    // Generic
+    {
+      condition: "generic",
+      planName: "AI: Balanced Morning",
       mealType: "breakfast",
       items: [
-        { name: "egg", quantity: 2, unit: "items", calories: 155, protein: 13, carbohydrates: 1.1, fat: 11, fiber: 0 },
-        { name: "bread", quantity: 2, unit: "slices", calories: 160, protein: 6, carbohydrates: 30, fat: 2, fiber: 2 },
-        { name: "milk", quantity: 250, unit: "ml", calories: 105, protein: 8.5, carbohydrates: 12.5, fat: 2.5, fiber: 0 },
+        { name: "muesli", quantity: 60, unit: "g", calories: 220, protein: 6, carbohydrates: 40, fat: 4, fiber: 6 },
+        { name: "milk", quantity: 200, unit: "ml", calories: 100, protein: 7, carbohydrates: 10, fat: 3, fiber: 0 },
       ],
-      targetCalories: 420, targetProtein: 27.5, targetCarbohydrates: 43.6, targetFat: 15.5,
-      scheduledDays: [1, 2, 3, 4, 5],
-      scheduledTime: "08:00",
-      notes: "AI Recommended: High protein breakfast to induce satiety."
+      targetCalories: 320, targetProtein: 13, targetCarbohydrates: 50, targetFat: 7,
+      scheduledDays: [0, 1, 2, 3, 4, 5, 6], scheduledTime: "07:30",
+      notes: "AI Recommended: Balanced nutrients for general wellness."
     },
     {
       condition: "generic",
-      planName: "AI: Balanced Wellness Plan",
+      planName: "AI: Energy Peak Lunch",
       mealType: "lunch",
       items: [
-        { name: "rice", quantity: 200, unit: "g", calories: 260, protein: 5.4, carbohydrates: 56, fat: 0.6, fiber: 0.8 },
-        { name: "chicken", quantity: 150, unit: "g", calories: 358, protein: 40.5, carbohydrates: 0, fat: 21, fiber: 0 },
-        { name: "dhal", quantity: 100, unit: "g", calories: 116, protein: 9, carbohydrates: 20, fat: 0.4, fiber: 8 },
+        { name: "brown rice", quantity: 150, unit: "g", calories: 165, protein: 3.5, carbohydrates: 35, fat: 1.2, fiber: 2.5 },
+        { name: "beef stir-fry", quantity: 150, unit: "g", calories: 300, protein: 28, carbohydrates: 10, fat: 15, fiber: 2 },
       ],
-      targetCalories: 734, targetProtein: 54.9, targetCarbohydrates: 76, targetFat: 22,
-      scheduledDays: [0, 1, 2, 3, 4, 5, 6],
-      scheduledTime: "12:30",
-      notes: "AI Recommended: A standard balanced lunch template."
+      targetCalories: 465, targetProtein: 31.5, targetCarbohydrates: 45, targetFat: 16.2,
+      scheduledDays: [0, 1, 2, 3, 4, 5, 6], scheduledTime: "12:30",
+      notes: "AI Recommended: Standard balanced lunch."
+    },
+    {
+      condition: "generic",
+      planName: "AI: Reset Dinner",
+      mealType: "dinner",
+      items: [
+        { name: "sweet potato", quantity: 200, unit: "g", calories: 170, protein: 3, carbohydrates: 40, fat: 0.2, fiber: 6 },
+        { name: "roasted chicken", quantity: 150, unit: "g", calories: 250, protein: 35, carbohydrates: 0, fat: 12, fiber: 0 },
+      ],
+      targetCalories: 420, targetProtein: 38, targetCarbohydrates: 40, targetFat: 12.2,
+      scheduledDays: [0, 1, 2, 3, 4, 5, 6], scheduledTime: "20:00",
+      notes: "AI Recommended: Nourishing dinner to end the day."
+    },
+    // Generic Snack
+    {
+      condition: "generic",
+      planName: "AI: Quick Vitality Snack",
+      mealType: "snack",
+      items: [
+        { name: "apple", quantity: 1, unit: "item", calories: 95, protein: 0.5, carbohydrates: 25, fat: 0.3, fiber: 4.5 },
+        { name: "walnuts", quantity: 20, unit: "g", calories: 130, protein: 3, carbohydrates: 3, fat: 13, fiber: 2 },
+      ],
+      targetCalories: 225, targetProtein: 3.5, targetCarbohydrates: 28, targetFat: 13.3,
+      scheduledDays: [0, 1, 2, 3, 4, 5, 6], scheduledTime: "16:00",
+      notes: "AI Recommended: Healthy fats and fiber for mid-day energy."
+    },
+    // Diabetes Snack
+    {
+      condition: "diabetes",
+      planName: "AI: Steady-Sugar Snack",
+      mealType: "snack",
+      items: [
+        { name: "greek yogurt", quantity: 150, unit: "g", calories: 90, protein: 15, carbohydrates: 6, fat: 0, fiber: 0 },
+        { name: "chia seeds", quantity: 10, unit: "g", calories: 48, protein: 1.6, carbohydrates: 4, fat: 3, fiber: 3.4 },
+      ],
+      targetCalories: 138, targetProtein: 16.6, targetCarbohydrates: 10, targetFat: 3,
+      scheduledDays: [0, 1, 2, 3, 4, 5, 6], scheduledTime: "16:30",
+      notes: "AI Recommended: High protein snack to prevent sugar spikes."
+    },
+    // Hypertension Snack
+    {
+      condition: "hypertension",
+      planName: "AI: Potassium Plus Snack",
+      mealType: "snack",
+      items: [
+        { name: "apricots", quantity: 3, unit: "items", calories: 50, protein: 1, carbohydrates: 12, fat: 0, fiber: 2.5 },
+        { name: "pistachios", quantity: 20, unit: "g", calories: 110, protein: 4, carbohydrates: 5, fat: 9, fiber: 2 },
+      ],
+      targetCalories: 160, targetProtein: 5, targetCarbohydrates: 17, targetFat: 9,
+      scheduledDays: [0, 1, 2, 3, 4, 5, 6], scheduledTime: "15:45",
+      notes: "AI Recommended: Natural electrolytes for cardiac support."
+    },
+    // Obesity Snack
+    {
+      condition: "obesity",
+      planName: "AI: Zero-Guilt Snack",
+      mealType: "snack",
+      items: [
+        { name: "cucumber slices", quantity: 100, unit: "g", calories: 15, protein: 0.7, carbohydrates: 3.6, fat: 0.1, fiber: 0.5 },
+        { name: "hummus", quantity: 50, unit: "g", calories: 80, protein: 4, carbohydrates: 7, fat: 4, fiber: 2 },
+      ],
+      targetCalories: 95, targetProtein: 4.7, targetCarbohydrates: 10.6, targetFat: 4.1,
+      scheduledDays: [0, 1, 2, 3, 4, 5, 6], scheduledTime: "17:00",
+      notes: "AI Recommended: Low calorie density snack."
     }
   ];
 
-  let selectedTemplates = AI_TEMPLATES.filter(t => user.healthConditions.includes(t.condition));
+  // Filter templates by health conditions AND current meal type
+  // Normalize conditions to lowercase for matching
+  let rawConditions = user.healthConditions && user.healthConditions.length > 0 ? user.healthConditions : ["generic"];
+  let userConditions = rawConditions.map(c => c.toLowerCase().trim());
+  
+  console.log(`[AI Engine] User conditions: ${JSON.stringify(userConditions)}`);
+  console.log(`[AI Engine] Current meal type: ${currentMealType}`);
+
+  let selectedTemplates = AI_TEMPLATES.filter(t => 
+    userConditions.includes(t.condition.toLowerCase()) && t.mealType === currentMealType
+  );
+
+  console.log(`[AI Engine] Found ${selectedTemplates.length} matches for type ${currentMealType}`);
+
+  // If no specific match found for conditions + type, fallback to generic + type
   if (selectedTemplates.length === 0) {
-    selectedTemplates = [AI_TEMPLATES.find(t => t.condition === "generic")];
+    console.log(`[AI Engine] No specific match, falling back to generic ${currentMealType}`);
+    const fallback = AI_TEMPLATES.find(t => t.condition === "generic" && t.mealType === currentMealType);
+    if (fallback) {
+      selectedTemplates = [fallback];
+    } else {
+      console.log(`[AI Engine] EXTREME fallback to generic breakfast (first generic)`);
+      selectedTemplates = [AI_TEMPLATES.find(t => t.condition === "generic")];
+    }
   }
 
   const generatedDocs = [];
   for (const template of selectedTemplates) {
-    // Save to the database as an active plan for the user
     const newPlan = await MealPlan.create({
       userId,
       planName: template.planName,
@@ -388,9 +572,7 @@ async function suggestMealPlansForUser(userId) {
     generatedDocs.push(newPlan.toObject());
   }
 
-  // Trigger reminders recalculation since new AI plans have been inserted
   await reminderService.generateRemindersForActivePlans(userId);
-
   return generatedDocs;
 }
 

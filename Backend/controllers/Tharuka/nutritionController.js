@@ -10,7 +10,9 @@ const MEAL_TYPES = ["breakfast", "lunch", "dinner", "snack"];
 
 export const addMeal = async (req, res) => {
   try {
-    const { userId, mealType, mealName, items, notes, recordedAt, useApiForNutrition } = req.body;
+    const body = req.body || {};
+    const userId = req.user?._id || req.user?.id || body.userId;
+    const { mealType, mealName, items, notes, recordedAt, useApiForNutrition } = body;
     if (!userId) return badRequest(res, "userId is required");
     if (!mealType || !MEAL_TYPES.includes(mealType)) {
       return badRequest(res, "mealType is required and must be one of: breakfast, lunch, dinner, snack");
@@ -32,8 +34,9 @@ export const addMeal = async (req, res) => {
 
 export const getUserNutrition = async (req, res) => {
   try {
-    const { userId } = req.params;
-    const { date, mealType, limit, page } = req.query;
+    const { userId } = req.params || {};
+    const query = req.query || {};
+    const { date, mealType, limit, page } = query;
     const result = await nutritionService.getUserNutrition(userId, { date, mealType, limit, page });
     return ok(res, result.records, {
       count: result.records.length,
@@ -49,7 +52,9 @@ export const getUserNutrition = async (req, res) => {
 export const updateMeal = async (req, res) => {
   try {
     const { id } = req.params;
-    const { userId, ...data } = req.body;
+    const body = req.body || {};
+    const userId = req.user?._id || req.user?.id || body.userId;
+    const { userId: _, ...data } = body;
     if (!userId) return badRequest(res, "userId is required");
     const updated = await nutritionService.updateMeal(id, userId, data);
     if (!updated) return notFound(res, "Meal not found");
@@ -63,7 +68,7 @@ export const updateMeal = async (req, res) => {
 export const deleteMeal = async (req, res) => {
   try {
     const { id } = req.params;
-    const { userId } = req.body;
+    const userId = req.user?._id || req.user?.id || req.body?.userId || req.query?.userId;
     if (!userId) return badRequest(res, "userId is required");
     const deleted = await nutritionService.deleteMeal(id, userId);
     if (!deleted) return notFound(res, "Meal not found");
@@ -76,7 +81,8 @@ export const deleteMeal = async (req, res) => {
 
 export const addDoctorRecommendation = async (req, res) => {
   try {
-    const { id } = req.params;
+    const { id } = req.params || {};
+    const body = req.body || {};
     const {
       doctorId,
       message,
@@ -84,7 +90,7 @@ export const addDoctorRecommendation = async (req, res) => {
       targetProtein,
       targetCarbohydrates,
       targetFat,
-    } = req.body;
+    } = body;
     if (!doctorId) return badRequest(res, "doctorId is required");
     const updated = await nutritionService.addDoctorRecommendation(id, doctorId, {
       message,
@@ -115,7 +121,7 @@ export const getNutritionAnalysis = async (req, res) => {
 
 export const checkNutrition = async (req, res) => {
   try {
-    const { items } = req.body;
+    const { items } = req.body || {};
     if (!items || !Array.isArray(items)) return badRequest(res, "items array is required");
     const data = await nutritionService.checkNutrition(items);
     return ok(res, data);

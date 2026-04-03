@@ -1,37 +1,103 @@
+/* ===================================================================
+   PulseNova — Header.css  (Premium Redesign)
+   =================================================================== */
+
+/* ---- Top accent bar ---- */
 .pn-header {
   position: fixed;
   top: 0; left: 0; right: 0;
   z-index: 500;
   width: 100%;
   height: var(--header-height);
-  /* No overflow:hidden here — search results need to show below */
-  transition: background var(--transition-slow), box-shadow var(--transition-slow), border-color var(--transition-slow);
+  transition:
+    background var(--transition-slow),
+    box-shadow var(--transition-slow),
+    border-color var(--transition-slow),
+    backdrop-filter var(--transition-slow);
   border-bottom: 1px solid transparent;
 }
+
+/* Animated top gradient accent bar */
+.pn-header::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 2px;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    var(--color-primary) 30%,
+    var(--color-secondary) 60%,
+    var(--color-primary-light) 85%,
+    transparent 100%
+  );
+  background-size: 200% 100%;
+  animation: pnHeaderBeam 4s ease infinite;
+  opacity: 0.85;
+  z-index: 1;
+}
+
+@keyframes pnHeaderBeam {
+  0%   { background-position: 200% center; }
+  100% { background-position: -200% center; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .pn-header::before { animation: none; background-position: center; }
+}
+
+/* ---- Scrolled state — glass backdrop ---- */
 .pn-header--scrolled {
   border-bottom-color: var(--glass-border);
-  box-shadow: var(--shadow-md);
+  box-shadow:
+    0 4px 24px rgba(0, 200, 151, 0.12),
+    0 1px 0 var(--glass-border),
+    var(--shadow-md);
+  backdrop-filter: blur(24px) saturate(160%);
+  -webkit-backdrop-filter: blur(24px) saturate(160%);
 }
+
+/* Glowing bottom-border shimmer on scroll */
+.pn-header--scrolled::after {
+  content: '';
+  position: absolute;
+  bottom: -1px; left: 10%; right: 10%;
+  height: 1px;
+  background: linear-gradient(90deg,
+    transparent,
+    rgba(0,200,151,0.5) 40%,
+    rgba(0,180,216,0.4) 60%,
+    transparent);
+  border-radius: var(--radius-full);
+  pointer-events: none;
+}
+
+/* ---- Inner layout ---- */
 .pn-header__inner {
   height: 100%;
   display: flex;
   justify-content: center;
   align-items: center;
   gap: 10px;
+  position: relative;
+  z-index: 2;
 }
+
 .pn-header__right {
   display: flex;
   align-items: center;
-  gap: 6px;          /* fixed px */
-  margin-left: auto; /* push the right section to the right */
+  gap: 6px;
+  margin-left: auto;
   flex-shrink: 0;
   min-width: 0;
 }
+
+/* ---- Hamburger — premium hover ---- */
 .pn-header__hamburger {
   display: none;
   align-items: center;
   justify-content: center;
-  width: 44px; height: 44px;  /* fixed 44px */
+  width: 42px; height: 42px;
   flex-shrink: 0;
   border-radius: 10px;
   background: var(--bg-secondary);
@@ -39,12 +105,66 @@
   color: var(--text-secondary);
   cursor: pointer;
   transition: all var(--transition-fast);
+  position: relative;
+  overflow: hidden;
 }
-.pn-header__hamburger svg { width: 24px; height: 24px; display: block; color: inherit; }
+
+/* Glowing ripple on hamburger hover */
+.pn-header__hamburger::before {
+  content: '';
+  position: absolute;
+  inset: -1px;
+  border-radius: 10px;
+  background: linear-gradient(135deg,
+    var(--color-primary) 0%,
+    var(--color-secondary) 100%);
+  opacity: 0;
+  transition: opacity var(--transition-fast);
+  z-index: 0;
+}
+.pn-header__hamburger svg {
+  width: 22px; height: 22px;
+  display: block;
+  color: inherit;
+  position: relative;
+  z-index: 1;
+}
 .pn-header__hamburger:hover {
   border-color: var(--color-primary);
   color: var(--color-primary);
+  box-shadow: 0 0 16px var(--color-primary-glow);
+  transform: scale(1.05);
 }
+
 @media (max-width: 1200px) {
   .pn-header__hamburger { display: flex; }
+}
+
+/* ---- Mobile header row: prevent overflow ---- */
+@media (max-width: 768px) {
+  .pn-header__inner {
+    gap: 6px;
+    /* flex children must not overflow */
+    flex-wrap: nowrap;
+    overflow: hidden;
+  }
+
+  .pn-header__right {
+    gap: 4px;
+    flex-shrink: 0;
+  }
+
+  /* Hamburger: keep same size, just tighten */
+  .pn-header__hamburger {
+    width: 40px;
+    height: 40px;
+  }
+}
+
+/* 320px safety net */
+@media (max-width: 380px) {
+  .pn-header__inner {
+    padding: 0 8px;
+    gap: 4px;
+  }
 }

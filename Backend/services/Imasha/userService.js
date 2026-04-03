@@ -83,6 +83,9 @@ export const updateUser = async (userId, updateData, requestingUser) => {
   const allowedFields = [
     'firstName', 'lastName', 'phone',
     'dateOfBirth', 'gender', 'address',
+    'city', 'country', 'occupation',
+    'emergencyContactName', 'emergencyContactPhone', 'emergencyContactEmail',
+    'healthConditions',
   ];
 
   // Extra fields admin can update
@@ -90,22 +93,36 @@ export const updateUser = async (userId, updateData, requestingUser) => {
 
   // Build update object
   const updates = {};
-
+ 
   allowedFields.forEach((field) => {
-    if (updateData[field] !== undefined) updates[field] = updateData[field];
+    if (updateData[field] !== undefined) {
+      // 1. Special handling for empty strings
+      if (updateData[field] === '') {
+        if (field === 'gender') return; // Skip
+        if (field === 'dateOfBirth') {
+          user[field] = null;
+          return;
+        }
+      }
+      
+      // 2. Assign the value
+      user[field] = updateData[field];
+    }
   });
 
   if (requestingUser.role === 'admin') {
     adminOnlyFields.forEach((field) => {
-      if (updateData[field] !== undefined) updates[field] = updateData[field];
+      if (updateData[field] !== undefined) {
+        user[field] = updateData[field];
+      }
     });
   }
 
-  const updatedUser = await User.findByIdAndUpdate(
-    userId,
-    { $set: updates },
-    { new: true, runValidators: true }
-  ).select('-password -emailVerificationToken -passwordResetToken');
+  await user.save();
+  
+  // Return the user without sensitive fields
+  const updatedUser = await User.findById(userId).select('-password -emailVerificationToken -passwordResetToken');
+  return updatedUser;
 
   return updatedUser;
 };

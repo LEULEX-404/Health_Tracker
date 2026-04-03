@@ -1,5 +1,8 @@
+/* eslint-disable react-refresh/only-export-components */
+
 import { createContext, useContext, useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { toast } from 'react-hot-toast';
 import {
     loginUser,
     registerUser,
@@ -23,28 +26,51 @@ const ROLE_REDIRECTS = {
 export function AuthProvider({ children }) {
     const [user, setUser] = useState(null);
     const [token, setToken] = useState(() => localStorage.getItem('pn_token'));
-    const [loading, setLoading] = useState(!!localStorage.getItem('pn_token'));
+    const [loading, setLoading] = useState(() => !!localStorage.getItem('pn_token'));
     const navigate = useNavigate();
 
-    // Rehydrate user from token on mount
+    // Rehydrate user from token when token exists
     useEffect(() => {
-        if (!token) { setLoading(false); return; }
+        if (!token) return;
+
+        let cancelled = false;
+
         getCurrentUser(token)
-            .then((u) => setUser(u))
-            .catch(() => { localStorage.removeItem('pn_token'); setToken(null); })
-            .finally(() => setLoading(false));
+            .then((u) => {
+                if (!cancelled) setUser(u);
+            })
+            .catch(() => {
+                if (cancelled) return;
+                localStorage.removeItem('pn_token');
+                setToken(null);
+                setUser(null);
+            })
+            .finally(() => {
+                if (!cancelled) setLoading(false);
+            });
+
+        return () => {
+            cancelled = true;
+        };
     }, [token]);
 
     const login = useCallback(async ({ email, password }) => {
         const data = await loginUser({ email, password });
         const accessToken = data.data?.accessToken || data.accessToken;
         const userData = data.data?.user || data.user;
+
         localStorage.setItem('pn_token', accessToken);
         setToken(accessToken);
         setUser(userData);
-        const redirectTo = (userData?.role === 'patient' && !userData?.hasCompletedOnboarding)
-            ? '/onboarding'
-            : ROLE_REDIRECTS[userData?.role] || '/login';
+        setLoading(false);
+
+        toast.success('Login successful. Welcome back!');
+
+        const redirectTo =
+            userData?.role === 'patient' && !userData?.hasCompletedOnboarding
+                ? '/onboarding'
+                : ROLE_REDIRECTS[userData?.role] || '/login';
+
         navigate(redirectTo);
         return data;
     }, [navigate]);
@@ -56,10 +82,18 @@ export function AuthProvider({ children }) {
     }, []);
 
     const logout = useCallback(async () => {
-        try { await logoutUser(token); } catch (_) { /* ignore */ }
+        try {
+            await logoutUser(token);
+        } catch {
+            // ignore logout API failure and clear local session anyway
+        }
+
         localStorage.removeItem('pn_token');
         setToken(null);
         setUser(null);
+        setLoading(false);
+
+        toast.success('Logged out successfully.');
         navigate('/login');
     }, [token, navigate]);
 
@@ -78,23 +112,43 @@ export function AuthProvider({ children }) {
     const markOnboardingComplete = useCallback(async () => {
         const userId = user?.id || user?._id;
         if (!userId || !token) return;
+
         const result = await completeUserOnboarding(userId, token);
-        setUser(prev => ({ ...prev, hasCompletedOnboarding: true }));
+        setUser((prev) => ({ ...prev, hasCompletedOnboarding: true }));
         return result;
     }, [user, token]);
+
+    const updateUser = useCallback((newData) => {
+        setUser((prev) => {
+            if (!prev) return newData;
+            return { ...prev, ...newData };
+        });
+    }, []);
 
     const oauthLogin = useCallback(({ token: newToken, user: newUser }) => {
         localStorage.setItem('pn_token', newToken);
         setToken(newToken);
         setUser(newUser);
+        setLoading(false);
     }, []);
 
     return (
-        <AuthContext.Provider value={{
-            user, token, loading, login, register, logout,
-            requestPasswordReset, completePasswordReset, confirmEmail,
-            markOnboardingComplete, oauthLogin
-        }}>
+        <AuthContext.Provider
+            value={{
+                user,
+                token,
+                loading,
+                login,
+                register,
+                logout,
+                requestPasswordReset,
+                completePasswordReset,
+                confirmEmail,
+                markOnboardingComplete,
+                updateUser,
+                oauthLogin
+            }}
+        >
             {children}
         </AuthContext.Provider>
     );

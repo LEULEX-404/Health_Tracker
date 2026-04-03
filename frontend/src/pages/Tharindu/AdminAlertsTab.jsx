@@ -1,8 +1,8 @@
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { useAuth } from '../../context/Imasha/AuthContext';
 import { getAllUsers } from '../../utils/Imasha/adminApi';
-import { getAllAlerts, deleteAlert, getAlertSettings, updateAlertSettings } from '../../utils/Tharindu/adminAlertsApi';
-import { Bell, Settings, Trash2, Save, Loader2, Activity, Heart, Wind, Search, Filter, ChevronLeft, ChevronRight } from 'lucide-react';
+import { getAllAlerts, deleteAlert, deleteAllAlerts, getAlertSettings, updateAlertSettings } from '../../utils/Tharindu/adminAlertsApi';
+import { Bell, Settings, Trash2, Save, Loader2, Activity, Heart, Wind, Search, Filter, ChevronLeft, ChevronRight, AlertTriangle, User } from 'lucide-react';
 import toast from 'react-hot-toast';
 import '../../styles/Tharindu/adminAlerts.css';
 
@@ -29,7 +29,7 @@ export default function AdminAlertsTab() {
   
   // Pagination State
   const [currentPage, setCurrentPage] = useState(1);
-  const ITEMS_PER_PAGE = 20;
+  const ITEMS_PER_PAGE = 5;
 
   // Fetch Patients List
   const fetchPatientsList = useCallback(async () => {
@@ -87,6 +87,17 @@ export default function AdminAlertsTab() {
     try {
       await deleteAlert(token, id);
       toast.success('Alert deleted');
+      fetchAlerts();
+    } catch (e) { toast.error(e.message); }
+    finally { setActionLoading(null); }
+  };
+
+  const handleDeleteAll = async () => {
+    if (!window.confirm('WARNING: Are you sure you want to delete ALL system alerts? This action cannot be undone.')) return;
+    setActionLoading('deleteAll');
+    try {
+      await deleteAllAlerts(token);
+      toast.success('All alerts deleted successfully');
       fetchAlerts();
     } catch (e) { toast.error(e.message); }
     finally { setActionLoading(null); }
@@ -196,6 +207,17 @@ export default function AdminAlertsTab() {
                 <option value="Critical">Critical</option>
               </select>
             </div>
+            {paginatedAlerts.length > 0 && (
+              <button 
+                 className="action-btn danger ml-auto" 
+                 style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', padding: '0.5rem 1rem', borderRadius: '8px', background: 'rgba(239, 68, 68, 0.15)', color: '#ef4444', border: '1px solid rgba(239, 68, 68, 0.3)' }}
+                 onClick={handleDeleteAll}
+                 disabled={actionLoading !== null}
+              >
+                {actionLoading === 'deleteAll' ? <Loader2 size={16} className="spin" /> : <Trash2 size={16} />}
+                Delete All
+              </button>
+            )}
           </div>
 
           <div className="admin-table-container">
@@ -288,100 +310,144 @@ export default function AdminAlertsTab() {
       )}
 
       {activeSubTab === 'settings' && (
-        <div className="tharindu-settings-container">
-          <div className="tharindu-patient-selector">
-            <label>Select Patient to Configure:</label>
-            <select 
-              value={selectedPatient} 
-              onChange={(e) => setSelectedPatient(e.target.value)}
-              className="tharindu-select"
-            >
-              {patients.map(p => (
-                <option key={p._id} value={p._id}>
-                  {p.firstName} {p.lastName} ({p.email})
-                </option>
-              ))}
-            </select>
+        <div style={{ padding: '2rem', display: 'flex', flexDirection: 'column', gap: '2.5rem', minHeight: '500px' }}>
+          
+          {/* Patient Selector Card */}
+          <div style={{ background: 'var(--admin-card-bg)', padding: '1.5rem 2rem', borderRadius: '16px', border: '1px solid var(--admin-border)', display: 'flex', flexDirection: 'column', gap: '1rem', boxShadow: '0 4px 20px rgba(0,0,0,0.1)' }}>
+            <label style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', color: 'var(--admin-text)', fontWeight: 600, fontSize: '1.05rem' }}>
+              <div style={{ padding: '0.4rem', background: 'rgba(0,180,216,0.1)', borderRadius: '8px', color: 'var(--p-cyan)' }}>
+                <User size={18} />
+              </div>
+              Select Patient to Configure
+            </label>
+            <div style={{ position: 'relative' }}>
+              <select 
+                value={selectedPatient} 
+                onChange={(e) => setSelectedPatient(e.target.value)}
+                style={{ width: '100%', padding: '1rem 1.25rem', background: 'rgba(255,255,255,0.02)', border: '1px solid var(--admin-border)', borderRadius: '12px', color: 'var(--admin-text)', fontSize: '1rem', outline: 'none', cursor: 'pointer', appearance: 'none', WebkitAppearance: 'none' }}
+              >
+                {patients.map(p => (
+                  <option key={p._id} value={p._id} style={{ color: '#000' }}>
+                    {p.firstName} {p.lastName} — {p.email}
+                  </option>
+                ))}
+              </select>
+              <div style={{ position: 'absolute', right: '1.25rem', top: '50%', transform: 'translateY(-50%)', pointerEvents: 'none', color: 'var(--admin-text-muted)' }}>
+                <ChevronRight size={18} style={{ transform: 'rotate(90deg)' }} />
+              </div>
+            </div>
           </div>
 
           {loadingSettings ? (
-            <div className="loading-state py-8"><Loader2 className="spin inline-icon" /> Loading thresholds...</div>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '200px' }}>
+              <Loader2 className="spin" size={36} color="var(--p-green)" />
+            </div>
           ) : settings ? (
-            <form onSubmit={handleSaveSettings} className="tharindu-settings-form">
-              <div className="tharindu-form-grid">
+            <form onSubmit={handleSaveSettings} style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}>
+              
+              {/* Thresholds Grid */}
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '1.5rem' }}>
                 
-                <div className="tharindu-form-group">
-                  <label><Heart size={16}/> Max Heart Rate (bpm)</label>
+                {/* Heart Rate */}
+                <div style={{ background: 'var(--glass-bg)', padding: '1.5rem', borderRadius: '16px', border: '1px solid var(--admin-border)', display: 'flex', flexDirection: 'column', gap: '1rem', transition: 'transform 0.2s' }} onMouseEnter={(e) => e.currentTarget.style.transform = 'translateY(-3px)'} onMouseLeave={(e) => e.currentTarget.style.transform = 'translateY(0)'}>
+                  <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', color: 'var(--admin-text)', fontWeight: 600 }}>
+                    <Heart size={18} color="#ef4444" /> Max Heart Rate (bpm)
+                  </label>
                   <input 
                     type="number" 
                     value={settings.heartRateMax || ''} 
                     onChange={e => setSettings({...settings, heartRateMax: e.target.value})} 
                     placeholder="e.g. 100"
+                    style={{ padding: '0.8rem 1rem', background: 'rgba(0,0,0,0.2)', border: '1px solid rgba(255,255,255,0.05)', borderRadius: '10px', color: 'var(--admin-text)', outline: 'none' }}
                   />
-                  <small>Triggers alert if patient heart rate exceeds this value</small>
+                  <small style={{ color: 'var(--admin-text-muted)', fontSize: '0.85rem' }}>Triggers alert if patient heart rate exceeds this value.</small>
                 </div>
 
-                <div className="tharindu-form-group">
-                  <label><Wind size={16}/> Min Oxygen Level (%)</label>
+                {/* Oxygen Level */}
+                <div style={{ background: 'var(--glass-bg)', padding: '1.5rem', borderRadius: '16px', border: '1px solid var(--admin-border)', display: 'flex', flexDirection: 'column', gap: '1rem', transition: 'transform 0.2s' }} onMouseEnter={(e) => e.currentTarget.style.transform = 'translateY(-3px)'} onMouseLeave={(e) => e.currentTarget.style.transform = 'translateY(0)'}>
+                  <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', color: 'var(--admin-text)', fontWeight: 600 }}>
+                    <Wind size={18} color="var(--p-cyan)" /> Min Oxygen Level (%)
+                  </label>
                   <input 
                     type="number" 
                     value={settings.oxygenMin || ''} 
                     onChange={e => setSettings({...settings, oxygenMin: e.target.value})} 
                     placeholder="e.g. 95"
+                    style={{ padding: '0.8rem 1rem', background: 'rgba(0,0,0,0.2)', border: '1px solid rgba(255,255,255,0.05)', borderRadius: '10px', color: 'var(--admin-text)', outline: 'none' }}
                   />
-                  <small>Triggers alert if oxygen drops below this value</small>
+                  <small style={{ color: 'var(--admin-text-muted)', fontSize: '0.85rem' }}>Triggers alert if oxygen drops below this value.</small>
                 </div>
 
-                <div className="tharindu-form-group">
-                  <label><Activity size={16}/> Max Glucose Level (mg/dL)</label>
+                {/* Glucose Level */}
+                <div style={{ background: 'var(--glass-bg)', padding: '1.5rem', borderRadius: '16px', border: '1px solid var(--admin-border)', display: 'flex', flexDirection: 'column', gap: '1rem', transition: 'transform 0.2s' }} onMouseEnter={(e) => e.currentTarget.style.transform = 'translateY(-3px)'} onMouseLeave={(e) => e.currentTarget.style.transform = 'translateY(0)'}>
+                  <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', color: 'var(--admin-text)', fontWeight: 600 }}>
+                    <Activity size={18} color="var(--p-green)" /> Max Glucose Level (mg/dL)
+                  </label>
                   <input 
                     type="number" 
                     value={settings.glucoseMax || ''} 
                     onChange={e => setSettings({...settings, glucoseMax: e.target.value})} 
                     placeholder="e.g. 140"
+                    style={{ padding: '0.8rem 1rem', background: 'rgba(0,0,0,0.2)', border: '1px solid rgba(255,255,255,0.05)', borderRadius: '10px', color: 'var(--admin-text)', outline: 'none' }}
                   />
-                  <small>Triggers alert if glucose exceeds this value</small>
+                  <small style={{ color: 'var(--admin-text-muted)', fontSize: '0.85rem' }}>Triggers alert if glucose exceeds this value.</small>
                 </div>
 
-                <div className="tharindu-form-group">
-                  <label><AlertTriangle size={16} className="inline-icon"/> Escalation Time (Minutes)</label>
+                {/* Escalation Time */}
+                <div style={{ background: 'var(--glass-bg)', padding: '1.5rem', borderRadius: '16px', border: '1px solid var(--admin-border)', display: 'flex', flexDirection: 'column', gap: '1rem', transition: 'transform 0.2s' }} onMouseEnter={(e) => e.currentTarget.style.transform = 'translateY(-3px)'} onMouseLeave={(e) => e.currentTarget.style.transform = 'translateY(0)'}>
+                  <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', color: 'var(--admin-text)', fontWeight: 600 }}>
+                    <AlertTriangle size={18} color="#f59e0b" /> Escalation Time (Mins)
+                  </label>
                   <input 
                     type="number" 
                     value={settings.escalationTimeMinutes || 10} 
                     onChange={e => setSettings({...settings, escalationTimeMinutes: e.target.value})} 
+                    style={{ padding: '0.8rem 1rem', background: 'rgba(0,0,0,0.2)', border: '1px solid rgba(255,255,255,0.05)', borderRadius: '10px', color: 'var(--admin-text)', outline: 'none' }}
                   />
-                  <small>Time before unacknowledged alerts escalate to Critical</small>
+                  <small style={{ color: 'var(--admin-text-muted)', fontSize: '0.85rem' }}>Time before unacknowledged alerts escalate to Critical.</small>
                 </div>
 
               </div>
 
-              <div className="tharindu-form-toggles">
-                <label className="tharindu-toggle-row">
+              {/* Toggles */}
+              <div style={{ display: 'flex', gap: '2rem', flexWrap: 'wrap', padding: '1.5rem 2rem', background: 'var(--admin-card-bg)', borderRadius: '16px', border: '1px solid var(--admin-border)' }}>
+                <label style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', cursor: 'pointer', color: 'var(--admin-text)' }}>
                   <input 
                     type="checkbox" 
                     checked={settings.smsEnabled || false} 
                     onChange={e => setSettings({...settings, smsEnabled: e.target.checked})} 
+                    style={{ width: '20px', height: '20px', cursor: 'pointer', accentColor: 'var(--p-cyan)' }}
                   />
-                  <span className="tharindu-toggle-text">Enable SMS Notifications for Critical Alerts</span>
+                  <span>Enable <strong>SMS</strong> Notifications for Critical Alerts</span>
                 </label>
-                <label className="tharindu-toggle-row">
+                <label style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', cursor: 'pointer', color: 'var(--admin-text)' }}>
                   <input 
                     type="checkbox" 
                     checked={settings.emailEnabled !== false} 
                     onChange={e => setSettings({...settings, emailEnabled: e.target.checked})} 
+                    style={{ width: '20px', height: '20px', cursor: 'pointer', accentColor: 'var(--p-green)' }}
                   />
-                  <span className="tharindu-toggle-text">Enable Email Notifications for Alerts</span>
+                  <span>Enable <strong>Email</strong> Notifications for Alerts</span>
                 </label>
               </div>
 
-              <div className="tharindu-form-actions">
-                <button type="submit" className="admin-btn-primary" disabled={savingSettings}>
-                  {savingSettings ? <><Loader2 size={16} className="spin inline-icon" /> Saving...</> : <><Save size={16} className="inline-icon" /> Save Configurations</>}
+              {/* Save Layout */}
+              <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '1rem' }}>
+                <button 
+                  type="submit" 
+                  disabled={savingSettings}
+                  style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', padding: '0.8rem 1.5rem', background: 'linear-gradient(135deg, var(--p-green), var(--p-cyan))', color: '#000', border: 'none', borderRadius: '10px', fontWeight: 600, fontSize: '1rem', cursor: 'pointer', opacity: savingSettings ? 0.7 : 1, transition: 'all 0.2s', boxShadow: '0 4px 15px rgba(0, 200, 151, 0.3)' }}
+                >
+                  {savingSettings ? <Loader2 size={18} className="spin" /> : <Save size={18} />}
+                  {savingSettings ? 'Saving...' : 'Save Configurations'}
                 </button>
               </div>
             </form>
           ) : (
-            <div className="empty-state">Select a patient to configure their alert thresholds.</div>
+            <div className="empty-state" style={{ padding: '4rem', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', background: 'rgba(255,255,255,0.02)', borderRadius: '16px', border: '1px dashed rgba(255,255,255,0.1)' }}>
+              <Settings size={48} style={{ opacity: 0.3, marginBottom: '1rem' }} />
+              <p style={{ margin: 0, color: 'var(--admin-text)' }}>Select a patient to configure their alert thresholds.</p>
+            </div>
           )}
         </div>
       )}
