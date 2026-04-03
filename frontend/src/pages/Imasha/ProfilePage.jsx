@@ -9,7 +9,7 @@ import {
     User, Mail, Phone, MapPin, Calendar,
     Camera, LogOut, Save, Bell, Activity,
     ClipboardList, Settings, ChevronRight,
-    Loader2, ShieldCheck, CheckCircle2, Stethoscope
+    Loader2, ShieldCheck, CheckCircle2, Stethoscope,
     TrendingUp, Zap, Star, Clock, Heart, Sparkles,
     IdCard, Briefcase, Globe, Home, BriefcaseIcon, PhoneCall, X
 } from 'lucide-react';
