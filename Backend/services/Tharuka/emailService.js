@@ -1,27 +1,9 @@
-
-import nodemailer from 'nodemailer';
-/**
- * Creates nodemailer transporter
- */
-const createTransporter = () => {
-  return nodemailer.createTransport({
-    host: process.env.EMAIL_HOST,
-    port: process.env.EMAIL_PORT,
-    secure: false, // Use TLS
-    auth: {
-      user: process.env.EMAIL_USER,
-      pass: process.env.EMAIL_PASSWORD,
-    },
-  });
-};
-
+import { sendGmailApiEmail } from '../../utils/gmailEmailSender.js';
 
 /**
  * Sends meal reminder email
  */
 export const sendMealReminderEmail = async (email, firstName, mealData) => {
-  const transporter = createTransporter();
-  
   const { mealName, mealType, scheduledTime, items = [] } = mealData;
   const formattedTime = scheduledTime ? new Date(scheduledTime).toLocaleString() : "scheduled time";
   
@@ -29,11 +11,8 @@ export const sendMealReminderEmail = async (email, firstName, mealData) => {
     ? items.map((item) => `<li>${item.quantity || ""} ${item.unit || "g"} ${item.name || ""}</li>`).join("")
     : "<li>Check your meal plan for details</li>";
 
-  const mailOptions = {
-    from: process.env.EMAIL_FROM,
-    to: email,
-    subject: `🍽️ Meal Reminder: ${mealName || mealType}`,
-    html: `
+  const subject = `🍽️ Meal Reminder: ${mealName || mealType}`;
+  const htmlContent = `
       <!DOCTYPE html>
       <html>
         <head>
@@ -68,11 +47,11 @@ export const sendMealReminderEmail = async (email, firstName, mealData) => {
           </div>
         </body>
       </html>
-    `,
-  };
+    `;
   
   try {
-    await transporter.sendMail(mailOptions);
+    const result = await sendGmailApiEmail(email, subject, htmlContent);
+    if (!result.success) throw new Error(result.error);
     console.log(`Meal reminder email sent to ${email}`);
   } catch (error) {
     console.error('Error sending meal reminder email:', error);

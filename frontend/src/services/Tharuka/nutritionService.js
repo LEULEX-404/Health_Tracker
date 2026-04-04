@@ -57,7 +57,7 @@ export const deleteMeal = async (id, userId) => {
   try {
     const response = await axios.delete(`${API_URL}/${id}`, {
       ...getAuthHeaders(),
-      data: { userId } // axios delete requires data to be passed explicitly in config
+      params: { userId } // axios delete requires data to be passed explicitly in config
     });
     return response.data;
   } catch (error) {

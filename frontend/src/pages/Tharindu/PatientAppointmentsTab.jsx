@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../../context/Imasha/AuthContext';
 import { Calendar, Stethoscope, HeartHandshake, Loader2, Clock, MapPin, User, ChevronRight, CheckCircle2, AlertCircle, Phone, Sparkles, X, FileText, CreditCard } from 'lucide-react';
+import AppointmentPage from '../Priya/Appointment';
 import { motion, AnimatePresence } from 'framer-motion';
 import toast from 'react-hot-toast';
 import PulsePaymentModal from '../../components/Tharindu/PulsePaymentModal';
@@ -34,7 +35,7 @@ export default function PatientAppointmentsTab({ onBookingSuccess }) {
     setLoading(true);
     try {
       // Fetch My Bookings
-      const bookRes = await fetch('http://localhost:5000/api/tharindu/bookings/my-bookings', {
+      const bookRes = await fetch(`${import.meta.env.VITE_API_URL}/tharindu/bookings/my-bookings`, {
         headers: {
           'Content-Type': 'application/json',
           Authorization: `Bearer ${token}`
@@ -45,7 +46,7 @@ export default function PatientAppointmentsTab({ onBookingSuccess }) {
       setMyBookings(bookData.data || []);
 
       // Fetch Available Caregivers via new dedicated route
-      const cgRes = await fetch('http://localhost:5000/api/tharindu/bookings/caregivers', {
+      const cgRes = await fetch(`${import.meta.env.VITE_API_URL}/tharindu/bookings/caregivers`, {
         headers: {
           'Content-Type': 'application/json',
           Authorization: `Bearer ${token}`
@@ -146,7 +147,7 @@ export default function PatientAppointmentsTab({ onBookingSuccess }) {
         notes: bookingNotes,
       };
 
-      const res = await fetch('http://localhost:5000/api/tharindu/bookings/request', {
+      const res = await fetch(`${import.meta.env.VITE_API_URL}/tharindu/bookings/request`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -178,7 +179,7 @@ export default function PatientAppointmentsTab({ onBookingSuccess }) {
   const handleDownloadReport = async () => {
     setDownloadingReport(true);
     try {
-      const res = await fetch('http://localhost:5000/api/tharindu/bookings/my-bookings/report', {
+      const res = await fetch(`${import.meta.env.VITE_API_URL}/tharindu/bookings/my-bookings/report`, {
         headers: {
           Authorization: `Bearer ${token}`
         }
@@ -224,6 +225,19 @@ export default function PatientAppointmentsTab({ onBookingSuccess }) {
 
       <AnimatePresence mode="wait">
         
+        {/* ── DOCTOR TAB (PLACEHOLDER) ── */}
+        {activeTab === 'doctor' && (
+          <motion.div
+            key="docTab"
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -10 }}
+            transition={{ duration: 0.2 }}
+          >
+            <AppointmentPage embedded />
+          </motion.div>
+        )}
+
         {/* ── CAREGIVER TAB ── */}
         {activeTab === 'caregiver' && (
           <motion.div

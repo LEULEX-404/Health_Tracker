@@ -3,7 +3,6 @@ import { Link, useSearchParams, useNavigate } from 'react-router-dom';
 import { Lock, AlertCircle, CheckCircle2, ArrowLeft } from 'lucide-react';
 import { toast } from 'react-hot-toast';
 
-import AuthLayout from '../../components/Imasha/AuthLayout';
 import DoctorCat from '../../components/Imasha/DoctorCat';
 import PasswordInput from '../../components/Imasha/PasswordInput';
 import { useAuth } from '../../context/Imasha/AuthContext';
@@ -61,8 +60,7 @@ export default function ResetPasswordPage() {
 
     if (isResetDone) {
         return (
-            <AuthLayout>
-                <div className="Imasha-form-card Imasha-confirmation-card">
+            <div className="Imasha-form-card Imasha-confirmation-card">
                     <div className="Imasha-mascot-wrap">
                         <DoctorCat isHappy={true} />
                     </div>
@@ -78,14 +76,12 @@ export default function ResetPasswordPage() {
                         Go to Login Now
                     </Link>
                 </div>
-            </AuthLayout>
         );
     }
 
     return (
-        <AuthLayout>
-            <div className="Imasha-form-card">
-                <div className="Imasha-mascot-wrap">
+        <div className="Imasha-form-card">
+            <div className="Imasha-mascot-wrap">
                     <DoctorCat
                         isHiding={isPasswordFocused}
                         isWatching={!isPasswordFocused && !isResetDone}
@@ -150,7 +146,6 @@ export default function ResetPasswordPage() {
                         <ArrowLeft size={14} /> Back to Sign In
                     </Link>
                 </p>
-            </div>
-        </AuthLayout>
+        </div>
     );
 }

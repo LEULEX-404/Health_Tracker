@@ -51,6 +51,7 @@ const nutritionSchema = new mongoose.Schema(
 
     notes: { type: String, trim: true },
     doctorRecommendation: doctorRecommendationSchema,
+    mealReminderId: { type: mongoose.Schema.Types.ObjectId, ref: "MealReminder", default: null },
     recordedAt: { type: Date, default: Date.now, index: true },
   },
   { timestamps: true }

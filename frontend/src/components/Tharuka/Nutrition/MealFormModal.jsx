@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { X, Save, Clock, LayoutList, Plus, Trash2 } from 'lucide-react';
 import './NutritionComponents.css';
 
 const UNITS = ['g', 'ml', 'cup(s)', 'slice(s)', 'bowl(s)', 'item(s)', 'tbsp', 'tsp'];
 
-export default function MealFormModal({ isOpen, onClose, onSubmit, initialData }) {
+export default function MealFormModal({ isOpen, onClose, onSubmit, initialData, isSimple = false }) {
   const blank = { mealType: 'breakfast', mealName: '', items: [{ name: '', quantity: '', unit: 'g' }], notes: '', recordedAt: new Date().toISOString().slice(0, 16) };
 
   const [form, setForm]       = useState(blank);
@@ -20,6 +21,7 @@ export default function MealFormModal({ isOpen, onClose, onSubmit, initialData }
           ? initialData.items.map(i => ({ name: i.name || '', quantity: i.quantity || '', unit: i.unit || 'g' }))
           : [{ name: '', quantity: '', unit: 'g' }],
         notes:       initialData.notes       || '',
+        mealReminderId: initialData.mealReminderId || null,
         recordedAt:  initialData.recordedAt
           ? new Date(initialData.recordedAt).toISOString().slice(0, 16)
           : new Date().toISOString().slice(0, 16),
@@ -45,6 +47,7 @@ export default function MealFormModal({ isOpen, onClose, onSubmit, initialData }
     setLoading(true);
     await onSubmit({
       ...form,
+      mealName: form.mealName || (isSimple ? 'Standalone Log' : ''),
       useApiForNutrition: true, // Force backend to calculate calories and macros for these items
       items: form.items
         .filter(it => it.name.trim())
@@ -53,23 +56,23 @@ export default function MealFormModal({ isOpen, onClose, onSubmit, initialData }
     setLoading(false);
   };
 
-  return (
+  const modalContent = (
     <div className="n-overlay">
       <div className="n-modal" onClick={e => e.stopPropagation()}>
         {/* Header */}
         <div className="n-modal-head">
           <div>
-            <h2>{initialData ? 'Edit Meal Log' : '+ Add Meal Log'}</h2>
-            <p>Our AI will automatically fetch the nutrition values for each item you enter.</p>
+            <h2>{initialData ? 'Edit Meal Log' : (isSimple ? '+ Quick Standalone Log' : '+ Add Meal Log')}</h2>
+            <p>{isSimple ? 'Log items and quantities for standalone tracking.' : 'Our AI will automatically fetch the nutrition values for each item you enter.'}</p>
           </div>
           <button className="n-modal-close" onClick={onClose}><X size={20} /></button>
         </div>
 
         {/* Form */}
         <form className="n-form" onSubmit={handleSubmit}>
-          {/* Row: type + time */}
+          {/* Row: type + time (Time hidden in simple mode) */}
           <div className="n-row-fields">
-            <div className="n-field wide">
+            <div className={`n-field ${isSimple ? '' : 'wide'}`}>
               <label><LayoutList size={14} /> Meal Type</label>
               <select className="n-input" value={form.mealType} onChange={e => set('mealType', e.target.value)} required>
                 <option value="breakfast">Breakfast</option>
@@ -78,13 +81,15 @@ export default function MealFormModal({ isOpen, onClose, onSubmit, initialData }
                 <option value="snack">Snack</option>
               </select>
             </div>
-            <div className="n-field wide">
-              <label><Clock size={14} /> Date &amp; Time</label>
-              <input type="datetime-local" className="n-input" value={form.recordedAt} onChange={e => set('recordedAt', e.target.value)} required />
-            </div>
+            {!isSimple && (
+              <div className="n-field wide">
+                <label><Clock size={14} /> Date &amp; Time</label>
+                <input type="datetime-local" className="n-input" value={form.recordedAt} onChange={e => set('recordedAt', e.target.value)} required />
+              </div>
+            )}
           </div>
 
-          {/* Meal name */}
+          {/* Meal name - Always shown now */}
           <div className="n-field">
             <label>Meal Name / Description</label>
             <input
@@ -132,15 +137,17 @@ export default function MealFormModal({ isOpen, onClose, onSubmit, initialData }
           </div>
 
           {/* Notes */}
-          <div className="n-field">
-            <label>Notes (Optional)</label>
-            <input
-              type="text" className="n-input"
-              placeholder="e.g. Felt very energetic after this meal"
-              value={form.notes}
-              onChange={e => set('notes', e.target.value)}
-            />
-          </div>
+          {!isSimple && (
+            <div className="n-field">
+              <label>Notes (Optional)</label>
+              <input
+                type="text" className="n-input"
+                placeholder="e.g. Felt very energetic after this meal"
+                value={form.notes}
+                onChange={e => set('notes', e.target.value)}
+              />
+            </div>
+          )}
 
           {/* Footer */}
           <div className="n-modal-foot">
@@ -153,4 +160,6 @@ export default function MealFormModal({ isOpen, onClose, onSubmit, initialData }
       </div>
     </div>
   );
+
+  return createPortal(modalContent, document.body);
 }

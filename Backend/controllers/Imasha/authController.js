@@ -65,20 +65,32 @@ class AuthController {
    */
   async logout(req, res, next) {
     try {
-      const userId = req.user.userId;
-      const refreshToken = req.cookies.refreshToken || req.body.refreshToken;
-      const ipAddress = req.ip || req.connection.remoteAddress;
+      const userId = req.user?._id || req.user?.id || req.user?.userId;
+      const refreshToken = req.cookies?.refreshToken || req.body?.refreshToken;
+      const ipAddress = req.ip || req.connection?.remoteAddress;
+
+      if (!userId) {
+        return res.status(HTTP_STATUS.UNAUTHORIZED).json({
+          success: false,
+          message: 'User authentication failed',
+        });
+      }
 
       const result = await authService.logout(userId, refreshToken, ipAddress);
 
       // Clear refresh token cookie
-      res.clearCookie('refreshToken');
+      res.clearCookie('refreshToken', {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === 'production',
+        sameSite: 'strict',
+      });
 
       res.status(HTTP_STATUS.OK).json({
         success: true,
         ...result,
       });
     } catch (error) {
+      console.error('Logout error:', error.message);
       next(error);
     }
   }
@@ -89,8 +101,8 @@ class AuthController {
    */
   async refreshToken(req, res, next) {
     try {
-      const refreshToken = req.cookies.refreshToken || req.body.refreshToken;
-      const ipAddress = req.ip || req.connection.remoteAddress;
+      const refreshToken = req.cookies?.refreshToken || req.body?.refreshToken;
+      const ipAddress = req.ip || req.connection?.remoteAddress;
 
       if (!refreshToken) {
         return res.status(HTTP_STATUS.UNAUTHORIZED).json({

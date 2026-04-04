@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../../context/Imasha/AuthContext';
 import { getAllUsers } from '../../utils/Imasha/adminApi';
+import DoctorAppointmentsTab from '../Imasha/Admin/AppointmentsTab';
 import { Calendar, Stethoscope, HeartHandshake, Loader2, Clock, MapPin, User, ChevronRight, CheckCircle2, AlertCircle, Phone, Mail } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import toast from 'react-hot-toast';
@@ -150,32 +151,8 @@ export default function AdminAppointmentsTab() {
               animate={{ opacity: 1, x: 0 }}
               exit={{ opacity: 0, x: 20 }}
               transition={{ duration: 0.2 }}
-              style={{
-                display: 'flex',
-                flexDirection: 'column',
-                alignItems: 'center',
-                justifyContent: 'center',
-                height: '400px',
-                textAlign: 'center',
-                background: 'rgba(255,255,255,0.02)',
-                borderRadius: '16px',
-                border: '1px dashed rgba(255,255,255,0.1)'
-              }}
             >
-              <div style={{
-                width: '64px', height: '64px', borderRadius: '50%',
-                background: 'rgba(0,180,216,0.1)', color: 'var(--p-cyan)',
-                display: 'flex', alignItems: 'center', justifyContent: 'center',
-                marginBottom: '1rem'
-              }}>
-                <Stethoscope size={32} />
-              </div>
-              <h3 style={{ margin: '0 0 0.5rem 0', color: 'var(--admin-text)', fontSize: '1.2rem' }}>
-                Doctor Appointments Module
-              </h3>
-              <p style={{ color: 'var(--admin-text-muted)', maxWidth: '400px', margin: 0, lineHeight: 1.5 }}>
-                This section will be independently managed. Check back during the next deployment phase for the integrated doctor schedule interface.
-              </p>
+              <DoctorAppointmentsTab />
             </motion.div>
           )}
 
