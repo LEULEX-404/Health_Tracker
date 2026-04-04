@@ -109,7 +109,7 @@ export default function FindSpecialistPage() {
   const [bookingConfirmed, setBookingConfirmed] = useState(false);
   const [lastBooking, setLastBooking] = useState(null);
   const [phoneError, setPhoneError] = useState('');
-  const [dateBounds] = useState(() => getAppointmentDateBounds());
+  const dateBounds = useMemo(() => getAppointmentDateBounds(), []);
   const [form, setForm] = useState({
     patientName: '',
     patientEmail: '',
