@@ -245,7 +245,7 @@ const startContinuousSimulator = () => {
         } catch (err) {
             console.error("[Simulator] Error:", err.message);
         }
-    }, process.env.SIMULATOR_INTERVAL_MS || 600000);
+    }, process.env.SIMULATOR_INTERVAL_MS || 60000);
 };
 
 // Start simulator AFTER DB is connected
@@ -284,7 +284,7 @@ const startMealReminderProcessor = () => {
         } catch (err) {
             console.error("[Reminder Processor] Error:", err.message);
         }
-    }, 600000); // Run every minute
+    }, 60000); // Run every minute
 };
 
 // Start reminder processor AFTER DB is connected
@@ -302,9 +302,11 @@ import adminAppointmentsRoutes from "./routes/Priya/adminAppointmentsRoutes.js";
 
 // Tharindu Routes
 import caregiverRoutes from "./routes/Tharindu/caregiverRoutes.js";
+import paymentRoutes from "./routes/Tharindu/paymentRoutes.js";
 
 app.use('/api/appointments', appointmentsRoutes);
 app.use('/api/tharindu/bookings', caregiverRoutes);
+app.use('/api/tharindu/payment', paymentRoutes);
 app.use('/api/email-logs', emailLogRoutes);
 app.use('/api/appointments', appointmentsRoutes);
 app.use('/api/exercise', exerciseRoutes);

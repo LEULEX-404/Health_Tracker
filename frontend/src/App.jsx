@@ -42,6 +42,7 @@ const AppointmentPage = lazy(() => import('./pages/Priya/Appointment'));
 
 // Pages — Tharindu (Lazy Loaded)
 const CaregiverDashboard = lazy(() => import('./pages/Tharindu/careGiverDashboard'));
+const CaregiverAppointmentPage = lazy(() => import('./pages/Tharindu/CaregiverAppointmentPage'));
 
 import ProtectedRoute from './components/Imasha/ProtectedRoute';
 
@@ -126,6 +127,7 @@ function App() {
               <Route path="/meal-plan" element={<ProtectedRoute><ServicesPage /></ProtectedRoute>} />
               {/* Protected Tharindu Routes */}
               <Route path="/caregiver-dashboard" element={<ProtectedRoute><CaregiverDashboard /></ProtectedRoute>} />
+              <Route path="/caregiver-appointment" element={<ProtectedRoute allowedRoles={['patient']}><CaregiverAppointmentPage /></ProtectedRoute>} />
 
               {/* Catch-all Redirect */}
               <Route path="*" element={<Navigate to="/" replace />} />
