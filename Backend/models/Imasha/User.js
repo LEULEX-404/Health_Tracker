@@ -58,6 +58,30 @@ const userSchema = new mongoose.Schema(
       type: String,
       trim: true,
     },
+    city: {
+      type: String,
+      trim: true,
+    },
+    country: {
+      type: String,
+      trim: true,
+    },
+    occupation: {
+      type: String,
+      trim: true,
+    },
+    emergencyContactName: {
+      type: String,
+      trim: true,
+    },
+    emergencyContactPhone: {
+      type: String,
+      trim: true,
+    },
+    emergencyContactEmail: {
+      type: String,
+      trim: true,
+    },
 
     // Health Information
     healthConditions: {

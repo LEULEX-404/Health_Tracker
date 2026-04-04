@@ -1,27 +1,28 @@
 /* ================================================================
    PulseNova — Register Page Extra Styles (Imasha)
+   Uses new --iauth-* variables from AuthCommon.css
    ================================================================ */
 
 /* ── Progress Bar ──────────────────────────────────────────────── */
 .Imasha-register-progress {
-    margin-bottom: 1.5rem;
+    margin-bottom: 1.4rem;
 }
 
 .Imasha-register-progress-bar {
     width: 100%;
-    height: 6px;
-    background: var(--auth-divider);
+    height: 5px;
+    background: var(--iauth-divider);
     border-radius: 99px;
     overflow: hidden;
-    margin-bottom: 0.75rem;
+    margin-bottom: 0.65rem;
 }
 
 .Imasha-register-progress-fill {
     height: 100%;
-    background: linear-gradient(90deg, var(--auth-primary), #10b981);
+    background: linear-gradient(90deg, var(--iauth-green), #10b981);
     border-radius: 99px;
-    transition: width 0.6s cubic-bezier(0.65, 0, 0.35, 1);
-    box-shadow: 0 0 15px var(--auth-primary-glow);
+    transition: width 0.55s cubic-bezier(0.65, 0, 0.35, 1);
+    box-shadow: 0 0 12px var(--iauth-green-glow);
 }
 
 .Imasha-register-steps {
@@ -30,226 +31,191 @@
     gap: 0;
 }
 
-.Imasha-step-dot {
-    width: 28px;
-    height: 28px;
-    border-radius: 50%;
-    border: 2px solid var(--auth-card-border);
-    background: var(--auth-input-bg);
-    color: var(--auth-text-muted);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 0.78rem;
-    font-weight: 700;
-    transition: all 0.35s;
-}
-
-.Imasha-step-dot.active {
-    border-color: var(--auth-primary);
-    background: linear-gradient(135deg, var(--auth-primary), #00a876);
-    color: #fff;
-    box-shadow: 0 0 14px var(--auth-primary-glow);
-}
-
 .Imasha-step-line {
     flex: 1;
     height: 2px;
-    background: var(--auth-divider);
-    margin: 0 0.4rem;
+    background: var(--iauth-divider);
+    margin: 0 0.8rem;
 }
 
-/* ── Register Nav (Back + Submit) ──────────────────────────────── */
-.Imasha-register-nav {
-    display: flex;
-    gap: 0.75rem;
-    align-items: stretch;
-    margin-bottom: 1rem;
-}
-
-.Imasha-btn-back {
-    display: flex;
-    align-items: center;
-    gap: 0.35rem;
-    padding: 0.9rem 1.1rem;
-    background: var(--auth-input-bg);
-    border: 1.5px solid var(--auth-input-border);
-    color: var(--auth-primary);
-    border-radius: 10px;
-    font-size: 0.88rem;
-    font-weight: 600;
-    font-family: 'Inter', sans-serif;
-    cursor: pointer;
-    transition: all 0.2s;
-    white-space: nowrap;
-    flex-shrink: 0;
-}
-
-.Imasha-btn-back:hover {
-    background: var(--auth-divider);
-    border-color: var(--auth-primary);
-}
-
-.Imasha-btn-flex {
-    flex: 1;
-}
-
-/* ── Selection Pills & Chips ────────────────────────────────────── */
-.Imasha-selection-group {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 0.6rem;
-    margin-top: 0.5rem;
-}
-
-/* Gender Pills */
-.Imasha-gender-pill {
-    flex: 1;
+.Imasha-step-dot {
+    width: 26px;
+    height: 26px;
+    border-radius: 50%;
+    background: var(--iauth-input-border);
+    color: var(--iauth-text-muted);
+    font-size: 0.75rem;
+    font-weight: 700;
     display: flex;
     align-items: center;
     justify-content: center;
-    gap: 0.5rem;
-    padding: 1rem;
-    background: var(--auth-input-bg);
-    border: 1.5px solid var(--auth-input-border);
-    border-radius: 14px;
-    color: var(--auth-text-muted);
-    cursor: pointer;
-    transition: all 0.3s ease;
-    font-size: 0.9rem;
-    font-weight: 600;
-    font-family: inherit;
+    transition: all 0.3s;
 }
 
-.Imasha-gender-pill:hover {
-    background: rgba(0, 168, 125, 0.05);
-    border-color: var(--auth-primary);
-    transform: translateY(-2px);
+.Imasha-step-dot.active {
+    background: var(--iauth-green);
+    color: #fff;
+    box-shadow: 0 0 10px var(--iauth-green-glow);
 }
 
-.Imasha-gender-pill.active {
-    background: rgba(0, 168, 125, 0.12);
-    border-color: var(--auth-primary);
-    color: var(--auth-primary);
-    box-shadow: 0 4px 12px var(--auth-primary-glow);
-}
-
-/* Health Chips */
-.Imasha-health-chips {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
-    gap: 0.5rem;
-    margin-top: 0.6rem;
-}
-
-.Imasha-health-chip {
-    padding: 0.75rem 1rem;
-    background: var(--auth-input-bg);
-    border: 1.5px solid var(--auth-input-border);
-    border-radius: 12px;
-    color: var(--auth-text-muted);
-    cursor: pointer;
-    transition: all 0.25s;
-    font-size: 0.85rem;
-    font-weight: 500;
-    text-align: center;
-    text-transform: capitalize;
+/* ── Form Rows ─────────────── */
+.Imasha-field-row {
     display: flex;
-    align-items: center;
-    justify-content: center;
-    user-select: none;
+    gap: 1rem;
+}
+.Imasha-field-row > * {
+    flex: 1;
+    min-width: 0; /* Prevent flex blowout */
 }
 
-.Imasha-health-chip:hover {
-    background: rgba(0, 168, 125, 0.04);
-    border-color: var(--auth-primary);
-    transform: scale(1.02);
-}
-
-.Imasha-health-chip.active {
-    background: rgba(0, 168, 125, 0.1);
-    border-color: var(--auth-primary);
-    color: var(--auth-primary);
-    box-shadow: 0 2px 8px var(--auth-primary-glow);
-}
-
-/* Transitions */
-.Imasha-field-group {
-    animation: fadeInSlide 0.4s ease forwards;
+@media (max-width: 600px) {
+    .Imasha-field-row {
+        flex-direction: column;
+        gap: 0;
+    }
 }
 
 /* ── Modern Date Input Polish ── */
-/* Hide default icon and create a custom click area */
 .Imasha-input[type="date"] {
     cursor: text;
     font-family: 'Inter', sans-serif;
-    color: var(--auth-text-main);
+    color: var(--iauth-text);
     text-transform: uppercase;
     letter-spacing: 0.5px;
     font-size: 0.85rem;
     position: relative;
 }
 
-/* Custom styling for date text fields */
-.Imasha-input[type="date"]::-webkit-datetime-edit {
-    padding-right: 2rem;
-}
-.Imasha-input[type="date"]::-webkit-datetime-edit-fields-wrapper {
-    display: flex;
-    gap: 2px;
-}
-.Imasha-input[type="date"]::-webkit-datetime-edit-text {
-    color: var(--auth-primary);
-    opacity: 0.8;
-}
+.Imasha-input[type="date"]::-webkit-datetime-edit { padding-right: 2rem; }
+.Imasha-input[type="date"]::-webkit-datetime-edit-fields-wrapper { display: flex; gap: 2px; }
+.Imasha-input[type="date"]::-webkit-datetime-edit-text { color: var(--iauth-green); opacity: 0.8; }
 .Imasha-input[type="date"]::-webkit-datetime-edit-month-field,
 .Imasha-input[type="date"]::-webkit-datetime-edit-day-field,
 .Imasha-input[type="date"]::-webkit-datetime-edit-year-field {
-    color: var(--auth-text-main);
+    color: var(--iauth-text);
     background: rgba(255, 255, 255, 0.05);
     border-radius: 4px;
     padding: 2px 4px;
-    transition: background 0.3s;
+    transition: background 0.25s;
 }
-
 .Imasha-input[type="date"]::-webkit-datetime-edit-month-field:focus,
 .Imasha-input[type="date"]::-webkit-datetime-edit-day-field:focus,
 .Imasha-input[type="date"]::-webkit-datetime-edit-year-field:focus {
-    background: var(--auth-primary);
+    background: var(--iauth-green);
     color: #fff;
     outline: none;
 }
-
-/* Hide spin-button entirely */
-.Imasha-input[type="date"]::-webkit-inner-spin-button {
-    display: none;
-}
-
-/* Modernized native calendar icon styling */
-.light-theme .Imasha-input[type="date"]::-webkit-calendar-picker-indicator {
-    filter: invert(0.6) sepia(1) saturate(3) hue-rotate(110deg);
-}
-
+.Imasha-input[type="date"]::-webkit-inner-spin-button { display: none; }
 .Imasha-input[type="date"]::-webkit-calendar-picker-indicator {
     position: absolute;
     right: 12px;
-    color: transparent;
     background: transparent;
     z-index: 10;
     cursor: pointer;
     width: 20px;
     height: 20px;
-    opacity: 0; /* Fully transparent so our Lucide icon shows */
+    opacity: 0;
 }
 
-@keyframes fadeInSlide {
-    from {
-        opacity: 0;
-        transform: translateY(10px);
-    }
+/* ── Health chips grid override ── */
+.Imasha-health-chips {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+    gap: 0.45rem;
+    margin-top: 0.5rem;
+}
+.Imasha-health-chip {
+    padding: 0.65rem 0.8rem;
+    text-align: center;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    -webkit-user-select: none;
+    user-select: none;
+    border-radius: 999px;
+    border: 1px solid var(--iauth-input-border);
+    background: rgba(0, 168, 125, 0.04);
+    color: var(--iauth-text);
+    font-weight: 700;
+    font-size: 0.85rem;
+    letter-spacing: 0.2px;
+    cursor: pointer;
+    transition: transform 0.18s ease, background 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+}
 
-    to {
-        opacity: 1;
-        transform: translateY(0);
+.Imasha-health-chip:hover {
+    transform: translateY(-1px);
+    border-color: rgba(0, 168, 125, 0.45);
+    box-shadow: 0 10px 24px rgba(0, 168, 125, 0.12);
+}
+
+.Imasha-health-chip.active {
+    background: rgba(0, 168, 125, 0.14);
+    border-color: rgba(0, 168, 125, 0.7);
+    box-shadow: 0 12px 30px rgba(0, 168, 125, 0.18);
+}
+
+/* ── Gender pills (Step 2) ── */
+.Imasha-selection-group {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 0.6rem;
+    margin-top: 0.55rem;
+}
+
+.Imasha-gender-pill {
+    width: 100%;
+    border-radius: 999px;
+    border: 1px solid var(--iauth-input-border);
+    background: rgba(0, 168, 125, 0.04);
+    color: var(--iauth-text);
+    padding: 0.75rem 0.9rem;
+    font-weight: 800;
+    font-size: 0.9rem;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    transition: transform 0.18s ease, background 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.Imasha-gender-pill:hover {
+    transform: translateY(-1px);
+    border-color: rgba(0, 168, 125, 0.45);
+    box-shadow: 0 10px 24px rgba(0, 168, 125, 0.12);
+}
+
+.Imasha-gender-pill.active {
+    background: var(--iauth-green);
+    border-color: var(--iauth-green);
+    color: #fff;
+    box-shadow: 0 12px 32px rgba(0, 168, 125, 0.25);
+}
+
+.Iauth-dark .Imasha-gender-pill,
+.Iauth-dark .Imasha-health-chip {
+    background: rgba(255, 255, 255, 0.03);
+}
+
+.Iauth-dark .Imasha-gender-pill.active,
+.Iauth-dark .Imasha-health-chip.active {
+    background: rgba(0, 168, 125, 0.25);
+    border-color: rgba(57, 255, 20, 0.35);
+    box-shadow: 0 14px 34px rgba(0, 168, 125, 0.18);
+}
+
+@media (max-width: 520px) {
+    .Imasha-selection-group {
+        grid-template-columns: 1fr;
     }
-}
+}
+
+/* ── Register field group entry animation ── */
+.Imasha-field-group {
+    animation: iauth-fade-in 0.38s ease forwards;
+}
+@keyframes iauth-fade-in {
+    from { opacity: 0; transform: translateY(10px); }
+    to   { opacity: 1; transform: translateY(0); }
+}
