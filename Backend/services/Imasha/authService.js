@@ -51,7 +51,11 @@ class AuthService {
       // Validate input
       validateRegistrationInput(sanitizedData);
       
-      const { firstName, lastName, email, password, phone, dateOfBirth, gender } = sanitizedData;
+      const {
+        firstName, lastName, email, password,
+        phone, dateOfBirth, gender, address,
+        healthConditions
+      } = sanitizedData;
       
       // Check if user already exists
       const existingUser = await User.findOne({ email: email.toLowerCase() });
@@ -71,6 +75,8 @@ class AuthService {
         phone,
         dateOfBirth,
         gender,
+        address,
+        healthConditions: Array.isArray(healthConditions) ? healthConditions : [],
         role: USER_ROLES.PATIENT,
         emailVerificationToken,
         isEmailVerified: false,
@@ -185,6 +191,17 @@ class AuthService {
           email: user.email,
           role: user.role,
           profileImage: user.profileImage,
+          phone: user.phone,
+          dateOfBirth: user.dateOfBirth,
+          gender: user.gender,
+          address: user.address,
+          city: user.city,
+          country: user.country,
+          occupation: user.occupation,
+          emergencyContactName: user.emergencyContactName,
+          emergencyContactPhone: user.emergencyContactPhone,
+          emergencyContactEmail: user.emergencyContactEmail,
+          healthConditions: user.healthConditions,
           hasCompletedOnboarding: user.hasCompletedOnboarding,
         },
         redirectUrl,

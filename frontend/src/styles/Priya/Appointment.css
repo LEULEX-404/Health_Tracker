@@ -8,12 +8,21 @@
   max-width: 1180px;
 }
 
+.pr-appointment-panel-wrap {
+  width: 100%;
+}
+
 .pr-appointment-head {
   display: flex;
   justify-content: space-between;
   align-items: flex-start;
   gap: 1rem;
   margin-bottom: 1rem;
+}
+
+.pr-appointment-head--embedded {
+  align-items: center;
+  margin-bottom: 0.85rem;
 }
 
 .pr-appointment-head h1 {
@@ -24,10 +33,20 @@
   line-height: 1.15;
 }
 
+.pr-appointment-head--embedded h1 {
+  font-size: clamp(1.15rem, 2vw, 1.45rem);
+  line-height: 1.2;
+}
+
 .pr-appointment-head p {
   margin: 0.35rem 0 0;
   color: var(--text-secondary);
   font-size: 0.95rem;
+}
+
+.pr-appointment-head--embedded p {
+  margin-top: 0.2rem;
+  font-size: 0.88rem;
 }
 
 .pr-appointment-new-btn {
@@ -44,6 +63,13 @@
   border: 0;
   background: linear-gradient(135deg, #00e7b9, #00c98d);
   box-shadow: 0 8px 20px rgba(0, 201, 141, 0.28);
+}
+
+.pr-appointment-new-btn--embedded {
+  height: 38px;
+  padding: 0 0.9rem;
+  font-size: 0.84rem;
+  box-shadow: 0 6px 16px rgba(0, 201, 141, 0.2);
 }
 
 .pr-appointment-panel {

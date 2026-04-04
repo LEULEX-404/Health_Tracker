@@ -1,37 +1,13 @@
-import nodemailer from 'nodemailer';
+import { sendGmailApiEmail } from '../../utils/gmailEmailSender.js';
 import { EMAIL_SUBJECTS } from '../../constants/Imasha/index.js';
-
-/**
- * Creates nodemailer transporter
- */
-const createTransporter = () => {
-  return nodemailer.createTransport({
-    host: process.env.EMAIL_HOST,
-    port: process.env.EMAIL_PORT,
-    secure: false, // Use TLS
-    auth: {
-      user: process.env.EMAIL_USER,
-      pass: process.env.EMAIL_PASSWORD,
-    },
-    tls: {
-      family: 4 // Force IPv4
-    }
-  });
-}
 
 /**
  * Sends email verification email
  */
-export const sendVerificationEmail = async (email, firstName, token) => {
-  const transporter = createTransporter();
-  
+export const sendVerificationEmail = async (email, firstName, token) => { 
   const verificationUrl = `${process.env.CLIENT_URL}/verify-email?token=${token}`;
   
-  const mailOptions = {
-    from: process.env.EMAIL_FROM,
-    to: email,
-    subject: EMAIL_SUBJECTS.VERIFY_EMAIL,
-    html: `
+  const htmlContent = `
       <!DOCTYPE html>
       <html>
         <head>
@@ -67,11 +43,10 @@ export const sendVerificationEmail = async (email, firstName, token) => {
           </div>
         </body>
       </html>
-    `,
-  };
+    `;
   
   try {
-    await transporter.sendMail(mailOptions);
+    await sendGmailApiEmail(email, EMAIL_SUBJECTS.VERIFY_EMAIL, htmlContent);
     console.log(`Verification email sent to ${email}`);
   } catch (error) {
     console.error('Error sending verification email:', error);
@@ -83,15 +58,9 @@ export const sendVerificationEmail = async (email, firstName, token) => {
  * Sends password reset email
  */
 export const sendPasswordResetEmail = async (email, firstName, token) => {
-  const transporter = createTransporter();
-  
   const resetUrl = `${process.env.CLIENT_URL}/reset-password?token=${token}`;
   
-  const mailOptions = {
-    from: process.env.EMAIL_FROM,
-    to: email,
-    subject: EMAIL_SUBJECTS.PASSWORD_RESET,
-    html: `
+  const htmlContent = `
       <!DOCTYPE html>
       <html>
         <head>
@@ -130,11 +99,10 @@ export const sendPasswordResetEmail = async (email, firstName, token) => {
           </div>
         </body>
       </html>
-    `,
-  };
+    `;
   
   try {
-    await transporter.sendMail(mailOptions);
+    await sendGmailApiEmail(email, EMAIL_SUBJECTS.PASSWORD_RESET, htmlContent);
     console.log(`Password reset email sent to ${email}`);
   } catch (error) {
     console.error('Error sending password reset email:', error);
@@ -146,13 +114,7 @@ export const sendPasswordResetEmail = async (email, firstName, token) => {
  * Sends account locked notification email
  */
 export const sendAccountLockedEmail = async (email, firstName) => {
-  const transporter = createTransporter();
-  
-  const mailOptions = {
-    from: process.env.EMAIL_FROM,
-    to: email,
-    subject: EMAIL_SUBJECTS.ACCOUNT_LOCKED,
-    html: `
+    const htmlContent = `
       <!DOCTYPE html>
       <html>
         <head>
@@ -190,11 +152,10 @@ export const sendAccountLockedEmail = async (email, firstName) => {
           </div>
         </body>
       </html>
-    `,
-  };
+    `;
   
   try {
-    await transporter.sendMail(mailOptions);
+    await sendGmailApiEmail(email, EMAIL_SUBJECTS.ACCOUNT_LOCKED, htmlContent);
     console.log(`Account locked email sent to ${email}`);
   } catch (error) {
     console.error('Error sending account locked email:', error);
@@ -205,13 +166,7 @@ export const sendAccountLockedEmail = async (email, firstName) => {
  * Sends welcome email
  */
 export const sendWelcomeEmail = async (email, firstName) => {
-  const transporter = createTransporter();
-  
-  const mailOptions = {
-    from: process.env.EMAIL_FROM,
-    to: email,
-    subject: EMAIL_SUBJECTS.WELCOME,
-    html: `
+    const htmlContent = `
       <!DOCTYPE html>
       <html>
         <head>
@@ -246,11 +201,10 @@ export const sendWelcomeEmail = async (email, firstName) => {
           </div>
         </body>
       </html>
-    `,
-  };
+    `;
   
   try {
-    await transporter.sendMail(mailOptions);
+    await sendGmailApiEmail(email, EMAIL_SUBJECTS.WELCOME, htmlContent);
     console.log(`Welcome email sent to ${email}`);
   } catch (error) {
     console.error('Error sending welcome email:', error);

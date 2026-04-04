@@ -32,6 +32,8 @@ const VerifyEmailPage = lazy(() => import('./pages/Imasha/VerifyEmailPage'));
 const OnboardingPage = lazy(() => import('./pages/Imasha/OnboardingPage'));
 const ProfilePage = lazy(() => import('./pages/Imasha/ProfilePage'));
 const AdminDashboard = lazy(() => import('./pages/Imasha/Admin/AdminDashboard'));
+const AuthShell = lazy(() => import('./components/Imasha/AuthShell'));
+const RestrictedPage = lazy(() => import('./pages/Imasha/RestrictedPage'));
 
 // Pages — Priya (Lazy Loaded)
 const ExercisePage = lazy(() => import('./pages/Priya/Exercise'));
@@ -40,6 +42,7 @@ const AppointmentPage = lazy(() => import('./pages/Priya/Appointment'));
 
 // Pages — Tharindu (Lazy Loaded)
 const CaregiverDashboard = lazy(() => import('./pages/Tharindu/careGiverDashboard'));
+const CaregiverAppointmentPage = lazy(() => import('./pages/Tharindu/CaregiverAppointmentPage'));
 
 import ProtectedRoute from './components/Imasha/ProtectedRoute';
 
@@ -100,11 +103,14 @@ function App() {
               <Route path="/faq" element={<FaqPage />} />
 
               {/* Auth Routes */}
-              <Route path="/login" element={<LoginPage />} />
-              <Route path="/register" element={<RegisterPage />} />
-              <Route path="/forgot-password" element={<ForgotPasswordPage />} />
-              <Route path="/reset-password" element={<ResetPasswordPage />} />
-              <Route path="/verify-email" element={<VerifyEmailPage />} />
+              <Route element={<AuthShell />}>
+                <Route path="/login" element={<LoginPage />} />
+                <Route path="/register" element={<RegisterPage />} />
+                <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+                <Route path="/reset-password" element={<ResetPasswordPage />} />
+                <Route path="/verify-email" element={<VerifyEmailPage />} />
+                <Route path="/restricted" element={<RestrictedPage />} />
+              </Route>
               <Route path="/profile" element={<ProtectedRoute><ProfilePage /></ProtectedRoute>} />
 
               {/* Optional Onboarding Route */}
@@ -121,6 +127,7 @@ function App() {
               <Route path="/meal-plan" element={<ProtectedRoute><ServicesPage /></ProtectedRoute>} />
               {/* Protected Tharindu Routes */}
               <Route path="/caregiver-dashboard" element={<ProtectedRoute><CaregiverDashboard /></ProtectedRoute>} />
+              <Route path="/caregiver-appointment" element={<ProtectedRoute allowedRoles={['patient']}><CaregiverAppointmentPage /></ProtectedRoute>} />
 
               {/* Catch-all Redirect */}
               <Route path="*" element={<Navigate to="/" replace />} />

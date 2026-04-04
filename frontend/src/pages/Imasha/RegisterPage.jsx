@@ -7,7 +7,6 @@ import {
 import { toast } from 'react-hot-toast';
 import { motion, AnimatePresence } from 'framer-motion';
 
-import AuthLayout from '../../components/Imasha/AuthLayout';
 import DoctorCat from '../../components/Imasha/DoctorCat';
 import PasswordInput from '../../components/Imasha/PasswordInput';
 import AuthFormInput from '../../components/Imasha/AuthFormInput';
@@ -138,21 +137,13 @@ export default function RegisterPage() {
     const progress = useMemo(() => step === 1 ? 50 : 100, [step]);
 
     return (
-        <AuthLayout visualVariant="swing">
-            <motion.div 
-                initial={{ opacity: 0, x: 20 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ duration: 0.5 }}
-                className="Imasha-auth-toggle"
-            >
-                <Link to="/login" className="Imasha-auth-toggle-btn">Sign In</Link>
-                <Link to="/register" className="Imasha-auth-toggle-btn active">Sign Up</Link>
-            </motion.div>
+        <>
+
 
             <motion.div 
-                initial={{ opacity: 0, scale: 0.95 }}
+                initial={{ opacity: 0, scale: 0.97 }}
                 animate={{ opacity: 1, scale: 1 }}
-                transition={{ duration: 0.5, delay: 0.1 }}
+                transition={{ duration: 0.4, delay: 0.08 }}
                 className="Imasha-form-card"
             >
                 {/* Mascot */}
@@ -355,6 +346,6 @@ export default function RegisterPage() {
                     <Link to="/login" className="Imasha-auth-link">Sign in</Link>
                 </p>
             </motion.div>
-        </AuthLayout>
+        </>
     );
 }

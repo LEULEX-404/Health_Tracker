@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useState } from 'react';
-import { CheckCircle2, XCircle, Calendar, Clock, Mail, Phone } from 'lucide-react';
+import { CheckCircle2, XCircle, Calendar, Clock, Mail, Phone, Stethoscope } from 'lucide-react';
 import { toast } from 'react-hot-toast';
 import { useAuth } from '../../../context/Imasha/AuthContext';
 import {
@@ -7,8 +7,6 @@ import {
     approveAppointment,
     rejectAppointment,
 } from '../../../utils/Imasha/adminApi';
-
-const FALLBACK_AVATAR = '/images/Priya/doctor-01.png';
 
 const AppointmentsTab = () => {
     const { token } = useAuth();
@@ -132,14 +130,22 @@ const AppointmentsTab = () => {
                                 </td>
                                 <td>
                                     <div className="user-info-cell">
-                                        <img
-                                            src={apt.avatar || FALLBACK_AVATAR}
-                                            alt={apt.doctor || 'Doctor'}
-                                            onError={(e) => {
-                                                e.currentTarget.onerror = null;
-                                                e.currentTarget.src = FALLBACK_AVATAR;
+                                        <div
+                                            style={{
+                                                width: '42px',
+                                                height: '42px',
+                                                borderRadius: '50%',
+                                                display: 'flex',
+                                                alignItems: 'center',
+                                                justifyContent: 'center',
+                                                background: 'rgba(0, 180, 216, 0.12)',
+                                                color: 'var(--p-cyan)',
+                                                flexShrink: 0,
                                             }}
-                                        />
+                                            aria-label={apt.doctor || 'Doctor'}
+                                        >
+                                            <Stethoscope size={18} />
+                                        </div>
                                         <div>
                                             <span className="user-name">{apt.doctor || 'Doctor'}</span>
                                             <span className="user-id">{apt.specialty || 'Consultation'}</span>
