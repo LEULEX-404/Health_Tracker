@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useAuth } from '../../../context/Imasha/AuthContext';
-import { getReports, generateNewReport, deleteReport, downloadReport } from '../../../utils/Imasha/adminApi';
+import { getReports, generateNewReport, deleteReport, downloadReport, getAdminDashboardStats, getAllUsers } from '../../../utils/Imasha/adminApi';
 import { FileText, Trash2, Download, Plus, Calendar, Activity, Server, Clock, Eye, X } from 'lucide-react';
 import { toast } from 'react-hot-toast';
 import { PieChart, Pie, Cell, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
@@ -46,7 +46,6 @@ const ReportsTab = () => {
     const fetchReportsAndData = useCallback(async () => {
         setLoading(true);
         try {
-            const { getAdminDashboardStats, getAllUsers } = await import('../../../utils/Imasha/adminApi');
             const [data, stats, allUsers] = await Promise.all([
                 getReports(token),
                 getAdminDashboardStats(token),
