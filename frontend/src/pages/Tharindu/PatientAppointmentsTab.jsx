@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../../context/Imasha/AuthContext';
-import { Calendar, Stethoscope, HeartHandshake, Loader2, Clock, MapPin, User, ChevronRight, CheckCircle2, AlertCircle, Phone, Sparkles, X, FileText } from 'lucide-react';
+import { Calendar, Stethoscope, HeartHandshake, Loader2, Clock, MapPin, User, ChevronRight, CheckCircle2, AlertCircle, Phone, Sparkles, X, FileText, CreditCard } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import toast from 'react-hot-toast';
+import PulsePaymentModal from '../../components/Tharindu/PulsePaymentModal';
 
 export default function PatientAppointmentsTab({ onBookingSuccess }) {
   const { token, user } = useAuth();
@@ -18,6 +19,11 @@ export default function PatientAppointmentsTab({ onBookingSuccess }) {
   const [bookingNotes, setBookingNotes] = useState('');
   const [submitting, setSubmitting] = useState(false);
   const [downloadingReport, setDownloadingReport] = useState(false);
+
+  // Payment flow state
+  const [paymentClientSecret, setPaymentClientSecret] = useState(null);
+  const [showPaymentModal, setShowPaymentModal] = useState(false);
+  const [fetchingIntent, setFetchingIntent] = useState(false);
 
   // Time slots for demo
   const TIME_SLOTS = [
@@ -65,16 +71,61 @@ export default function PatientAppointmentsTab({ onBookingSuccess }) {
     }
   }, [activeTab, token]);
 
-  const handleBookAppointment = async (e) => {
+  /**
+   * STEP 1 — Patient clicks "Proceed to Payment".
+   * Validates fields, then asks backend to create a Stripe PaymentIntent.
+   * The returned clientSecret opens the payment modal.
+   */
+  const handleProceedToPayment = async (e) => {
     e.preventDefault();
     if (!selectedCaregiver || !bookingDate || !bookingTime) {
       toast.error('Please select a caregiver, date, and time slot.');
       return;
     }
 
-    setSubmitting(true);
+    setFetchingIntent(true);
     try {
-      // Calculate end time (assuming 2 hour blocks for caregivers)
+      const res = await fetch('http://localhost:5000/api/tharindu/payment/create-intent', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          amount: 5000,
+          currency: 'usd',
+          description: `Caregiver Session — ${bookingDate} at ${bookingTime}`,
+          metadata: {
+            caregiverId: selectedCaregiver._id,
+            date: bookingDate,
+            startTime: bookingTime,
+          }
+        }),
+      });
+
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.message || 'Could not initiate payment.');
+
+      setPaymentClientSecret(data.clientSecret);
+      setShowPaymentModal(true);
+    } catch (err) {
+      toast.error(err.message);
+    } finally {
+      setFetchingIntent(false);
+    }
+  };
+
+  /**
+   * STEP 2 — Called by CaregiverPaymentModal after Stripe confirms the payment.
+   * Now we save the booking to our database.
+   */
+  const handlePaymentSuccess = async () => {
+    setShowPaymentModal(false);
+    setPaymentClientSecret(null);
+    setSubmitting(true);
+
+    try {
+      // Calculate 2-hour end time block
       const baseHourStr = bookingTime.split(':')[0];
       const period = bookingTime.split(' ')[1];
       let endHour = parseInt(baseHourStr, 10) + 2;
@@ -92,37 +143,37 @@ export default function PatientAppointmentsTab({ onBookingSuccess }) {
         date: bookingDate,
         startTime: bookingTime,
         endTime,
-        notes: bookingNotes
+        notes: bookingNotes,
       };
 
       const res = await fetch('http://localhost:5000/api/tharindu/bookings/request', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`
+          Authorization: `Bearer ${token}`,
         },
-        body: JSON.stringify(payload)
+        body: JSON.stringify(payload),
       });
-      
+
       const data = await res.json();
-      if (!res.ok) throw new Error(data.message || 'Failed to book appointment');
-      
-      toast.success('Caregiver appointment requested successfully!');
+      if (!res.ok) throw new Error(data.message || 'Failed to save booking.');
+
+      toast.success('🎉 Appointment booked successfully!');
       if (onBookingSuccess) onBookingSuccess();
-      
-      // Reset flow and refresh
+
+      // Reset booking form
       setSelectedCaregiver(null);
       setBookingDate('');
       setBookingTime('');
       setBookingNotes('');
       fetchData();
-
-    } catch (e) {
-      toast.error(e.message);
+    } catch (err) {
+      toast.error(err.message);
     } finally {
       setSubmitting(false);
     }
   };
+
 
   const handleDownloadReport = async () => {
     setDownloadingReport(true);
@@ -170,59 +221,9 @@ export default function PatientAppointmentsTab({ onBookingSuccess }) {
   return (
     <div style={{ width: '100%', display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
       
-      {/* ── SEGMENTED HEADER ── */}
-      <div style={{ display: 'flex', background: 'var(--admin-card-bg)', borderRadius: '16px', border: '1px solid var(--admin-border)', padding: '0.5rem', gap: '0.5rem' }}>
-        <button
-          onClick={() => setActiveTab('doctor')}
-          style={{
-            flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem',
-            padding: '1rem', borderRadius: '12px',
-            border: activeTab === 'doctor' ? '1px solid var(--p-cyan)' : '1px solid transparent',
-            background: activeTab === 'doctor' ? 'rgba(0,180,216,0.1)' : 'transparent',
-            color: activeTab === 'doctor' ? 'var(--p-cyan)' : 'var(--admin-text-muted)',
-            fontWeight: 600, fontSize: '1rem', cursor: 'pointer', transition: 'all 0.3s ease'
-          }}
-        >
-          <Stethoscope size={20} /> Doctor Appointments
-        </button>
-
-        <button
-          onClick={() => setActiveTab('caregiver')}
-          style={{
-            flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem',
-            padding: '1rem', borderRadius: '12px',
-            border: activeTab === 'caregiver' ? '1px solid var(--p-green)' : '1px solid transparent',
-            background: activeTab === 'caregiver' ? 'rgba(0,200,151,0.1)' : 'transparent',
-            color: activeTab === 'caregiver' ? 'var(--p-green)' : 'var(--admin-text-muted)',
-            fontWeight: 600, fontSize: '1rem', cursor: 'pointer', transition: 'all 0.3s ease'
-          }}
-        >
-          <HeartHandshake size={20} /> Caregiver Appointments
-        </button>
-      </div>
 
       <AnimatePresence mode="wait">
         
-        {/* ── DOCTOR TAB (PLACEHOLDER) ── */}
-        {activeTab === 'doctor' && (
-          <motion.div
-            key="docTab"
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -10 }}
-            transition={{ duration: 0.2 }}
-            style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', minHeight: '400px', textAlign: 'center', background: 'var(--admin-card-bg)', borderRadius: '16px', border: '1px dashed var(--admin-border)' }}
-          >
-            <div style={{ width: '64px', height: '64px', borderRadius: '50%', background: 'rgba(0,180,216,0.1)', color: 'var(--p-cyan)', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '1rem' }}>
-              <Stethoscope size={32} />
-            </div>
-            <h3 style={{ margin: '0 0 0.5rem 0', color: 'var(--admin-text)', fontSize: '1.3rem' }}>Doctor Appointments Module</h3>
-            <p style={{ color: 'var(--admin-text-muted)', maxWidth: '400px', margin: 0, lineHeight: 1.5 }}>
-              This section is coming soon. You'll be able to book full consultations with verified medical professionals here.
-            </p>
-          </motion.div>
-        )}
-
         {/* ── CAREGIVER TAB ── */}
         {activeTab === 'caregiver' && (
           <motion.div
@@ -384,7 +385,7 @@ export default function PatientAppointmentsTab({ onBookingSuccess }) {
                         </div>
                       </div>
 
-                      <form onSubmit={handleBookAppointment} style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+                      <form onSubmit={handleProceedToPayment} style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
                         
                         <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
                           <label style={{ color: 'var(--admin-text)', fontWeight: 600, fontSize: '0.95rem' }}>Select Date</label>
@@ -437,13 +438,27 @@ export default function PatientAppointmentsTab({ onBookingSuccess }) {
                         </div>
 
                         <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '0.5rem' }}>
-                          <button 
-                            type="submit" 
-                            disabled={submitting}
-                            style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', padding: '1rem 2rem', background: 'linear-gradient(135deg, var(--p-green), var(--p-cyan))', color: '#000', border: 'none', borderRadius: '12px', fontWeight: 700, fontSize: '1rem', cursor: 'pointer', opacity: submitting ? 0.7 : 1, transition: 'all 0.2s', boxShadow: '0 4px 15px rgba(0, 200, 151, 0.3)' }}
+                          <button
+                            type="submit"
+                            disabled={fetchingIntent || submitting}
+                            style={{
+                              display: 'flex', alignItems: 'center', gap: '0.5rem',
+                              padding: '1rem 2rem',
+                              background: (fetchingIntent || submitting)
+                                ? 'rgba(0,200,151,0.4)'
+                                : 'linear-gradient(135deg, var(--p-green), var(--p-cyan))',
+                              color: '#000', border: 'none', borderRadius: '12px',
+                              fontWeight: 700, fontSize: '1rem',
+                              cursor: (fetchingIntent || submitting) ? 'not-allowed' : 'pointer',
+                              transition: 'all 0.2s',
+                              boxShadow: '0 4px 15px rgba(0, 200, 151, 0.3)',
+                            }}
                           >
-                            {submitting ? <Loader2 size={18} className="spin" /> : <Calendar size={18} />}
-                            {submitting ? 'Confirming...' : 'Request Appointment'}
+                            {fetchingIntent
+                              ? <><Loader2 size={18} style={{ animation: 'spin 1s linear infinite' }} /> Preparing…</>
+                              : submitting
+                                ? <><Loader2 size={18} style={{ animation: 'spin 1s linear infinite' }} /> Booking…</>
+                                : <><CreditCard size={18} /> Proceed to Payment</>}
                           </button>
                         </div>
 
@@ -457,6 +472,29 @@ export default function PatientAppointmentsTab({ onBookingSuccess }) {
           </motion.div>
         )}
       </AnimatePresence>
+
+      {/* ── STRIPE PAYMENT MODAL ── */}
+      {showPaymentModal && paymentClientSecret && (
+        <PulsePaymentModal
+          clientSecret={paymentClientSecret}
+          title="Secure Checkout"
+          subtitle="Caregiver Appointment Payment"
+          amount={5000}
+          currency="USD"
+          summaryTitle="Booking Summary"
+          summaryItems={[
+            { icon: <User size={14} />, label: "Caregiver", value: `${selectedCaregiver?.firstName ?? ''} ${selectedCaregiver?.lastName ?? ''}`.trim() },
+            { icon: <Calendar size={14} />, label: "Date", value: new Date(bookingDate).toLocaleDateString(undefined, { weekday: 'short', day: 'numeric', month: 'short', year: 'numeric' }) },
+            { icon: <Clock size={14} />, label: "Time", value: bookingTime },
+            { icon: <CreditCard size={14} />, label: "Session Fee", value: "$50.00 USD", highlight: true }
+          ]}
+          onSuccess={handlePaymentSuccess}
+          onCancel={() => {
+            setShowPaymentModal(false);
+            setPaymentClientSecret(null);
+          }}
+        />
+      )}
     </div>
   );
 }
