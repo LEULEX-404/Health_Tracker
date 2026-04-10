@@ -42,12 +42,6 @@ function matchSpecialist(doc, query) {
 }
 
 function getAppointmentDateBounds() {
-  const today = new Date();
-  today.setHours(0, 0, 0, 0);
-
-  const endAllowed = new Date(today);
-  endAllowed.setDate(today.getDate() + 14);
-
   const formatLocalDate = (date) => {
     const year = date.getFullYear();
     const month = String(date.getMonth() + 1).padStart(2, '0');
@@ -55,9 +49,15 @@ function getAppointmentDateBounds() {
     return `${year}-${month}-${day}`;
   };
 
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+
+  const endAllowed = new Date(today);
+  endAllowed.setDate(today.getDate() + 14);
+
   return {
-    min: startCurrentWeek.toISOString().slice(0, 10),
-    max: endNextWeek.toISOString().slice(0, 10),
+    min: formatLocalDate(today),
+    max: formatLocalDate(endAllowed),
   };
 }
 
@@ -73,7 +73,7 @@ function isValidEmail(email) {
 
 function isValidPhone(phone) {
   const digits = (phone || '').replace(/\D/g, '');
-  return /^(070|071|072|074|076|077|078)\d{7}$/.test(digits);
+  return /^(070|071|072|074|075|076|077|078)\d{7}$/.test(digits);
 }
 
 function normalizePhone(phone) {
@@ -83,8 +83,8 @@ function normalizePhone(phone) {
 function getPhoneValidationMessage(phone) {
   const digits = normalizePhone(phone);
   if (!digits) return '';
-  if (digits.length >= 3 && !/^(070|071|072|074|076|077|078)/.test(digits)) {
-    return 'Phone must start with 070, 071, 072, 074, 076, 077, or 078.';
+  if (digits.length >= 3 && !/^(070|071|072|074|075|076|077|078)/.test(digits)) {
+    return 'Phone must start with 070, 071, 072, 074, 075, 076, 077, or 078.';
   }
   if (digits.length < 10) {
     return 'Phone must contain exactly 10 digits.';
@@ -432,10 +432,10 @@ export default function FindSpecialistPage() {
                     className="pr-booking-submit"
                     onClick={() => {
                       closeBookingForm();
-                      navigate('/appointment');
+                      navigate('/Appointment');
                     }}
                   >
-                    View Appointments
+                    View Appointment
                   </button>
                   <button
                     type="button"

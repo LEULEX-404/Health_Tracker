@@ -8,6 +8,7 @@ import {
     FileText,
     Calendar,
     Bell,
+    MessageSquareMore,
     Settings,
     ChevronLeft,
     ChevronRight,
@@ -25,6 +26,7 @@ const AdminSidebar = ({ activeTab, setActiveTab, isOpen, toggleSidebar, theme, t
         { id: 'caregivers', label: 'Caregivers', icon: <HeartHandshake size={20} /> },
         { id: 'reports', label: 'Reports', icon: <FileText size={20} /> },
         { id: 'appointments', label: 'Appointments', icon: <Calendar size={20} /> },
+        { id: 'support', label: 'Doctor Support', icon: <MessageSquareMore size={20} /> },
         { id: 'alerts', label: 'Alerts', icon: <Bell size={20} /> },
     ];
 

@@ -11,6 +11,7 @@ import authRoutes from './routes/Imasha/authRoutes.js';
 import userRoutes from './routes/Imasha/userRoutes.js';
 import userReportRoutes from './routes/Imasha/reportRoutes.js';
 import adminRoutes from './routes/Imasha/adminRoutes.js';
+import supportRoutes from './routes/Imasha/supportRoutes.js';
 import {
     errorHandler,
     notFound,
@@ -200,6 +201,7 @@ app.use('/api/users', userRoutes);
 
 // Admin management routes (doctors and caregivers)
 app.use('/api/admin', adminRoutes);
+app.use('/api/support', supportRoutes);
 
 // Health System Routes
 app.use("/api/health-data", healthDataRoutes);

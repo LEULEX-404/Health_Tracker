@@ -9,6 +9,7 @@ import ReportsTab from './ReportsTab';
 import AppointmentsTab from './AppointmentsTab';
 import AdminAlertsTab from '../../Tharindu/AdminAlertsTab';
 import AdminAppointmentsTab from '../../Tharindu/AdminAppointmentsTab';
+import SupportMessagesTab from './SupportMessagesTab';
 import { Users, UserCheck, UserPlus, Activity, ShieldAlert, LogOut, Sun, Moon, Menu, Clock, FileText, CheckCircle, X, Heart, ShieldCheck } from 'lucide-react';
 import { toast } from 'react-hot-toast';
 
@@ -55,6 +56,17 @@ const AdminDashboard = () => {
     const [isAuditModalOpen, setIsAuditModalOpen] = useState(false);
     const [fullAuditLogs, setFullAuditLogs] = useState([]);
     const [fullLogsLoading, setFullLogsLoading] = useState(false);
+
+    const tabTitles = {
+        overview: 'Overview',
+        patients: 'Patients',
+        doctors: 'Doctors',
+        caregivers: 'Caregivers',
+        reports: 'Reports',
+        appointments: 'Appointments',
+        alerts: 'Alerts',
+        support: 'Doctor Support',
+    };
 
     useEffect(() => {
         if (activeTab === 'overview') {
@@ -116,6 +128,7 @@ const AdminDashboard = () => {
             case 'reports': return <ReportsTab />;
             case 'appointments': return <AdminAppointmentsTab />;
             case 'alerts': return <AdminAlertsTab />;
+            case 'support': return <SupportMessagesTab />;
             default: return (
                 <div className="admin-overview">
 
@@ -394,7 +407,7 @@ const AdminDashboard = () => {
                             <Menu size={20} />
                         </button>
                         <h2 className="admin-page-title">
-                            {activeTab.charAt(0).toUpperCase() + activeTab.slice(1)}
+                            {tabTitles[activeTab] || 'Overview'}
                         </h2>
                     </div>
 
