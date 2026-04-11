@@ -12,6 +12,7 @@ import AdminAppointmentsTab from '../../Tharindu/AdminAppointmentsTab';
 import SupportMessagesTab from './SupportMessagesTab';
 import { Users, UserCheck, UserPlus, Activity, ShieldAlert, LogOut, Sun, Moon, Menu, Clock, FileText, CheckCircle, X, Heart, ShieldCheck } from 'lucide-react';
 import { toast } from 'react-hot-toast';
+import { getAdminDashboardStats, getAuditLogs } from '../../../utils/Imasha/adminApi';
 
 import '../../../styles/Imasha/AdminDashboard.css';
 
@@ -74,7 +75,6 @@ const AdminDashboard = () => {
                 setDashboardStats(prev => ({ ...prev, loading: true }));
                 setLogsLoading(true);
                 try {
-                    const { getAdminDashboardStats, getAuditLogs } = await import('../../../utils/Imasha/adminApi');
                     const [stats, logsData] = await Promise.all([
                         getAdminDashboardStats(token),
                         getAuditLogs(token, { limit: 10 })
@@ -103,7 +103,6 @@ const AdminDashboard = () => {
         setIsAuditModalOpen(true);
         setFullLogsLoading(true);
         try {
-            const { getAuditLogs } = await import('../../../utils/Imasha/adminApi');
             const logsData = await getAuditLogs(token, { limit: 100 });
             setFullAuditLogs(logsData.data || []);
         } catch {

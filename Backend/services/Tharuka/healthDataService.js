@@ -1,7 +1,7 @@
 import HealthData from "../../models/Tharuka/HealthData.js";
 import { createRequire } from "module";
 const require = createRequire(import.meta.url);
-const { PDFParse } = require("pdf-parse");
+const pdf = require("pdf-parse");
 import fs from "fs";
 
 // ─── Manual Entry ─────────────────────────────────────────────
@@ -20,8 +20,7 @@ const saveManualEntry = async (userId, vitals) => {
 const savePdfEntry = async (userId, file) => {
   // Read uploaded file buffer for parsing (pdf-parse v2 API)
   const dataBuffer = fs.readFileSync(file.path);
-  const parser = new PDFParse({ data: dataBuffer });
-  const textResult = await parser.getText();
+  const textResult = await pdf(dataBuffer);
   const rawText = textResult.text || "";
 
   // Naive regex extractors — adjust patterns to match your real PDFs

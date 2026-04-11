@@ -1,0 +1,98 @@
+/* ============================================
+   Caregiver Appointment Page - Theme Support
+   Maps the Tharuka theme system to the admin-*
+   variables used by PatientAppointmentsTab inline styles.
+   ============================================ */
+
+/* ── Light mode (default) ── */
+.cg-appointment-page {
+  --admin-bg: var(--bg-primary, #f0fff9);
+  --admin-card-bg: var(--bg-card, #ffffff);
+  --admin-border: var(--border-color, rgba(0, 200, 151, 0.2));
+  --admin-text: var(--text-primary, #0d2019);
+  --admin-text-main: var(--text-primary, #0d2019);
+  --admin-text-muted: var(--text-muted, #5a8870);
+  --admin-hover: rgba(0, 200, 151, 0.08);
+  --glass-bg: var(--glass-bg, rgba(255, 255, 255, 0.78));
+
+  --p-cyan: #00b4d8;
+  --p-green: #00c897;
+
+  background: var(--bg-primary);
+  color: var(--text-primary);
+  min-height: 100vh;
+  padding-top: 5rem;
+  padding-bottom: 4rem;
+}
+
+/* ── Dark mode ── */
+[data-theme="dark"] .cg-appointment-page {
+  --admin-bg: var(--bg-primary, #080e0b);
+  --admin-card-bg: var(--bg-card, #101d16);
+  --admin-border: var(--border-color, rgba(0, 200, 151, 0.14));
+  --admin-text: var(--text-primary, #e8fff5);
+  --admin-text-main: var(--text-primary, #e8fff5);
+  --admin-text-muted: var(--text-muted, #6b9b80);
+  --admin-hover: rgba(0, 200, 151, 0.1);
+  --glass-bg: var(--glass-bg, rgba(16, 29, 22, 0.82));
+
+  --p-cyan: #00b4d8;
+  --p-green: #00c897;
+}
+
+/* ── Page header styles ── */
+.cg-appointment-page__title {
+  font-size: 2rem;
+  font-weight: 800;
+  margin: 0 0 0.5rem 0;
+  background: linear-gradient(135deg, #00C897, #00B4D8);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.cg-appointment-page__subtitle {
+  color: var(--text-muted);
+  font-size: 1rem;
+  margin: 0;
+}
+
+.cg-appointment-page__container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 1.5rem;
+}
+
+/* ── Fix inline dark backgrounds for light mode ── */
+.cg-appointment-page input[type="date"] {
+  background: var(--bg-card) !important;
+  border: 1px solid var(--border-color) !important;
+  color: var(--text-primary) !important;
+  color-scheme: auto !important;
+}
+
+[data-theme="dark"] .cg-appointment-page input[type="date"] {
+  color-scheme: dark !important;
+}
+
+.cg-appointment-page textarea {
+  background: var(--bg-card) !important;
+  border: 1px solid var(--border-color) !important;
+  color: var(--text-primary) !important;
+}
+
+/* ── Fix status pills for light mode ── */
+.cg-appointment-page .status-pill {
+  display: inline-flex;
+  align-items: center;
+}
+
+/* ── Spin animation (used by Loader2) ── */
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+.cg-appointment-page .spin {
+  animation: spin 1s linear infinite;
+}

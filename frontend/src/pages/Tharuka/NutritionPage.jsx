@@ -2,6 +2,7 @@ import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useAuth } from '../../context/Imasha/AuthContext';
 import { getNutritionAnalysis, getUserNutrition, deleteMeal, addMeal, updateMeal } from '../../services/Tharuka/nutritionService';
+import { markReminderCompleted } from '../../services/Tharuka/mealReminderService';
 import NutritionAnalysisWidget from '../../components/Tharuka/Nutrition/NutritionAnalysisWidget';
 import DoctorAdviceCard from '../../components/Tharuka/Nutrition/DoctorAdviceCard';
 import MealLogTable from '../../components/Tharuka/Nutrition/MealLogTable';
@@ -60,11 +61,7 @@ export default function NutritionPage() {
       if (selectedMeal?._id) {
         await updateMeal(selectedMeal._id, { ...formData, userId });
         toast.success('Meal updated!');
-      } else if (formData.mealReminderId) {
-        // Log meal AND complete reminder
         const { mealReminderId, ...mealData } = formData;
-        // Import markReminderCompleted inside handleModalSubmit to avoid redundant top-level imports if needed
-        const { markReminderCompleted } = await import('../../services/Tharuka/mealReminderService');
         await markReminderCompleted(mealReminderId, userId, mealData);
         toast.success('Meal logged and reminder completed!');
       } else {
