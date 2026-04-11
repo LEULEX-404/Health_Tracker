@@ -1163,7 +1163,8 @@
   left: 0;
   width: 4px;
   height: 100%;
-  background: #3b82f6; /* Matching professional Medical Blue */
+  background: #3b82f6;
+  /* Matching professional Medical Blue */
   opacity: 0.15;
   border-radius: 20px 0 0 20px;
 }
@@ -2011,6 +2012,104 @@
   background: var(--bg-card);
 }
 
+.ims-profile__appointments-shell {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+.ims-profile__appointments-tabs {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.25rem;
+  align-items: center;
+}
+
+.ims-profile__appointments-tab {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.55rem;
+  min-height: 54px;
+  padding: 0.95rem 1.2rem;
+  border: 1px solid transparent;
+  border-radius: 16px;
+  background: transparent;
+  color: var(--p-green);
+  font-size: 0.95rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.22s ease;
+}
+
+.ims-profile__appointments-tab.is-active {
+  border-color: var(--p-green);
+  background: rgba(0, 200, 151, 0.08);
+  color: var(--p-green);
+  box-shadow: inset 0 0 0 1px rgba(0, 200, 151, 0.06);
+}
+
+.ims-profile__appointments-stage {
+  border-top: 1px solid rgba(0, 0, 0, 0.05);
+  padding-top: 0.1rem;
+}
+
+[data-theme="dark"] .ims-profile__appointments-stage {
+  border-top-color: rgba(255, 255, 255, 0.06);
+}
+
+.ims-profile__appointments-history {
+  border-top: 1px solid rgba(0, 0, 0, 0.05);
+  margin-top: 0.15rem;
+  padding-top: 0.65rem;
+  width: 100%;
+  text-align: left;
+}
+
+[data-theme="dark"] .ims-profile__appointments-history {
+  border-top-color: rgba(255, 255, 255, 0.06);
+}
+
+.ims-profile__appointments-history--embedded {
+  max-width: 100%;
+  margin-top: 2.5rem;
+}
+
+.ims-profile__appointments-history-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 1rem;
+  flex-wrap: wrap;
+}
+
+.ims-profile__appointments-history-head h5 {
+  margin: 0;
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.ims-profile__appointments-history-link {
+  color: var(--p-green);
+  text-decoration: none;
+  font-size: 0.9rem;
+  font-weight: 700;
+}
+
+.ims-profile__appointments-history-link:hover {
+  text-decoration: underline;
+}
+
+.ims-profile__placeholder-content--doctor {
+  align-items: flex-start;
+}
+
+.ims-profile__placeholder-content--doctor p {
+  color: #5c8d79;
+}
+
 .ims-profile__appointment-left {
   display: flex;
   align-items: center;
@@ -2023,6 +2122,14 @@
   border-radius: 50%;
   object-fit: cover;
   border: 1px solid var(--border-color-strong);
+}
+
+.ims-profile__appointment-avatar--icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, rgba(0, 200, 151, 0.18), rgba(0, 200, 151, 0.1));
+  color: var(--p-green);
 }
 
 .ims-profile__appointment-actions {
@@ -2040,6 +2147,17 @@
   cursor: pointer;
   font-size: 12px;
   font-weight: 600;
+}
+
+@media (max-width: 900px) {
+  .ims-profile__appointments-tabs {
+    grid-template-columns: 1fr;
+    gap: 0.75rem;
+  }
+
+  .ims-profile__appointments-history-head {
+    align-items: flex-start;
+  }
 }
 
 /* ======================================================
@@ -2094,11 +2212,12 @@
   border-radius: 10px;
   box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
   z-index: -1;
-  border: 1px solid rgba(0,0,0,0.02);
+  border: 1px solid rgba(0, 0, 0, 0.02);
 }
 
 [data-theme="dark"] .ims-profile__gender-indicator {
-  background: #1e293b; /* Premium slate indicator */
+  background: #1e293b;
+  /* Premium slate indicator */
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
   border-color: rgba(255, 255, 255, 0.1);
 }
@@ -2112,7 +2231,8 @@
 }
 
 .ims-profile__gender-chip.active .ims-profile__gender-text {
-  color: #3b82f6; /* Medical Blue */
+  color: #3b82f6;
+  /* Medical Blue */
 }
 
 [data-theme="dark"] .ims-profile__gender-chip.active .ims-profile__gender-text {
@@ -2188,8 +2308,15 @@
 }
 
 @keyframes chipCheckPop {
-  from { transform: scale(0.5); opacity: 0; }
-  to { transform: scale(1); opacity: 1; }
+  from {
+    transform: scale(0.5);
+    opacity: 0;
+  }
+
+  to {
+    transform: scale(1);
+    opacity: 1;
+  }
 }
 
 .ims-profile__condition-chip:hover {
@@ -2383,28 +2510,35 @@
 .ims-profile__update-modal .ims-profile__input-icon {
   opacity: 1;
 }
+
 .ims-profile__update-modal .ims-profile__input-container[data-field="firstName"] .ims-profile__input-icon,
 .ims-profile__update-modal .ims-profile__input-container[data-field="lastName"] .ims-profile__input-icon {
   color: #3b82f6;
 }
+
 .ims-profile__update-modal .ims-profile__input-container[data-field="phone"] .ims-profile__input-icon,
 .ims-profile__update-modal .ims-profile__input-container[data-field="emergencyContactPhone"] .ims-profile__input-icon {
   color: #14b8a6;
 }
+
 .ims-profile__update-modal .ims-profile__input-container[data-field="dateOfBirth"] .ims-profile__input-icon {
   color: #8b5cf6;
 }
+
 .ims-profile__update-modal .ims-profile__input-container[data-field="address"] .ims-profile__input-icon,
 .ims-profile__update-modal .ims-profile__input-container[data-field="city"] .ims-profile__input-icon,
 .ims-profile__update-modal .ims-profile__input-container[data-field="country"] .ims-profile__input-icon {
   color: #f59e0b;
 }
+
 .ims-profile__update-modal .ims-profile__input-container[data-field="occupation"] .ims-profile__input-icon {
   color: #ec4899;
 }
+
 .ims-profile__update-modal .ims-profile__input-container[data-field="emergencyContactName"] .ims-profile__input-icon {
   color: #22c55e;
 }
+
 .ims-profile__update-modal .ims-profile__input-container[data-field="emergencyContactEmail"] .ims-profile__input-icon {
   color: #ef4444;
 }

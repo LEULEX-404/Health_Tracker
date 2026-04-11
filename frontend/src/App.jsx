@@ -31,6 +31,7 @@ const ResetPasswordPage = lazy(() => import('./pages/Imasha/ResetPasswordPage'))
 const VerifyEmailPage = lazy(() => import('./pages/Imasha/VerifyEmailPage'));
 const OnboardingPage = lazy(() => import('./pages/Imasha/OnboardingPage'));
 const ProfilePage = lazy(() => import('./pages/Imasha/ProfilePage'));
+const DoctorDashboard = lazy(() => import('./pages/Priya/DoctorDashboard'));
 const AdminDashboard = lazy(() => import('./pages/Imasha/Admin/AdminDashboard'));
 const AuthShell = lazy(() => import('./components/Imasha/AuthShell'));
 const RestrictedPage = lazy(() => import('./pages/Imasha/RestrictedPage'));
@@ -112,6 +113,7 @@ function App() {
                 <Route path="/restricted" element={<RestrictedPage />} />
               </Route>
               <Route path="/profile" element={<ProtectedRoute><ProfilePage /></ProtectedRoute>} />
+              <Route path="/doctor-dashboard" element={<ProtectedRoute allowedRoles={['doctor']}><DoctorDashboard /></ProtectedRoute>} />
 
               {/* Optional Onboarding Route */}
               <Route path="/onboarding" element={<ProtectedRoute><OnboardingPage /></ProtectedRoute>} />
