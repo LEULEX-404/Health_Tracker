@@ -349,3 +349,135 @@
   .nu-hero-banner { height: 180px; }
   .nu-hero-title  { font-size: 1.6rem; }
 }
+
+/* Mobile responsiveness hardening */
+@media (max-width: 1024px) {
+  .pn-grid {
+    grid-template-columns: 1fr !important;
+    gap: 24px;
+  }
+
+  .pn-col-side {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 16px;
+  }
+}
+
+@media (max-width: 768px) {
+  .nu-page {
+    overflow-x: hidden;
+  }
+
+  .pn-float-neon {
+    display: none;
+  }
+
+  .nu-hero-banner {
+    height: 240px;
+  }
+
+  .nu-hero-text {
+    padding: 18px 1rem;
+    justify-content: center;
+  }
+
+  .nu-hero-badge {
+    font-size: 0.65rem;
+    padding: 4px 10px;
+  }
+
+  .nu-hero-title {
+    font-size: clamp(1.8rem, 10vw, 2.4rem);
+    max-width: 100%;
+  }
+
+  .nu-hero-sub {
+    font-size: 0.92rem;
+    line-height: 1.55;
+    max-width: 100%;
+  }
+
+  .nu-hero-stats {
+    display: none;
+  }
+
+  .pn-content {
+    padding-top: 24px;
+    padding-bottom: 48px;
+  }
+
+  .pn-tabs-wrap {
+    position: sticky;
+    top: 0;
+    z-index: 20;
+    margin-inline: -1rem;
+    padding: 0 1rem 0.5rem;
+    background: rgba(248, 250, 252, 0.92);
+    backdrop-filter: blur(10px);
+  }
+
+  [data-theme='dark'] .pn-tabs-wrap {
+    background: rgba(4, 7, 18, 0.9);
+  }
+
+  .pn-tabs {
+    width: 100%;
+  }
+
+  .pn-tab {
+    min-width: 0;
+    flex: 1;
+    white-space: normal;
+    line-height: 1.2;
+  }
+
+  .pn-col-main,
+  .pn-col-side {
+    width: 100%;
+    min-width: 0;
+  }
+
+  .pn-col-side {
+    grid-template-columns: 1fr;
+  }
+
+  .pn-tip-card {
+    padding: 16px;
+  }
+}
+
+@media (max-width: 480px) {
+  .nu-hero-banner {
+    height: 220px;
+  }
+
+  .nu-hero-text {
+    padding-inline: 1rem;
+  }
+
+  .nu-hero-title {
+    font-size: 1.75rem;
+  }
+
+  .nu-hero-sub {
+    font-size: 0.86rem;
+  }
+
+  .pn-content {
+    padding-top: 18px;
+  }
+
+  .pn-tabs {
+    display: grid;
+    grid-template-columns: 1fr;
+  }
+
+  .pn-tab {
+    justify-content: center;
+  }
+
+  .pn-tip-card {
+    flex-direction: column;
+  }
+}
