@@ -1,8 +1,12 @@
-import React, { useState, useEffect, useCallback } from 'react';
+/* eslint-disable no-unused-vars */
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { useAuth } from '../../../context/Imasha/AuthContext';
 import { getAllUsers, updateUserStatus, deleteUser, createDoctor, updateDoctor } from '../../../utils/Imasha/adminApi';
 import { Search, Filter, Plus, Edit2, Trash2, UserX, UserCheck, Mail, Award, Stethoscope } from 'lucide-react';
 import { toast } from 'react-hot-toast';
+import AdminTablePagination from '../../../components/Imasha/Admin/AdminTablePagination';
+
+const ROWS_PER_PAGE = 10;
 
 const DoctorsTab = () => {
     const { token } = useAuth();
@@ -10,6 +14,7 @@ const DoctorsTab = () => {
     const [loading, setLoading] = useState(true);
     const [search, setSearch] = useState('');
     const [statusFilter, setStatusFilter] = useState('all');
+    const [currentPage, setCurrentPage] = useState(1);
 
     // Form Modal State
     const [isModalOpen, setIsModalOpen] = useState(false);
@@ -25,6 +30,7 @@ const DoctorsTab = () => {
         try {
             const data = await getAllUsers(token, {
                 role: 'doctor',
+                limit: 1000,
                 search: search || undefined,
                 isActive: statusFilter === 'all' ? undefined : statusFilter === 'active'
             });
@@ -43,6 +49,23 @@ const DoctorsTab = () => {
         const timer = setTimeout(fetchDoctors, 500);
         return () => clearTimeout(timer);
     }, [fetchDoctors]);
+
+    useEffect(() => {
+        setCurrentPage(1);
+    }, [search, statusFilter]);
+
+    const totalPages = Math.max(1, Math.ceil(doctors.length / ROWS_PER_PAGE));
+
+    useEffect(() => {
+        if (currentPage > totalPages) {
+            setCurrentPage(totalPages);
+        }
+    }, [currentPage, totalPages]);
+
+    const paginatedDoctors = useMemo(() => {
+        const startIndex = (currentPage - 1) * ROWS_PER_PAGE;
+        return doctors.slice(startIndex, startIndex + ROWS_PER_PAGE);
+    }, [doctors, currentPage]);
 
     const handleToggleActive = async (doctor) => {
         try {
@@ -130,8 +153,17 @@ const DoctorsTab = () => {
                         </select>
                     </div>
                 </div>
-                <button className="Imasha-btn-primary admin-add-btn" onClick={() => handleOpenModal()}>
-                    <Plus size={18} /> Add Doctor
+                <button
+                    className="Imasha-btn-primary admin-add-btn admin-add-btn--doctor"
+                    onClick={() => handleOpenModal()}
+                >
+                    <span className="admin-add-btn__icon-wrap">
+                        <Plus size={18} />
+                    </span>
+                    <span className="admin-add-btn__content">
+                        <span className="admin-add-btn__eyebrow">Staff Management</span>
+                        <span className="admin-add-btn__label">Add Doctor</span>
+                    </span>
                 </button>
             </div>
 
@@ -151,7 +183,7 @@ const DoctorsTab = () => {
                             <tr><td colSpan="5" className="loading-state">Loading doctors...</td></tr>
                         ) : doctors.length === 0 ? (
                             <tr><td colSpan="5" className="empty-state">No doctors found.</td></tr>
-                        ) : doctors.map((d) => (
+                        ) : paginatedDoctors.map((d) => (
                             <tr key={d._id}>
                                 <td>
                                     <div className="user-info-cell">
@@ -203,6 +235,16 @@ const DoctorsTab = () => {
                     </tbody>
                 </table>
             </div>
+
+            {!loading && (
+                <AdminTablePagination
+                    currentPage={currentPage}
+                    totalItems={doctors.length}
+                    itemsPerPage={ROWS_PER_PAGE}
+                    onPageChange={setCurrentPage}
+                    itemLabel="doctors"
+                />
+            )}
 
             {/* Simple Modal for Add/Edit */}
             {isModalOpen && (

@@ -1,8 +1,12 @@
-import React, { useState, useEffect, useCallback } from 'react';
+/* eslint-disable no-unused-vars */
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { useAuth } from '../../../context/Imasha/AuthContext';
 import { getAllUsers, updateUserStatus, deleteUser } from '../../../utils/Imasha/adminApi';
 import { Search, Filter, Trash2, UserX, UserCheck, Mail, Shield } from 'lucide-react';
 import { toast } from 'react-hot-toast';
+import AdminTablePagination from '../../../components/Imasha/Admin/AdminTablePagination';
+
+const ROWS_PER_PAGE = 10;
 
 const PatientsTable = () => {
     const { token } = useAuth();
@@ -10,12 +14,14 @@ const PatientsTable = () => {
     const [loading, setLoading] = useState(true);
     const [search, setSearch] = useState('');
     const [statusFilter, setStatusFilter] = useState('all');
+    const [currentPage, setCurrentPage] = useState(1);
 
     const fetchPatients = useCallback(async () => {
         setLoading(true);
         try {
             const data = await getAllUsers(token, {
                 role: 'patient',
+                limit: 1000,
                 search: search || undefined,
                 isActive: statusFilter === 'all' ? undefined : statusFilter === 'active'
             });
@@ -31,6 +37,23 @@ const PatientsTable = () => {
         const timer = setTimeout(fetchPatients, 500);
         return () => clearTimeout(timer);
     }, [fetchPatients]);
+
+    useEffect(() => {
+        setCurrentPage(1);
+    }, [search, statusFilter]);
+
+    const totalPages = Math.max(1, Math.ceil(patients.length / ROWS_PER_PAGE));
+
+    useEffect(() => {
+        if (currentPage > totalPages) {
+            setCurrentPage(totalPages);
+        }
+    }, [currentPage, totalPages]);
+
+    const paginatedPatients = useMemo(() => {
+        const startIndex = (currentPage - 1) * ROWS_PER_PAGE;
+        return patients.slice(startIndex, startIndex + ROWS_PER_PAGE);
+    }, [patients, currentPage]);
 
     const handleToggleActive = async (patient) => {
         try {
@@ -95,7 +118,7 @@ const PatientsTable = () => {
                             <tr><td colSpan="5" className="loading-state">Loading patients...</td></tr>
                         ) : patients.length === 0 ? (
                             <tr><td colSpan="5" className="empty-state">No patients found.</td></tr>
-                        ) : patients.map((p) => (
+                        ) : paginatedPatients.map((p) => (
                             <tr key={p._id}>
                                 <td>
                                     <div className="user-info-cell">
@@ -151,6 +174,16 @@ const PatientsTable = () => {
                     </tbody>
                 </table>
             </div>
+
+            {!loading && (
+                <AdminTablePagination
+                    currentPage={currentPage}
+                    totalItems={patients.length}
+                    itemsPerPage={ROWS_PER_PAGE}
+                    onPageChange={setCurrentPage}
+                    itemLabel="patients"
+                />
+            )}
         </div>
     );
 };
