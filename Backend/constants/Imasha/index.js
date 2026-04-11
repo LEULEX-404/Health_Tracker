@@ -69,10 +69,10 @@ export const AUDIT_ACTIONS = {
 
 // Email Templates
 export const EMAIL_SUBJECTS = {
-  VERIFY_EMAIL: 'Verify Your Email - Healthcare System',
-  PASSWORD_RESET: 'Password Reset Request - Healthcare System',
-  ACCOUNT_LOCKED: 'Account Security Alert - Healthcare System',
-  WELCOME: 'Welcome to Healthcare System',
+  VERIFY_EMAIL: 'Verify Your Email - PulseNova',
+  PASSWORD_RESET: 'Password Reset Request - PulseNova',
+  ACCOUNT_LOCKED: 'Account Security Alert - PulseNova',
+  WELCOME: 'Welcome to PulseNova',
 };
 
 // Token Types

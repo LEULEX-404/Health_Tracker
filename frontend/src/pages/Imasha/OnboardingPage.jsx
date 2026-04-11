@@ -1,3 +1,4 @@
+/* eslint-disable no-unused-vars */
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
@@ -12,9 +13,9 @@ import { useAuth } from '../../context/Imasha/AuthContext';
 import Logo from '../../components/Tharuka/Common/Logo';
 
 // Import images
-import welcomeImg from '../../assets/Imasha/onboarding/welcome.png';
-import trackingImg from '../../assets/Imasha/onboarding/tracking.png';
-import specialistImg from '../../assets/Imasha/onboarding/specialist.png';
+import onboard1Img from '../../assets/Imasha/onboarding/onboard1.png';
+import onboard2Img from '../../assets/Imasha/onboarding/onboard2.png';
+import onboard3Img from '../../assets/Imasha/onboarding/onboard3.png';
 
 const STEPS = [
     {
@@ -22,7 +23,8 @@ const STEPS = [
         title: "Welcome to PulseNova",
         subtitle: "Your AI-Powered Health Companion",
         description: "Join thousands of users who have transformed their lives through data-driven health insights and personalized care.",
-        image: welcomeImg,
+        image: onboard1Img,
+        imageAspectRatio: '1024 / 1536',
         icon: <Sparkles size={24} />,
         features: ["Personalized Dashboard", "Smart Health Alerts", "Secure Data Storage"]
     },
@@ -31,7 +33,8 @@ const STEPS = [
         title: "Track Your Vitals",
         subtitle: "Real-Time Health Monitoring",
         description: "From nutrition tracking to heart rate analysis, stay on top of your health goals with our advanced AI metrics.",
-        image: trackingImg,
+        image: onboard2Img,
+        imageAspectRatio: '1536 / 1024',
         icon: <Activity size={24} />,
         features: ["Macro Tracking", "Workout Analysis", "Trend Visualization"]
     },
@@ -40,7 +43,8 @@ const STEPS = [
         title: "Expert Consultations",
         subtitle: "Verified Specialist Access",
         description: "Connect instantly with certified medical professionals. Securely share your reports and get expert advice anywhere.",
-        image: specialistImg,
+        image: onboard3Img,
+        imageAspectRatio: '1024 / 1536',
         icon: <Stethoscope size={24} />,
         features: ["Instant Appointments", "Secure Report Sharing", "Verified Specialists"]
     }
@@ -68,6 +72,7 @@ export default function OnboardingPage() {
     };
 
     const step = STEPS[currentStep];
+    const imageScale = step.imageAspectRatio === '1536 / 1024' ? 1.12 : 1.18;
 
     return (
         <div style={{
@@ -138,16 +143,26 @@ export default function OnboardingPage() {
                             animate={{ opacity: 1, scale: 1 }}
                             exit={{ opacity: 0, scale: 1.05 }}
                             transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
+                            style={{
+                                position: 'relative',
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                width: '100%',
+                                height: '100%',
+                                minHeight: 0
+                            }}
                         >
                             <div style={{ 
-                                position: 'relative',
-                                borderRadius: '32px',
-                                overflow: 'hidden',
-                                boxShadow: '0 25px 50px -12px rgba(0, 200, 151, 0.12)',
-                                aspectRatio: '16/10',
-                                background: '#f0fff9',
-                                maxWidth: '100%',
-                                border: '1px solid rgba(0, 200, 151, 0.1)'
+                                position: 'absolute',
+                                inset: 0,
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                width: '100%',
+                                height: '100%',
+                                overflow: 'visible',
+                                pointerEvents: 'none'
                             }}>
                                 <img 
                                     src={step.image} 
@@ -155,7 +170,12 @@ export default function OnboardingPage() {
                                     style={{ 
                                         width: '100%', 
                                         height: '100%', 
-                                        objectFit: 'cover'
+                                        objectFit: 'contain',
+                                        objectPosition: 'center',
+                                        display: 'block',
+                                        transform: `scale(${imageScale})`,
+                                        transformOrigin: 'center center',
+                                        willChange: 'transform'
                                     }}
                                 />
                             </div>

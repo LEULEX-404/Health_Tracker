@@ -1,3 +1,4 @@
+/* eslint-disable react-hooks/set-state-in-effect */
 import { useState, useEffect } from 'react';
 import { Link, useSearchParams, useNavigate } from 'react-router-dom';
 import { CheckCircle2, XCircle, ArrowRight, Loader2 } from 'lucide-react';
@@ -11,6 +12,7 @@ import '../../styles/Imasha/AuthCommon.css';
 export default function VerifyEmailPage() {
     const { confirmEmail } = useAuth();
     const [searchParams] = useSearchParams();
+    // eslint-disable-next-line no-unused-vars
     const navigate = useNavigate();
     const token = searchParams.get('token');
 
