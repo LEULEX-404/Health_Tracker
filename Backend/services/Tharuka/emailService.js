@@ -211,7 +211,7 @@ export const sendMealReminderEmail = async (email, firstName, mealData) => {
   const formattedTime = scheduledTime
     ? new Date(scheduledTime).toLocaleString()
     : 'Check your meal plan for the scheduled time';
-  const appUrl = `${process.env.CLIENT_URL || 'https://health-tracker-y6v2.onrender.com'}/nutrition`;
+  const appUrl = `${process.env.CLIENT_URL || 'https://healthhracker.vercel.app'}/nutrition`;
 
   const mealItems = items.length
     ? items.map((item) => {
