@@ -4,7 +4,9 @@
   "type": "module",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
+    "test": "vitest",
+    "lint": "eslint .",
+    "format": "prettier --write .",
     "start": "node server.js",
     "dev": "nodemon server.js",
     "migrate:appointments-doctorid": "node scripts/backfillAppointmentDoctorIds.js"
@@ -16,25 +18,32 @@
   "dependencies": {
     "axios": "^1.13.5",
     "bcryptjs": "^3.0.3",
+    "cloudinary": "^1.41.0",
     "cookie-parser": "^1.4.7",
     "cors": "^2.8.6",
     "dotenv": "^17.2.4",
     "express": "^5.2.1",
     "google-auth-library": "^10.5.0",
+    "googleapis": "^171.4.0",
     "helmet": "^8.1.0",
     "jsonwebtoken": "^9.0.3",
     "mongoose": "^9.1.6",
     "morgan": "^1.10.1",
     "multer": "^2.0.2",
     "multer-storage-cloudinary": "^4.0.0",
-    "nexmo": "^2.9.1",
+    "nexmo": "2.9.1",
     "node-cron": "^4.2.1",
     "nodemailer": "^8.0.1",
-    "pdf-parse": "^2.4.5",
+    "pdf-parse": "1.1.1",
     "pdfkit": "^0.17.2",
+    "stripe": "^22.0.0",
     "swagger-ui-express": "^5.0.1"
   },
   "devDependencies": {
-    "nodemon": "^3.1.11"
+    "eslint": "^9.39.1",
+    "globals": "^16.5.0",
+    "nodemon": "^3.1.11",
+    "prettier": "^3.6.1",
+    "vitest": "^3.0.7"
   }
 }

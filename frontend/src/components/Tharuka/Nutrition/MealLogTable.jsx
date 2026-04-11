@@ -1,5 +1,5 @@
 import React from 'react';
-import { Plus, Edit2, Trash2, Coffee, Sunset, Moon, Clock, Search } from 'lucide-react';
+import { Plus, Edit2, Trash2, Coffee, Sunset, Moon, Clock, Search, Bell } from 'lucide-react';
 import { motion } from 'framer-motion';
 import './NutritionComponents.css';
 
@@ -48,7 +48,7 @@ export default function MealLogTable({ meals, loading, onAddClick, onEditClick, 
             </button>
           )}
           <button className="n-btn n-btn-primary" onClick={onAddClick}>
-            <Plus size={15} /> Add Log
+            <Plus size={15} /> Add Standalone Log
           </button>
         </div>
       </div>
@@ -87,7 +87,10 @@ export default function MealLogTable({ meals, loading, onAddClick, onEditClick, 
                 return (
                   <motion.tr key={meal._id} variants={itemVariants}>
                     <td>
-                      <div className="n-meal-name">{meal.mealName}</div>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                        <div className="n-meal-name">{meal.mealName}</div>
+                        {meal.mealReminderId && <Bell size={12} title="From Reminder" style={{ color: '#F59E0B', opacity: 0.8 }} />}
+                      </div>
                       {meal.notes && <div className="n-meal-note">{meal.notes}</div>}
                     </td>
                     <td>
@@ -113,8 +116,8 @@ export default function MealLogTable({ meals, loading, onAddClick, onEditClick, 
                         <button className="n-icon-btn" onClick={() => onEditClick(meal)} title="Edit">
                           <Edit2 size={15} />
                         </button>
-                        <button className="n-icon-btn del" onClick={() => onDeleteClick(meal._id)} title="Delete">
-                          <Trash2 size={15} />
+                        <button className="n-icon-btn del-premium" onClick={() => onDeleteClick(meal._id)} title="Delete Log">
+                          <Trash2 size={16} />
                         </button>
                       </div>
                     </td>
@@ -164,7 +167,7 @@ export default function MealLogTable({ meals, loading, onAddClick, onEditClick, 
                     </div>
                     <div className="n-m-card-actions">
                       <button className="n-icon-btn" onClick={() => onEditClick(meal)}><Edit2 size={14}/></button>
-                      <button className="n-icon-btn del" onClick={() => onDeleteClick(meal._id)}><Trash2 size={14}/></button>
+                      <button className="n-icon-btn del-premium" onClick={() => onDeleteClick(meal._id)}><Trash2 size={15}/></button>
                     </div>
                   </div>
                 </motion.div>

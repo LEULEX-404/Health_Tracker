@@ -8,7 +8,9 @@ const serverError = (res, message) => res.status(500).json({ success: false, mes
 
 export const createMealPlan = async (req, res) => {
   try {
-    const { userId, ...data } = req.body;
+    const body = req.body || {};
+    const userId = req.user?._id || req.user?.id || body.userId;
+    const { userId: _, ...data } = body;
     if (!userId) return badRequest(res, "userId is required");
     const plan = await mealPlanService.createMealPlan(userId, data);
     return created(res, plan);
@@ -22,8 +24,9 @@ export const createMealPlan = async (req, res) => {
 
 export const getUserMealPlans = async (req, res) => {
   try {
-    const { userId } = req.params;
-    const { healthCondition, mealType, isActive, limit, page } = req.query;
+    const { userId } = req.params || {};
+    const query = req.query || {};
+    const { healthCondition, mealType, isActive, limit, page } = query;
     const result = await mealPlanService.getUserMealPlans(userId, {
       healthCondition,
       mealType,
@@ -40,8 +43,9 @@ export const getUserMealPlans = async (req, res) => {
 
 export const getMealPlanById = async (req, res) => {
   try {
-    const { id } = req.params;
-    const { userId } = req.query;
+    const { id } = req.params || {};
+    const query = req.query || {};
+    const userId = req.user?._id || req.user?.id || query.userId;
     if (!userId) return badRequest(res, "userId is required");
     const plan = await mealPlanService.getMealPlanById(id, userId);
     if (!plan) return notFound(res, "Meal plan not found");
@@ -55,7 +59,9 @@ export const getMealPlanById = async (req, res) => {
 export const updateMealPlan = async (req, res) => {
   try {
     const { id } = req.params;
-    const { userId, ...data } = req.body;
+    const body = req.body || {};
+    const userId = req.user?._id || req.user?.id || body.userId;
+    const { userId: _, ...data } = body;
     if (!userId) return badRequest(res, "userId is required");
     const updated = await mealPlanService.updateMealPlan(id, userId, data);
     if (!updated) return notFound(res, "Meal plan not found");
@@ -69,7 +75,7 @@ export const updateMealPlan = async (req, res) => {
 export const deleteMealPlan = async (req, res) => {
   try {
     const { id } = req.params;
-    const { userId } = req.body;
+    const userId = req.user?._id || req.user?.id || req.body?.userId || req.query?.userId;
     if (!userId) return badRequest(res, "userId is required");
     const deleted = await mealPlanService.deleteMealPlan(id, userId);
     if (!deleted) return notFound(res, "Meal plan not found");
@@ -95,8 +101,10 @@ export const getMealPlansByHealthCondition = async (req, res) => {
 
 export const suggestMealPlans = async (req, res) => {
   try {
-    const { userId } = req.params;
-    const plans = await mealPlanService.suggestMealPlansForUser(userId);
+    const userId = req.user?._id || req.user?.id || req.params?.userId;
+    const { mealType } = req.body;
+    if (!userId) return badRequest(res, "userId is required");
+    const plans = await mealPlanService.suggestMealPlansForUser(userId, mealType);
     return ok(res, plans);
   } catch (err) {
     console.error("suggestMealPlans:", err.message);

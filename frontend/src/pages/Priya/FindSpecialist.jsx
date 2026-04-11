@@ -56,8 +56,8 @@ function getAppointmentDateBounds() {
   };
 
   return {
-    min: formatLocalDate(today),
-    max: formatLocalDate(endAllowed),
+    min: startCurrentWeek.toISOString().slice(0, 10),
+    max: endNextWeek.toISOString().slice(0, 10),
   };
 }
 
@@ -73,7 +73,7 @@ function isValidEmail(email) {
 
 function isValidPhone(phone) {
   const digits = (phone || '').replace(/\D/g, '');
-  return /^(070|071|072|074|075|076|077|078)\d{7}$/.test(digits);
+  return /^(070|071|072|074|076|077|078)\d{7}$/.test(digits);
 }
 
 function normalizePhone(phone) {
@@ -83,8 +83,8 @@ function normalizePhone(phone) {
 function getPhoneValidationMessage(phone) {
   const digits = normalizePhone(phone);
   if (!digits) return '';
-  if (digits.length >= 3 && !/^(070|071|072|074|075|076|077|078)/.test(digits)) {
-    return 'Phone must start with 070, 071, 072, 074, 075, 076, 077, or 078.';
+  if (digits.length >= 3 && !/^(070|071|072|074|076|077|078)/.test(digits)) {
+    return 'Phone must start with 070, 071, 072, 074, 076, 077, or 078.';
   }
   if (digits.length < 10) {
     return 'Phone must contain exactly 10 digits.';
@@ -96,7 +96,7 @@ function getPhoneValidationMessage(phone) {
 }
 
 export default function FindSpecialistPage() {
-  const { token } = useAuth();
+  const { token, user } = useAuth();
   const navigate = useNavigate();
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('all');
@@ -168,14 +168,15 @@ export default function FindSpecialistPage() {
     }
 
     setSelectedDoctor(doc);
+    const fullName = [user?.firstName, user?.lastName].filter(Boolean).join(' ').trim();
     setForm({
-      patientName: '',
-      patientEmail: '',
-      patientPhone: '',
+      patientName: fullName,
+      patientEmail: user?.email || '',
+      patientPhone: normalizePhone(user?.phone || ''),
       time: '',
       date: '',
     });
-    setPhoneError('');
+    setPhoneError(getPhoneValidationMessage(user?.phone || ''));
     setBookingOpen(true);
   }
 
@@ -431,7 +432,7 @@ export default function FindSpecialistPage() {
                     className="pr-booking-submit"
                     onClick={() => {
                       closeBookingForm();
-                      navigate('/Appointment');
+                      navigate('/appointment');
                     }}
                   >
                     View Appointments

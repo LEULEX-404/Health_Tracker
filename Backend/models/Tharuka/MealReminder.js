@@ -71,6 +71,11 @@ const mealReminderSchema = new mongoose.Schema(
       default: null,
       trim: true,
     },
+    nutritionId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Nutrition",
+      default: null,
+    },
   },
   {
     timestamps: true,

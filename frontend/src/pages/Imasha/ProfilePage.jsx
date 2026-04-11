@@ -9,7 +9,7 @@ import {
     User, Mail, Phone, MapPin, Calendar,
     Camera, LogOut, Save, Bell, Activity,
     ClipboardList, Settings, ChevronRight,
-    Loader2, ShieldCheck, CheckCircle2,
+    Loader2, ShieldCheck, CheckCircle2, Stethoscope,
     TrendingUp, Zap, Star, Clock, Heart, Sparkles,
     IdCard, Briefcase, Globe, Home, BriefcaseIcon, PhoneCall, X
 } from 'lucide-react';
@@ -499,11 +499,11 @@ export default function ProfilePage() {
                 headers: { Authorization: `Bearer ${token}` },
             });
             const data = await res.json();
-            if (!res.ok) throw new Error(data?.message || 'Failed to delete appointment');
-            toast.success('Appointment deleted');
+            if (!res.ok) throw new Error(data?.message || 'Failed to cancel appointment');
+            toast.success('Appointment cancelled');
             loadRecentAppointments();
         } catch (error) {
-            toast.error(error.message || 'Failed to delete appointment');
+            toast.error(error.message || 'Failed to cancel appointment');
         }
     };
 
@@ -762,7 +762,7 @@ export default function ProfilePage() {
                             <ClipboardList size={12} />Appointments &amp; Bookings
                         </h3>
                         <Link
-                            to="/Appointment"
+                            to={user?.role === 'caregiver' ? '/caregiver-dashboard' : '/Appointment'}
                             className="ims-profile__save-btn"
                             style={{
                                 textDecoration: 'none',
@@ -775,7 +775,7 @@ export default function ProfilePage() {
                                 fontSize: '13px',
                             }}
                         >
-                            View All History
+                            {user?.role === 'caregiver' ? 'Go to Dashboard' : 'View All History'}
                         </Link>
                     </div>
 

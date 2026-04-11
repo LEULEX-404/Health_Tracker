@@ -1,10 +1,29 @@
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { motion } from 'framer-motion';
 import { useTranslation } from 'react-i18next';
 import {
-  Salad, Dumbbell, BarChart3, Bell, CalendarCheck,
-  ArrowRight, CheckCircle2, Zap, Shield, Clock,
-  ChevronDown
+  Salad,
+  Dumbbell,
+  BarChart3,
+  Bell,
+  CalendarCheck,
+  ArrowRight,
+  CheckCircle2,
+  Zap,
+  Shield,
+  ChevronDown,
+  HeartPulse,
+  Activity,
+  Globe2,
+  Star,
+  Sparkles,
+  Headset,
+  BookOpenText,
+  ShieldCheck,
+  Cpu,
+  UserCog,
+  Gauge,
+  CircleDot
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import Header from '../../components/Tharuka/Header/Header';
@@ -13,143 +32,173 @@ import ScrollToTop from '../../components/Tharuka/Common/ScrollToTop';
 import BackgroundEffect from '../../components/Tharuka/Common/BackgroundEffect';
 import './ServicesPage.css';
 
-/* Based on Backend routes/Tharuka/:
-   - nutritionRoutes  → /api/nutrition
-   - healthDataRoutes → /api/health-data
-   - mealPlanRoutes   → /api/meal-plan
-   - mealReminderRoutes → /api/meal-reminders
-   - reportRoutes     → /api/reports
-*/
 const SERVICES = [
   {
     id: 'nutrition',
     icon: Salad,
-    color: '#00C897',
     title: 'Nutrition Tracking',
-    tagline: 'Smart Meal Logging & AI Dietary Insights',
-    desc: 'Our AI-powered nutrition engine lets you log every meal, scan barcodes, and get real-time macro breakdowns. Backed by the backend /api/nutrition endpoint, every meal you add is instantly analysed for calories, carbs, protein, and fat against your personal health goals.',
+    image: '/images/Tharuka/services/service_1.png',
+    tagline: 'AI-powered food logging and analysis',
+    desc: 'AI-powered food logging with verified item data, macro insights, and personalized coaching tailored to your health goals.',
     features: [
-      'Log meals by name, barcode scan, or custom entry',
-      'Real-time macro & calorie calculations',
-      'Doctor recommendation notes per meal',
-      'Full meal history with edit & delete',
-      'Nutritional gap analysis via /api/nutrition/analysis',
+      'Barcode scan and photo recognition',
+      'AI macro and micronutrient optimizer',
+      'Custom meal plan generation',
+      'Weekly nutrition summary reports'
     ],
-    apiEndpoint: 'GET /api/nutrition/:userId',
+    stats: ['500K+ Foods', 'AI Powered'],
+    endpoint: 'POST /api/v2/nutrition/log',
+    cta: 'Start Tracking',
     badge: 'Most Popular',
   },
   {
     id: 'health',
     icon: BarChart3,
-    color: '#00B4D8',
     title: 'Health Data Monitoring',
-    tagline: 'Track Vitals & Body Metrics Over Time',
-    desc: 'Connect your body metrics — weight, BMI, blood pressure, glucose, sleep — to PulseNova\'s health data system. The /api/health-data endpoint stores each log with timestamps so you and your care team can visualise long-term trends.',
+    image: '/images/Tharuka/services/service_2.png',
+    tagline: 'Realtime biomarker intelligence',
+    desc: 'Continuous real-time tracking with anomaly detection, wearable integration, and smart alerts for chronic care monitoring.',
     features: [
-      'Log weight, BMI, blood pressure & glucose',
-      'Sleep duration & quality tracking',
-      'Timestamped health data timeline',
-      'Trend graphs and progress indicators',
-      'Access-controlled for caregivers and doctors',
+      'Heart rate, SpO2, and sleep tracking',
+      '30+ biomarker dashboards',
+      'Anomaly detection and smart alerts',
+      'Wearable and IoT device sync'
     ],
-    apiEndpoint: 'GET /api/health-data/:userId',
-    badge: null,
+    stats: ['30+ Biomarkers', 'Multi-device'],
+    endpoint: 'WS /api/v2/vitals/stream',
+    cta: 'Monitor Now'
   },
   {
     id: 'mealplan',
     icon: CalendarCheck,
-    color: '#39FF14',
     title: 'Meal Planning',
-    tagline: 'AI-Generated Weekly Meal Plans',
-    desc: 'PulseNova generates personalised weekly meal plans tailored to your caloric target, dietary restrictions, and nutritional goals. Each plan is stored at /api/meal-plan and can be regenerated, customised, and shared with a nutritionist.',
+    image: '/images/Tharuka/services/service_3.png',
+    tagline: 'Weekly adaptive planning',
+    desc: 'Intelligent weekly meal planning tailored by calories, dietary restrictions, family size, and shopping budget.',
     features: [
-      'Auto-generate 7-day meal plans',
-      'Customise meals within the plan',
-      'Align plans with nutrition goals',
-      'Share plans with doctor/nutritionist',
-      'Integrated with meal reminders',
+      'AI-generated weekly meal plans',
+      'Auto-generated grocery shopping lists',
+      'Allergy and dietary preference filters',
+      'Family-size portion adjustments'
     ],
-    apiEndpoint: 'GET /api/meal-plans/:userId',
+    stats: ['Weekly Plans', 'Diet-aware'],
+    endpoint: 'GET /api/v2/meals/plan/generate',
+    cta: 'Plan Meals',
     badge: 'New',
   },
   {
     id: 'reminders',
     icon: Bell,
-    color: '#F59E0B',
     title: 'Meal Reminders',
-    tagline: 'Never Miss a Meal or Medication',
-    desc: 'Smart, context-aware reminders keep your nutrition on track. Our /api/meal-reminders system schedules reminders based on your meal plan timing, sends email and SMS alerts, and supports snooze and reschedule options.',
+    image: '/images/Tharuka/services/service_4.png',
+    tagline: 'Context-aware smart reminders',
+    desc: 'Adaptive reminder automation across meals, medication, and hydration with behavior-aware scheduling and caregiver controls.',
     features: [
-      'Schedule reminders for each meal slot',
-      'Email & SMS notification support',
-      'Snooze and reschedule with one tap',
-      'Caregiver can set reminders for patients',
-      'Simulator mode for testing reminders',
+      'Adaptive smart timing engine',
+      'Location-based trigger reminders',
+      'Hydration and supplement alerts',
+      'Medication schedule management'
     ],
-    apiEndpoint: 'POST /api/meal-reminders',
-    badge: null,
+    stats: ['Smart Timing', 'Cross-device'],
+    endpoint: 'POST /api/v2/reminders/schedule',
+    cta: 'Set Reminders'
   },
   {
     id: 'exercise',
     icon: Dumbbell,
-    color: '#A78BFA',
     title: 'Exercise Tracking',
-    tagline: 'Log Workouts & Monitor Performance',
-    desc: 'Track every workout session — from cardio to strength training. Log duration, sets, reps, and calories burned. Performance data is stored securely and visualised in progress charts accessible via your dashboard.',
+    image: '/images/Tharuka/services/service_5.png',
+    tagline: 'Workout intelligence system',
+    desc: 'Track every rep, set, and mile with precision biomechanical analytics and adaptive coaching progression.',
     features: [
-      'Log cardio, strength, yoga, and custom workouts',
-      'Track sets, reps, duration & calories',
-      'Weekly and monthly progress charts',
-      'Personal record (PR) tracking',
-      'Export workout history as PDF',
+      '200+ workout templates and guides',
+      'Real-time VO2 max and heart zones',
+      'Progressive overload tracking',
+      'AI form coaching and injury prevention'
     ],
-    apiEndpoint: 'GET /api/exercise/:userId',
-    badge: null,
+    stats: ['200+ Workouts', 'HR Zones'],
+    endpoint: 'POST /api/v2/workouts/session',
+    cta: 'Track Exercise'
   },
   {
     id: 'reports',
     icon: BarChart3,
-    color: '#EC4899',
+    image: '/images/Tharuka/services/service_6.png',
     title: 'Health Reports',
-    tagline: 'Comprehensive PDF & Data Reports',
-    desc: 'Generate professional health reports combining nutrition, exercise, and health metrics into a single downloadable document. Reports from /api/reports can be shared directly with your doctor or specialist for informed consultations.',
+    tagline: 'Clinical reporting and insights',
+    desc: 'Clinician-ready exports powered by AI trend analysis with secure sharing and long-range biomarker intelligence.',
     features: [
-      'Combine nutrition + exercise + vitals',
-      'Export as PDF for doctor visits',
-      'Date-range filtering',
-      'Custom report templates',
-      'Audit trail for medical compliance',
+      'Comprehensive monthly health summaries',
+      'Doctor-ready shareable PDF export',
+      'Trend analysis across all biomarkers',
+      'HIPAA-compliant data sharing'
     ],
-    apiEndpoint: 'GET /api/reports/:userId',
-    badge: null,
+    stats: ['PDF Export', 'HIPAA Safe'],
+    endpoint: 'GET /api/v2/reports/generate',
+    cta: 'View Reports'
   },
 ];
 
 const PRICING = [
   {
     name: 'Free',
-    price: 'LKR 0',
-    period: '/month',
-    desc: 'Perfect for individuals getting started with health tracking.',
-    features: ['Nutrition logging (50 meals/month)', 'Basic health data tracking', '3 meal reminders/day', 'Weekly summary report', '1 meal plan/month'],
-    cta: 'Get Started Free',
+    price: '$0',
+    period: '/mo',
+    desc: 'For individuals getting started',
+    features: [
+      'Basic nutrition logging (up to 5/day)',
+      'Manual exercise tracking',
+      'Monthly health summary',
+      'Basic meal reminders (3/day)',
+      '30-day data history'
+    ],
+    disabledFeatures: [
+      'AI-powered recommendations',
+      'Advanced analytics and reports',
+      'Wearable device sync',
+      'Caregiver profiles',
+      'Priority support'
+    ],
+    cta: 'Start for Free',
     highlight: false,
   },
   {
     name: 'Pro',
-    price: 'LKR 990',
-    period: '/month',
-    desc: 'For health-conscious individuals who want full tracking power.',
-    features: ['Unlimited nutrition logging', 'Full health data history', 'Unlimited meal reminders', 'Weekly & monthly reports', 'AI meal plan generation', 'Find Specialist access', 'Priority support'],
+    price: '$19',
+    period: '/mo',
+    desc: 'For health-focused individuals',
+    features: [
+      'Unlimited nutrition logging and barcode scan',
+      'Full AI macro and meal recommendations',
+      'Advanced analytics and weekly insights',
+      'AI-generated weekly meal plans',
+      'Wearable and IoT device sync',
+      'Real-time biomarker monitoring',
+      'Shareable PDF health reports',
+      'Smart reminders (unlimited)',
+      'End-to-end encryption and HIPAA',
+      'Priority 24/7 support'
+    ],
     cta: 'Start Pro Trial',
     highlight: true,
   },
   {
     name: 'Caregiver',
-    price: 'LKR 1,490',
-    period: '/month',
-    desc: 'For caregivers managing one or more patients.',
-    features: ['All Pro features', 'Up to 5 patient profiles', 'Caregiver appointment scheduler', 'Real-time patient monitoring', 'Medication reminder setup', 'Audit logs for compliance', 'Dedicated support'],
+    price: '$39',
+    period: '/mo',
+    desc: 'For families and professionals',
+    features: [
+      'Up to 6 family member profiles',
+      'Family health command center',
+      'Emergency alerts and medication reminders',
+      'Location and vitals monitoring',
+      'One-tap care team communication',
+      'Multi-member health reports',
+      'Unlimited data history',
+      'Full HIPAA and data security suite',
+      'Dedicated account manager',
+      'Clinician data export formats'
+    ],
     cta: 'Start Caregiver Plan',
     highlight: false,
   },
@@ -158,36 +207,108 @@ const PRICING = [
 export default function ServicesPage() {
   const { t } = useTranslation();
   const [openFaq, setOpenFaq] = useState(null);
+  const [billingMode, setBillingMode] = useState('monthly');
 
   const faqs = [
-    { q: 'Is there a free trial for Pro?', a: 'Yes! The Pro plan includes a 14-day free trial. No credit card required.' },
-    { q: 'Can I switch plans at any time?', a: 'Absolutely. You can upgrade or downgrade your plan from Account Settings at any time. Changes take effect immediately.' },
-    { q: 'How does the backend API work for nutrition?', a: 'The nutrition endpoint accepts meal entries via POST /api/nutrition. Each meal is validated, stored, and instantly analysed. You can fetch all meals with GET /api/nutrition/:userId.' },
-    { q: 'Are reports available for free users?', a: 'Free users get weekly summary reports. Full PDF reports with custom date ranges require the Pro or Caregiver plan.' },
+    { color: '#0ea5e9', tag: 'General', icon: Sparkles, q: 'What is PulseNova and who is it for?', a: 'PulseNova is an intelligent health management platform for individuals, families, and healthcare professionals. Whether you are tracking daily nutrition, monitoring chronic conditions, or coordinating care, PulseNova helps make every health goal actionable.' },
+    { color: '#f59e0b', tag: 'Services', icon: Zap, q: 'Can I use all six services on a single account?', a: 'Yes. A single account can access nutrition, vitals, meal planning, reminders, workouts, and reports. Feature limits depend on your subscription plan.' },
+    { color: '#10b981', tag: 'Privacy & Security', icon: ShieldCheck, q: 'Is my health data safe and HIPAA compliant?', a: 'Yes. PulseNova includes encryption in transit and at rest, role-based access control, audit trails, and HIPAA-aligned workflows for secure handling of health data.' },
+    { color: '#3b82f6', tag: 'Integrations', icon: Globe2, q: 'Which wearables and devices does PulseNova support?', a: 'PulseNova supports major wearable ecosystems and health devices through secure API connectors and scheduled sync pipelines.' },
+    { color: '#8b5cf6', tag: 'Pricing', icon: CheckCircle2, q: 'What happens when my free trial ends?', a: 'Your account remains active on the Free plan unless you choose to upgrade. You can switch plans any time from account billing settings.' },
+    { color: '#ec4899', tag: 'AI Features', icon: Cpu, q: 'How does PulseNova AI actually work?', a: 'Our AI models combine nutrition inputs, biomarker trends, and behavior patterns to deliver adaptive plans, alerts, and recommendations personalized to each user.' },
+    { color: '#f43f5e', tag: 'Caregiver', icon: UserCog, q: 'How does the Caregiver plan work for families?', a: 'The Caregiver plan enables multiple dependent profiles, central monitoring, alert routing, shared schedules, and secure communication for coordinated care.' },
+    { color: '#14b8a6', tag: 'Support', icon: Headset, q: 'What kind of support does PulseNova offer?', a: 'Free users get community support and docs. Paid plans include priority support, and enterprise clients receive dedicated account assistance.' }
   ];
+
+  const pricing = useMemo(() => {
+    const factor = billingMode === 'annual' ? 0.8 : 1;
+    return PRICING.map((plan) => {
+      if (plan.price === '$0') return plan;
+      const amount = Number(plan.price.replace('$', ''));
+      return { ...plan, price: `$${Math.round(amount * factor)}` };
+    });
+  }, [billingMode]);
 
   return (
     <>
       <BackgroundEffect />
       <Header />
       <main className="page-wrapper pn-svc-page">
+        <div className="pn-svc-bg pn-svc-bg--one" />
+        <div className="pn-svc-bg pn-svc-bg--two" />
+        <div className="pn-svc-grid-overlay" />
 
-        {/* Hero */}
         <section className="pn-svc-page__hero section-pad">
           <div className="container">
-            <motion.div className="section-header" initial={{ opacity:0, y:30 }} animate={{ opacity:1, y:0 }} transition={{ duration:0.7 }}>
-              <span className="section-label">Services</span>
-              <h1 className="section-title">{t('serv_title')}</h1>
-              <p className="section-subtitle">
-                PulseNova's full suite of health services — each powered by a robust backend API designed for accuracy, security, and scale.
-              </p>
-            </motion.div>
+            <div className="pn-hero-shell">
+              <motion.div
+                className="pn-hero-copy"
+                initial={{ opacity: 0, y: 32 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.7 }}
+              >
+                <div className="pn-pill">
+                  <CircleDot size={12} />
+                  PULSENOVA SERVICES
+                </div>
+                <h1 className="pn-hero-title">
+                  Your Health,
+                  <span> Intelligently Managed.</span>
+                </h1>
+                <p className="pn-hero-subtitle">
+                  Six clinically-informed services unified in one intelligent platform - from AI nutrition coaching to real-time family care coordination.
+                </p>
+                <div className="pn-hero-cta-row">
+                  <Link to="/signup" className="btn-primary">
+                    Explore Services <ArrowRight size={15} />
+                  </Link>
+                  <Link to="/pricing" className="btn-outline">
+                    View Pricing
+                  </Link>
+                </div>
+              </motion.div>
+
+              <motion.div
+                className="pn-hero-visual"
+                initial={{ opacity: 0, x: 30, scale: 0.96 }}
+                animate={{ opacity: 1, x: 0, scale: 1 }}
+                transition={{ duration: 0.75, delay: 0.15 }}
+              >
+                <div className="pn-hero-image-wrap">
+                  <img src="/images/Tharuka/services/service_main.png" alt="PulseNova services" className="pn-hero-image" fetchPriority="high" />
+                  <motion.div className="pn-floating-card" animate={{ y: [0, -12, 0] }} transition={{ repeat: Infinity, duration: 2.2, ease: "easeInOut" }}>
+                    <HeartPulse size={18} />
+                    <div>
+                      <strong>Health Score</strong>
+                      <span>94 / 100</span>
+                    </div>
+                  </motion.div>
+                  <motion.div className="pn-floating-card pn-floating-card--two" animate={{ y: [0, -14, 0] }} transition={{ repeat: Infinity, duration: 2.5, ease: "easeInOut", delay: 0.3 }}>
+                    <Activity size={18} />
+                    <div>
+                      <strong>Daily Activity</strong>
+                      <span>8,540 steps</span>
+                    </div>
+                  </motion.div>
+                  <motion.div className="pn-floating-card pn-floating-card--three" animate={{ y: [0, -10, 0] }} transition={{ repeat: Infinity, duration: 1.9, ease: "easeInOut", delay: 0.15 }}>
+                    <Sparkles size={18} />
+                    <div>
+                      <strong>AI Recommendation</strong>
+                      <span>Meal plan updated</span>
+                    </div>
+                  </motion.div>
+                </div>
+              </motion.div>
+            </div>
+
             <div className="pn-svc-page__badges">
               {[
-                { icon: Zap,    text: 'AI-Powered' },
-                { icon: Shield, text: 'GDPR Compliant' },
-                { icon: Clock,  text: '99.9% Uptime' },
-              ].map(b => {
+                { icon: Shield, text: 'HIPAA Compliant' },
+                { icon: Zap, text: 'AI-Powered' },
+                { icon: ShieldCheck, text: 'End-to-End Encrypted' },
+                { icon: CheckCircle2, text: 'Clinically Validated' },
+                { icon: Globe2, text: '40+ Countries' },
+              ].map((b) => {
                 const Icon = b.icon;
                 return (
                   <div key={b.text} className="pn-svc-page__badge">
@@ -197,12 +318,44 @@ export default function ServicesPage() {
                 );
               })}
             </div>
+
+            <div className="pn-hero-stats">
+              {[
+                { icon: UserCog, value: '200K+', label: 'Active Users', color: '#10b981', bg: 'rgba(16, 185, 129, 0.15)' },
+                { icon: HeartPulse, value: '1M+', label: 'Health Records', color: '#f43f5e', bg: 'rgba(244, 63, 94, 0.15)' },
+                { icon: Gauge, value: '99.9%', label: 'Uptime SLA', color: '#0ea5e9', bg: 'rgba(14, 165, 233, 0.15)' },
+                { icon: Star, value: '4.9', label: 'Average Rating', color: '#f59e0b', bg: 'rgba(245, 158, 11, 0.15)' },
+              ].map((s) => {
+                const Icon = s.icon;
+                return (
+                  <motion.div
+                    className="pn-hero-stat-card"
+                    key={s.label}
+                    style={{ '--stat-c': s.color, '--stat-bg': s.bg }}
+                    whileHover={{ y: -3 }}
+                    transition={{ duration: 0.2 }}
+                  >
+                    <div className="pn-hero-stat-icon">
+                      <Icon size={18} />
+                    </div>
+                    <div>
+                      <strong>{s.value}</strong>
+                      <span>{s.label}</span>
+                    </div>
+                  </motion.div>
+                );
+              })}
+            </div>
           </div>
         </section>
 
-        {/* Service Cards */}
         <section className="section-pad" style={{ background:'var(--bg-secondary)' }}>
           <div className="container">
+            <div className="section-header">
+              <span className="section-label">Our Services</span>
+              <h2 className="section-title">Six Pillars of Complete Wellness</h2>
+              <p className="section-subtitle">Every service is precision-engineered, clinically informed, and seamlessly integrated.</p>
+            </div>
             <div className="pn-svc-page__grid">
               {SERVICES.map((svc, i) => {
                 const Icon = svc.icon;
@@ -210,26 +363,36 @@ export default function ServicesPage() {
                   <motion.div
                     key={svc.id}
                     className="pn-svc-card"
-                    initial={{ opacity:0, y:40 }}
+                    initial={{ opacity:0, y:20 }}
                     whileInView={{ opacity:1, y:0 }}
-                    viewport={{ once:true }}
-                    transition={{ duration:0.5, delay: (i % 3) * 0.12 }}
+                    viewport={{ once:true, amount: 0.1 }}
+                    transition={{ duration: 0.4, delay: i * 0.05 }}
+                    whileHover={{ y: -4 }}
                   >
+                    <div className="pn-svc-card__image-wrap">
+                      <img src={svc.image} alt={svc.title} className="pn-svc-card__image" loading="lazy" decoding="async" />
+                      <div className="pn-svc-card__overlay" />
+                    </div>
                     {svc.badge && <div className="pn-svc-card__badge">{svc.badge}</div>}
-                    <div className="pn-svc-card__icon" style={{ background: `${svc.color}18`, borderColor: `${svc.color}30` }}>
-                      <Icon size={26} style={{ color: svc.color }} />
+                    <div className="pn-svc-card__icon">
+                      <Icon size={22} />
                     </div>
                     <h3 className="pn-svc-card__title">{svc.title}</h3>
-                    <p className="pn-svc-card__tagline" style={{ color: svc.color }}>{svc.tagline}</p>
+                    <p className="pn-svc-card__tagline">{svc.tagline}</p>
                     <p className="pn-svc-card__desc">{svc.desc}</p>
                     <ul className="pn-svc-card__features">
                       {svc.features.map(f => (
-                        <li key={f}><CheckCircle2 size={14} style={{ color: svc.color }} />{f}</li>
+                        <li key={f}><CheckCircle2 size={14} />{f}</li>
                       ))}
                     </ul>
-                    <code className="pn-svc-card__api">{svc.apiEndpoint}</code>
-                    <Link to="/dashboard" className="pn-svc-card__cta" style={{ background: svc.color }}>
-                      Get Started <ArrowRight size={14} />
+                    <code className="pn-svc-card__api">{svc.endpoint}</code>
+                    <div className="pn-svc-card__meta">
+                      {svc.stats.map((s) => (
+                        <span key={s}>{s}</span>
+                      ))}
+                    </div>
+                    <Link to="/dashboard" className="pn-svc-card__cta">
+                      {svc.cta} <ArrowRight size={14} />
                     </Link>
                   </motion.div>
                 );
@@ -238,23 +401,49 @@ export default function ServicesPage() {
           </div>
         </section>
 
-        {/* Pricing */}
+        <section className="section-pad">
+          <div className="container">
+            <div className="pn-enterprise-cta">
+              <div className="pn-enterprise-left">
+                <Cpu size={20} />
+                <div>
+                  <strong>Ready to transform your health?</strong>
+                  <span>Join 200,000+ users already living smarter with PulseNova.</span>
+                </div>
+              </div>
+              <div className="pn-enterprise-actions">
+                <Link to="/pricing" className="btn-outline">See Pricing</Link>
+                <Link to="/signup" className="btn-primary">Get Started Free <ArrowRight size={14} /></Link>
+              </div>
+            </div>
+          </div>
+        </section>
+
         <section className="section-pad">
           <div className="container">
             <div className="section-header">
-              <span className="section-label">Pricing</span>
-              <h2 className="section-title">Simple, Transparent Pricing</h2>
-              <p className="section-subtitle">Start free. Upgrade when you're ready. Cancel anytime.</p>
+              <span className="section-label">Simple Pricing</span>
+              <h2 className="section-title">Plans That Grow With You</h2>
+              <p className="section-subtitle">Transparent pricing, no hidden fees. Start free and upgrade when you are ready.</p>
             </div>
+
+            <div className="pn-pricing-toggle">
+              <button className={billingMode === 'monthly' ? 'active' : ''} onClick={() => setBillingMode('monthly')}>Monthly</button>
+              <button className={billingMode === 'annual' ? 'active' : ''} onClick={() => setBillingMode('annual')}>
+                Annual <em>-20%</em>
+              </button>
+            </div>
+
             <div className="pn-svc-page__pricing">
-              {PRICING.map((plan, i) => (
+              {pricing.map((plan, i) => (
                 <motion.div
                   key={plan.name}
                   className={`pn-price-card ${plan.highlight ? 'pn-price-card--highlight' : ''}`}
-                  initial={{ opacity:0, y:40 }}
+                  initial={{ opacity:0, y:20 }}
                   whileInView={{ opacity:1, y:0 }}
-                  viewport={{ once:true }}
-                  transition={{ duration:0.5, delay: i * 0.12 }}
+                  viewport={{ once:true, amount: 0.1 }}
+                  transition={{ duration:0.4, delay: i * 0.08 }}
+                  whileHover={{ y: -4 }}
                 >
                   {plan.highlight && <div className="pn-price-card__top-badge">Most Popular</div>}
                   <h4 className="pn-price-card__name">{plan.name}</h4>
@@ -267,6 +456,9 @@ export default function ServicesPage() {
                     {plan.features.map(f => (
                       <li key={f}><CheckCircle2 size={14} />{f}</li>
                     ))}
+                    {plan.disabledFeatures?.map((f) => (
+                      <li key={f} className="muted"><CircleDot size={14} />{f}</li>
+                    ))}
                   </ul>
                   <Link to="/signup" className={plan.highlight ? 'btn-primary' : 'btn-outline'} style={{ width:'100%', justifyContent:'center', marginTop:'auto' }}>
                     {plan.cta}
@@ -274,29 +466,62 @@ export default function ServicesPage() {
                 </motion.div>
               ))}
             </div>
+
+            <div className="pn-pricing-enterprise">
+              <div className="pn-pricing-enterprise__left">
+                <ShieldCheck size={20} />
+                <div>
+                  <strong>Enterprise & Clinic Solutions</strong>
+                  <p>Custom EHR integrations, HIPAA BAA, SLA guarantees, and dedicated health infrastructure.</p>
+                </div>
+              </div>
+              <Link to="/contact" className="btn-outline">Contact Sales <ArrowRight size={14} /></Link>
+            </div>
           </div>
         </section>
 
-        {/* Mini FAQ */}
         <section className="section-pad" style={{ background:'var(--bg-secondary)' }}>
           <div className="container" style={{ maxWidth:760 }}>
             <div className="section-header">
               <span className="section-label">FAQ</span>
-              <h2 className="section-title">Services FAQ</h2>
+              <h2 className="section-title">Frequently Asked Questions</h2>
+              <p className="section-subtitle">Everything you need to know about services, pricing, privacy, and AI technology.</p>
             </div>
             <div className="pn-svc-page__faq">
               {faqs.map((f, i) => (
-                <div key={i} className={`pn-svc-page__faq-item ${openFaq === i ? 'open' : ''}`}>
+                <motion.div
+                  key={i}
+                  className={`pn-svc-page__faq-item ${openFaq === i ? 'open' : ''}`}
+                  style={{ '--faq-c': f.color }}
+                  initial={{ opacity: 0, y: 10 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true, amount: 0.1 }}
+                  transition={{ duration: 0.3, delay: i * 0.05 }}
+                  whileHover={{ y: -2 }}
+                >
                   <button className="pn-svc-page__faq-q" onClick={() => setOpenFaq(openFaq === i ? null : i)}>
-                    <span>{f.q}</span>
-                    <ChevronDown size={18} style={{ flexShrink:0, transition:'transform 0.25s', transform: openFaq===i ? 'rotate(180deg)' : 'none' }} />
+                    <div className="pn-svc-page__faq-q-left">
+                      <span className="pn-svc-page__faq-icon"><f.icon size={14} /></span>
+                      <div>
+                        <em className="pn-svc-page__faq-tag">{f.tag}</em>
+                        <span>{f.q}</span>
+                      </div>
+                    </div>
+                    <span className="pn-svc-page__faq-toggle">
+                      <ChevronDown size={18} style={{ flexShrink:0, transition:'transform 0.25s', transform: openFaq===i ? 'rotate(180deg)' : 'none' }} />
+                    </span>
                   </button>
                   {openFaq === i && <p className="pn-svc-page__faq-a">{f.a}</p>}
-                </div>
+                </motion.div>
               ))}
             </div>
-            <div style={{ textAlign:'center', marginTop:32 }}>
-              <Link to="/faq" className="btn-outline">View All FAQs <ArrowRight size={14} /></Link>
+
+            <div className="pn-faq-support">
+              <p>Still have questions? Our team is happy to help.</p>
+              <div className="pn-faq-support__buttons">
+                <Link to="/contact" className="btn-primary"><Headset size={15} /> Chat with Support</Link>
+                <Link to="/help" className="btn-outline"><BookOpenText size={15} /> Browse Help Center</Link>
+              </div>
             </div>
           </div>
         </section>
