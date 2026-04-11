@@ -94,8 +94,8 @@ export function AuthProvider({ children }) {
         setLoading(false);
 
         toast.success('Logged out successfully.');
-        navigate('/login');
-    }, [token, navigate]);
+        window.location.replace('/login');
+    }, [token]);
 
     const requestPasswordReset = useCallback(async (email) => {
         return await forgotPassword(email);
