@@ -34,7 +34,7 @@ export default function AdminAlertsTab() {
   // Fetch Patients List
   const fetchPatientsList = useCallback(async () => {
     try {
-      const data = await getAllUsers(token, { role: 'patient' });
+      const data = await getAllUsers(token, { role: 'patient',limit: 1000 });
       setPatients(data.data || []);
       if (data.data && data.data.length > 0) {
         setSelectedPatient(data.data[0]._id);
