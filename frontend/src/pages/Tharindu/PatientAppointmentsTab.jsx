@@ -1,13 +1,42 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../../context/Imasha/AuthContext';
-import { Calendar, Stethoscope, HeartHandshake, Loader2, Clock, MapPin, User, ChevronRight, CheckCircle2, AlertCircle, Phone, Sparkles, X, FileText, CreditCard } from 'lucide-react';
+import { Calendar, Stethoscope, HeartHandshake, Loader2, Clock, MapPin, User, ChevronRight, CheckCircle2, AlertCircle, Phone, Sparkles, X, FileText, CreditCard, ShieldCheck, RotateCcw } from 'lucide-react';
 import AppointmentPage from '../Priya/Appointment';
 import { motion, AnimatePresence } from 'framer-motion';
 import toast from 'react-hot-toast';
 import PulsePaymentModal from '../../components/Tharindu/PulsePaymentModal';
+import { deleteBooking as cancelCaregiverBooking, requestBookingRefund } from '../../utils/Tharindu/caregiverApi';
+
+const formatLkr = (minorAmount = 0) => `${new Intl.NumberFormat('en-LK', {
+  minimumFractionDigits: 2,
+  maximumFractionDigits: 2,
+}).format((minorAmount || 0) / 100)} LKR`;
+
+const addHoursToTimeSlot = (timeLabel, hoursToAdd = 2) => {
+  const match = String(timeLabel || '').trim().match(/^(\d{1,2}):(\d{2})\s*(AM|PM)$/i);
+  if (!match) return timeLabel;
+
+  let [, hour, minutes, period] = match;
+  let normalizedHour = parseInt(hour, 10) % 12;
+
+  if (period.toUpperCase() === 'PM') {
+    normalizedHour += 12;
+  }
+
+  normalizedHour = (normalizedHour + hoursToAdd) % 24;
+  const nextPeriod = normalizedHour >= 12 ? 'PM' : 'AM';
+  const displayHour = normalizedHour % 12 || 12;
+
+  return `${displayHour.toString().padStart(2, '0')}:${minutes} ${nextPeriod}`;
+};
 
 export default function PatientAppointmentsTab({ onBookingSuccess }) {
   const { token, user } = useAuth();
+  const SESSION_FEE_AMOUNT = 525000;
+  const REFUND_PROTECTION_FEE = 50000;
+  const SESSION_FEE_CURRENCY = 'LKR';
+  const SESSION_FEE_LABEL = formatLkr(SESSION_FEE_AMOUNT);
+  const REFUND_PROTECTION_LABEL = formatLkr(REFUND_PROTECTION_FEE);
   const [activeTab, setActiveTab] = useState('caregiver'); // 'doctor' | 'caregiver'
   const [myBookings, setMyBookings] = useState([]);
   const [caregivers, setCaregivers] = useState([]);
@@ -18,18 +47,24 @@ export default function PatientAppointmentsTab({ onBookingSuccess }) {
   const [bookingDate, setBookingDate] = useState('');
   const [bookingTime, setBookingTime] = useState('');
   const [bookingNotes, setBookingNotes] = useState('');
+  const [refundProtectionSelected, setRefundProtectionSelected] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [downloadingReport, setDownloadingReport] = useState(false);
 
   // Payment flow state
   const [paymentClientSecret, setPaymentClientSecret] = useState(null);
+  const [paymentIntentId, setPaymentIntentId] = useState(null);
   const [showPaymentModal, setShowPaymentModal] = useState(false);
   const [fetchingIntent, setFetchingIntent] = useState(false);
+  const [cancellingBookingId, setCancellingBookingId] = useState(null);
+  const [refundingBookingId, setRefundingBookingId] = useState(null);
 
   // Time slots for demo
   const TIME_SLOTS = [
     '08:00 AM', '10:00 AM', '12:00 PM', '02:00 PM', '04:00 PM', '06:00 PM'
   ];
+  const totalFeeAmount = SESSION_FEE_AMOUNT + (refundProtectionSelected ? REFUND_PROTECTION_FEE : 0);
+  const totalFeeLabel = formatLkr(totalFeeAmount);
 
   const fetchData = async () => {
     setLoading(true);
@@ -86,20 +121,23 @@ export default function PatientAppointmentsTab({ onBookingSuccess }) {
 
     setFetchingIntent(true);
     try {
-      const res = await fetch('http://localhost:5000/api/tharindu/payment/create-intent', {
+      const res = await fetch(`${import.meta.env.VITE_API_URL}/tharindu/payment/create-intent`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
           Authorization: `Bearer ${token}`,
         },
         body: JSON.stringify({
-          amount: 5000,
-          currency: 'usd',
+          amount: totalFeeAmount,
+          currency: SESSION_FEE_CURRENCY.toLowerCase(),
           description: `Caregiver Session — ${bookingDate} at ${bookingTime}`,
           metadata: {
             caregiverId: selectedCaregiver._id,
             date: bookingDate,
             startTime: bookingTime,
+            caregiverName: `${selectedCaregiver.firstName} ${selectedCaregiver.lastName}`,
+            notes: bookingNotes || '',
+            refundProtectionSelected,
           }
         }),
       });
@@ -108,6 +146,7 @@ export default function PatientAppointmentsTab({ onBookingSuccess }) {
       if (!res.ok) throw new Error(data.message || 'Could not initiate payment.');
 
       setPaymentClientSecret(data.clientSecret);
+      setPaymentIntentId(data.paymentIntentId);
       setShowPaymentModal(true);
     } catch (err) {
       toast.error(err.message);
@@ -120,24 +159,36 @@ export default function PatientAppointmentsTab({ onBookingSuccess }) {
    * STEP 2 — Called by CaregiverPaymentModal after Stripe confirms the payment.
    * Now we save the booking to our database.
    */
-  const handlePaymentSuccess = async () => {
+  const handlePaymentSuccess = async (paymentIntent) => {
     setShowPaymentModal(false);
     setPaymentClientSecret(null);
     setSubmitting(true);
 
     try {
-      // Calculate 2-hour end time block
-      const baseHourStr = bookingTime.split(':')[0];
-      const period = bookingTime.split(' ')[1];
-      let endHour = parseInt(baseHourStr, 10) + 2;
-      let endPeriod = period;
-      if (endHour >= 12) {
-        if (endHour > 12) endHour -= 12;
-        if (baseHourStr !== '12') {
-          endPeriod = period === 'AM' ? 'PM' : 'AM';
-        }
+      const verifiedPaymentIntentId = paymentIntent?.id || paymentIntentId;
+
+      if (!verifiedPaymentIntentId) {
+        throw new Error('Payment verification failed. Missing payment intent.');
       }
-      const endTime = `${endHour.toString().padStart(2, '0')}:00 ${endPeriod}`;
+
+      const verifyRes = await fetch(`${import.meta.env.VITE_API_URL}/tharindu/payment/verify`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ paymentIntentId: verifiedPaymentIntentId }),
+      });
+
+      const verifyData = await verifyRes.json();
+      if (!verifyRes.ok) {
+        throw new Error(verifyData.message || 'Unable to verify payment.');
+      }
+      if (!verifyData.verified) {
+        throw new Error(`Payment is not complete yet. Current status: ${verifyData.status}`);
+      }
+
+      const endTime = addHoursToTimeSlot(bookingTime, 2);
 
       const payload = {
         caregiverId: selectedCaregiver._id,
@@ -145,6 +196,7 @@ export default function PatientAppointmentsTab({ onBookingSuccess }) {
         startTime: bookingTime,
         endTime,
         notes: bookingNotes,
+        paymentIntentId: verifiedPaymentIntentId,
       };
 
       const res = await fetch(`${import.meta.env.VITE_API_URL}/tharindu/bookings/request`, {
@@ -167,11 +219,45 @@ export default function PatientAppointmentsTab({ onBookingSuccess }) {
       setBookingDate('');
       setBookingTime('');
       setBookingNotes('');
+      setRefundProtectionSelected(false);
+      setPaymentIntentId(null);
       fetchData();
     } catch (err) {
       toast.error(err.message);
     } finally {
       setSubmitting(false);
+    }
+  };
+
+  const handleCancelBooking = async (bookingId) => {
+    const confirmed = window.confirm('Cancel this caregiver booking request?');
+    if (!confirmed) return;
+
+    setCancellingBookingId(bookingId);
+    try {
+      await cancelCaregiverBooking(token, bookingId);
+      toast.success('Booking cancelled successfully');
+      fetchData();
+    } catch (error) {
+      toast.error(error.message);
+    } finally {
+      setCancellingBookingId(null);
+    }
+  };
+
+  const handleRefundRequest = async (booking) => {
+    const confirmed = window.confirm('Request a refund for this caregiver booking?');
+    if (!confirmed) return;
+
+    setRefundingBookingId(booking._id);
+    try {
+      const response = await requestBookingRefund(token, booking._id);
+      toast.success(response.message || 'Refund request submitted successfully');
+      fetchData();
+    } catch (error) {
+      toast.error(error.message);
+    } finally {
+      setRefundingBookingId(null);
     }
   };
 
@@ -210,6 +296,7 @@ export default function PatientAppointmentsTab({ onBookingSuccess }) {
       case 'approved':
         return <span className="status-pill active"><CheckCircle2 size={12} style={{marginRight: '4px'}}/> Approved</span>;
       case 'rejected':
+        return <span className="status-pill warn"><AlertCircle size={12} style={{marginRight: '4px'}}/> Rejected</span>;
       case 'cancelled':
         return <span className="status-pill warn"><AlertCircle size={12} style={{marginRight: '4px'}}/> Cancelled</span>;
       case 'completed':
@@ -325,6 +412,86 @@ export default function PatientAppointmentsTab({ onBookingSuccess }) {
                               </div>
                             </div>
                           </div>
+                          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.75rem' }}>
+                            <div style={{ padding: '0.75rem', borderRadius: '12px', background: 'rgba(255,255,255,0.03)', border: '1px solid var(--admin-border)' }}>
+                              <div style={{ color: 'var(--admin-text-muted)', fontSize: '0.72rem', textTransform: 'uppercase', fontWeight: 700, letterSpacing: '0.05em' }}>Paid</div>
+                              <div style={{ color: 'var(--admin-text)', fontWeight: 700, marginTop: '0.2rem' }}>{formatLkr(book.totalPaidAmount || book.baseAmount || SESSION_FEE_AMOUNT)}</div>
+                            </div>
+                            <div style={{ padding: '0.75rem', borderRadius: '12px', background: 'rgba(255,255,255,0.03)', border: '1px solid var(--admin-border)' }}>
+                              <div style={{ color: 'var(--admin-text-muted)', fontSize: '0.72rem', textTransform: 'uppercase', fontWeight: 700, letterSpacing: '0.05em' }}>Refund Protection</div>
+                              <div style={{ color: book.refundProtectionSelected ? 'var(--p-green)' : 'var(--admin-text)', fontWeight: 700, marginTop: '0.2rem' }}>
+                                {book.refundProtectionSelected ? 'Enabled' : 'Not Added'}
+                              </div>
+                            </div>
+                          </div>
+                          {book.status === 'Pending' && user?.role !== 'caregiver' && (
+                            <button
+                              type="button"
+                              onClick={() => handleCancelBooking(book._id)}
+                              disabled={cancellingBookingId === book._id}
+                              style={{
+                                padding: '0.7rem 1rem',
+                                borderRadius: '10px',
+                                border: '1px solid rgba(239, 68, 68, 0.35)',
+                                background: 'rgba(239, 68, 68, 0.1)',
+                                color: '#f87171',
+                                fontWeight: 600,
+                                cursor: cancellingBookingId === book._id ? 'not-allowed' : 'pointer',
+                                opacity: cancellingBookingId === book._id ? 0.7 : 1,
+                              }}
+                            >
+                              {cancellingBookingId === book._id ? 'Cancelling...' : 'Cancel Request'}
+                            </button>
+                          )}
+                          {['Rejected', 'Cancelled'].includes(book.status) && (
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.6rem' }}>
+                              <div style={{ padding: '0.85rem 1rem', borderRadius: '12px', background: 'rgba(245, 158, 11, 0.08)', border: '1px solid rgba(245, 158, 11, 0.25)' }}>
+                                <div style={{ color: '#fbbf24', fontWeight: 700, fontSize: '0.82rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                                  Refund Summary
+                                </div>
+                                <div style={{ color: 'var(--admin-text)', fontWeight: 600, marginTop: '0.35rem', fontSize: '0.92rem' }}>
+                                  {book.refundProtectionSelected
+                                    ? `Eligible refund amount: ${formatLkr(book.refundableAmount || SESSION_FEE_AMOUNT)}`
+                                    : 'Refund protection was not added for this booking.'}
+                                </div>
+                                {book.refundStatus === 'refunded' && (
+                                  <div style={{ color: 'var(--p-green)', fontWeight: 700, marginTop: '0.35rem', fontSize: '0.88rem' }}>
+                                    Refunded: {formatLkr(book.refundAmount || book.refundableAmount || SESSION_FEE_AMOUNT)}
+                                  </div>
+                                )}
+                                {book.refundStatus === 'pending' && (
+                                  <div style={{ color: '#fbbf24', fontWeight: 700, marginTop: '0.35rem', fontSize: '0.88rem' }}>
+                                    Refund is being processed.
+                                  </div>
+                                )}
+                              </div>
+                              {book.refundStatus !== 'refunded' && (
+                                <button
+                                  type="button"
+                                  onClick={() => handleRefundRequest(book)}
+                                  disabled={refundingBookingId === book._id || book.refundStatus === 'pending'}
+                                  style={{
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    justifyContent: 'center',
+                                    gap: '0.5rem',
+                                    padding: '0.8rem 1rem',
+                                    borderRadius: '10px',
+                                    border: '1px solid rgba(0, 200, 151, 0.35)',
+                                    background: 'rgba(0, 200, 151, 0.12)',
+                                    color: 'var(--p-green)',
+                                    fontWeight: 700,
+                                    cursor: (refundingBookingId === book._id || book.refundStatus === 'pending') ? 'not-allowed' : 'pointer',
+                                    opacity: (refundingBookingId === book._id || book.refundStatus === 'pending') ? 0.7 : 1,
+                                  }}
+                                >
+                                  {refundingBookingId === book._id
+                                    ? <><Loader2 size={16} style={{ animation: 'spin 1s linear infinite' }} /> Processing Refund...</>
+                                    : <><RotateCcw size={16} /> Request Refund</>}
+                                </button>
+                              )}
+                            </div>
+                          )}
                         </div>
                       ))}
                     </div>
@@ -451,6 +618,42 @@ export default function PatientAppointmentsTab({ onBookingSuccess }) {
                           />
                         </div>
 
+                        <div style={{ padding: '1rem 1.1rem', borderRadius: '14px', background: refundProtectionSelected ? 'rgba(0,200,151,0.08)' : 'rgba(255,255,255,0.03)', border: refundProtectionSelected ? '1px solid rgba(0,200,151,0.28)' : '1px solid var(--admin-border)', display: 'flex', flexDirection: 'column', gap: '0.7rem' }}>
+                          <label style={{ display: 'flex', alignItems: 'flex-start', gap: '0.8rem', cursor: 'pointer' }}>
+                            <input
+                              type="checkbox"
+                              checked={refundProtectionSelected}
+                              onChange={(e) => setRefundProtectionSelected(e.target.checked)}
+                              style={{ marginTop: '0.2rem', accentColor: '#00C897' }}
+                            />
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem' }}>
+                              <span style={{ color: 'var(--admin-text)', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '0.45rem' }}>
+                                <ShieldCheck size={16} color="var(--p-green)" />
+                                Add Refund Protection (+{REFUND_PROTECTION_LABEL})
+                              </span>
+                              <span style={{ color: 'var(--admin-text-muted)', fontSize: '0.88rem', lineHeight: 1.55 }}>
+                                Lets you claim a refund of {SESSION_FEE_LABEL} if the caregiver rejects your request or if you cancel before approval. The protection fee itself is non-refundable.
+                              </span>
+                            </div>
+                          </label>
+                          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '0.75rem' }}>
+                            <div style={{ padding: '0.8rem', borderRadius: '12px', background: 'rgba(255,255,255,0.03)', border: '1px solid var(--admin-border)' }}>
+                              <div style={{ color: 'var(--admin-text-muted)', fontSize: '0.72rem', textTransform: 'uppercase', fontWeight: 700 }}>Session Fee</div>
+                              <div style={{ color: 'var(--admin-text)', fontWeight: 700, marginTop: '0.25rem' }}>{SESSION_FEE_LABEL}</div>
+                            </div>
+                            <div style={{ padding: '0.8rem', borderRadius: '12px', background: 'rgba(255,255,255,0.03)', border: '1px solid var(--admin-border)' }}>
+                              <div style={{ color: 'var(--admin-text-muted)', fontSize: '0.72rem', textTransform: 'uppercase', fontWeight: 700 }}>Protection</div>
+                              <div style={{ color: refundProtectionSelected ? 'var(--p-green)' : 'var(--admin-text)', fontWeight: 700, marginTop: '0.25rem' }}>
+                                {refundProtectionSelected ? REFUND_PROTECTION_LABEL : '0.00 LKR'}
+                              </div>
+                            </div>
+                            <div style={{ padding: '0.8rem', borderRadius: '12px', background: 'rgba(0,200,151,0.1)', border: '1px solid rgba(0,200,151,0.2)' }}>
+                              <div style={{ color: 'var(--p-green)', fontSize: '0.72rem', textTransform: 'uppercase', fontWeight: 700 }}>Total</div>
+                              <div style={{ color: 'var(--admin-text)', fontWeight: 700, marginTop: '0.25rem' }}>{totalFeeLabel}</div>
+                            </div>
+                          </div>
+                        </div>
+
                         <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '0.5rem' }}>
                           <button
                             type="submit"
@@ -472,7 +675,7 @@ export default function PatientAppointmentsTab({ onBookingSuccess }) {
                               ? <><Loader2 size={18} style={{ animation: 'spin 1s linear infinite' }} /> Preparing…</>
                               : submitting
                                 ? <><Loader2 size={18} style={{ animation: 'spin 1s linear infinite' }} /> Booking…</>
-                                : <><CreditCard size={18} /> Proceed to Payment</>}
+                                : <><CreditCard size={18} /> Proceed to Payment ({totalFeeLabel})</>}
                           </button>
                         </div>
 
@@ -493,19 +696,22 @@ export default function PatientAppointmentsTab({ onBookingSuccess }) {
           clientSecret={paymentClientSecret}
           title="Secure Checkout"
           subtitle="Caregiver Appointment Payment"
-          amount={5000}
-          currency="USD"
+          amount={totalFeeAmount}
+          currency={SESSION_FEE_CURRENCY}
           summaryTitle="Booking Summary"
           summaryItems={[
             { icon: <User size={14} />, label: "Caregiver", value: `${selectedCaregiver?.firstName ?? ''} ${selectedCaregiver?.lastName ?? ''}`.trim() },
             { icon: <Calendar size={14} />, label: "Date", value: new Date(bookingDate).toLocaleDateString(undefined, { weekday: 'short', day: 'numeric', month: 'short', year: 'numeric' }) },
             { icon: <Clock size={14} />, label: "Time", value: bookingTime },
-            { icon: <CreditCard size={14} />, label: "Session Fee", value: "$50.00 USD", highlight: true }
+            { icon: <CreditCard size={14} />, label: "Session Fee", value: SESSION_FEE_LABEL },
+            { icon: <ShieldCheck size={14} />, label: "Refund Protection", value: refundProtectionSelected ? REFUND_PROTECTION_LABEL : 'Not Added' },
+            { icon: <CreditCard size={14} />, label: "Total Payable", value: totalFeeLabel, highlight: true }
           ]}
           onSuccess={handlePaymentSuccess}
           onCancel={() => {
             setShowPaymentModal(false);
             setPaymentClientSecret(null);
+            setPaymentIntentId(null);
           }}
         />
       )}

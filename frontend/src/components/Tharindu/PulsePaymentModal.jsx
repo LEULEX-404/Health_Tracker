@@ -8,8 +8,8 @@
  *  - clientSecret   {string}  Stripe PaymentIntent client secret (mandatory)
  *  - title          {string}  Main title (e.g. "Secure Checkout")
  *  - subtitle       {string}  Sub title (e.g. "Caregiver Appointment Payment")
- *  - amount         {number}  Total amount in the smallest currency unit (e.g., 5000 for $50.00)
- *  - currency       {string}  Currency symbol or code (e.g., "USD")
+ *  - amount         {number}  Total amount in the smallest currency unit (e.g., 525000 for 5,250.00 LKR)
+ *  - currency       {string}  Currency symbol or code (e.g., "LKR")
  *  - summaryTitle   {string}  Title for the summary block (e.g., "Booking Summary")
  *  - summaryItems   {array}   Array of objects: [{ icon: <LucideIcon/>, label: "Name", value: "John", highlight: false }]
  *  - onSuccess      {fn}      Called with the paymentIntent after successful payment
@@ -118,7 +118,10 @@ function CheckoutForm({ amount, currency, summaryTitle, summaryItems, onSuccess,
     }
   };
 
-  const formattedAmount = `${(amount / 100).toFixed(2)} ${currency}`;
+  const formattedAmount = `${new Intl.NumberFormat('en-LK', {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  }).format(amount / 100)} ${currency}`;
 
   // ── Success screen ────────────────────────────────────────────────────────
   if (succeeded) {
@@ -290,7 +293,7 @@ function CheckoutForm({ amount, currency, summaryTitle, summaryItems, onSuccess,
 }
 
 // ── Main exported component ───────────────────────────────────────────────────
-export default function PulsePaymentModal({ clientSecret, title = "Secure Checkout", subtitle = "Complete your payment", amount = 0, currency = "USD", summaryTitle = "Summary", summaryItems = [], onSuccess, onCancel }) {
+export default function PulsePaymentModal({ clientSecret, title = "Secure Checkout", subtitle = "Complete your payment", amount = 0, currency = "LKR", summaryTitle = "Summary", summaryItems = [], onSuccess, onCancel }) {
   if (!clientSecret) return null;
 
   return (

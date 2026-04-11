@@ -6,8 +6,11 @@ import {
   deleteNotification,
   clearAllNotifications
 } from "../../controllers/Tharindu/notificationController.js";
+import { authenticate } from "../../middleware/Imasha/authMiddleware.js";
 
 const router = express.Router();
+
+router.use(authenticate);
 
 router.get("/:userId", getUserNotifications);
 router.patch("/:id/read", markNotificationRead);

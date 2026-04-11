@@ -33,6 +33,7 @@ import mealReminderRoutes from "./routes/Tharuka/mealReminderRoutes.js";
 import alertRoutes from "./routes/Tharindu/alertRoutes.js";
 import alertSettingsRoutes from "./routes/Tharindu/alertSettingsRoutes.js";
 import notificationRoutes from "./routes/Tharindu/notificationRoutes.js";
+import paymentWebhookRoutes from "./routes/Tharindu/paymentWebhookRoutes.js";
 
 // ─────────────────────────────────────────────
 // SERVICES
@@ -90,6 +91,7 @@ app.use(cors({
 // ==========================================
 // BODY PARSING MIDDLEWARE
 // ==========================================
+app.use("/api/tharindu/payment", paymentWebhookRoutes);
 app.use(express.json({ limit: '10mb' })); // Parse JSON bodies
 app.use(express.urlencoded({ extended: true, limit: '10mb' })); // Parse URL-encoded bodies
 
