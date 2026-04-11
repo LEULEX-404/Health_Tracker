@@ -351,8 +351,7 @@ export const sendAccountLockedEmail = async (email, firstName) => {
  * Sends welcome email
  */
 export const sendWelcomeEmail = async (email, firstName) => {
-  const dashboardUrl = process.env.PATIENT_HOME_URL || process.env.CLIENT_URL;
-
+  const dashboardUrl = process.env.CLIENT_URL || process.env.PATIENT_HOME_URL || 'https://health-tracker-y6v2.onrender.com';
   const htmlContent = renderEmailLayout({
     preheader: 'Your PulseNova account is verified and ready to use.',
     badge: 'Welcome to PulseNova',
