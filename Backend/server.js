@@ -32,6 +32,7 @@ import mealReminderRoutes from "./routes/Tharuka/mealReminderRoutes.js";
 import alertRoutes from "./routes/Tharindu/alertRoutes.js";
 import alertSettingsRoutes from "./routes/Tharindu/alertSettingsRoutes.js";
 import notificationRoutes from "./routes/Tharindu/notificationRoutes.js";
+import paymentWebhookRoutes from "./routes/Tharindu/paymentWebhookRoutes.js";
 
 // ─────────────────────────────────────────────
 // SERVICES
@@ -89,6 +90,7 @@ app.use(cors({
 // ==========================================
 // BODY PARSING MIDDLEWARE
 // ==========================================
+app.use("/api/tharindu/payment", paymentWebhookRoutes);
 app.use(express.json({ limit: '10mb' })); // Parse JSON bodies
 app.use(express.urlencoded({ extended: true, limit: '10mb' })); // Parse URL-encoded bodies
 
@@ -245,7 +247,7 @@ const startContinuousSimulator = () => {
         } catch (err) {
             console.error("[Simulator] Error:", err.message);
         }
-    }, process.env.SIMULATOR_INTERVAL_MS || 60000);
+    }, process.env.SIMULATOR_INTERVAL_MS || 60000000);
 };
 
 // Start simulator AFTER DB is connected
@@ -284,7 +286,7 @@ const startMealReminderProcessor = () => {
         } catch (err) {
             console.error("[Reminder Processor] Error:", err.message);
         }
-    }, 60000); // Run every minute
+    }, 60000000); // Run every minute
 };
 
 // Start reminder processor AFTER DB is connected

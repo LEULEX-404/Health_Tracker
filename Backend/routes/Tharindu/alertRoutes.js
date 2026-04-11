@@ -9,8 +9,14 @@ import {
   deleteAlert,
   deleteAllAlerts,
 } from "../../controllers/Tharindu/alertController.js";
+import {
+  authenticate,
+  isAdmin,
+} from "../../middleware/Imasha/authMiddleware.js";
 
 const router = express.Router();
+
+router.use(authenticate);
 
 // Alert lifecycle routes
 router.post("/", generateAlert);
@@ -19,7 +25,7 @@ router.get("/:id", getAlertById);
 router.put("/:id", updateStatus);
 router.patch("/:id/acknowledge", acknowledgeAlert);
 router.patch("/:id/resolve", resolveAlert);
-router.delete("/all", deleteAllAlerts);
-router.delete("/:id", deleteAlert);
+router.delete("/all", isAdmin, deleteAllAlerts);
+router.delete("/:id", isAdmin, deleteAlert);
 
 export default router;

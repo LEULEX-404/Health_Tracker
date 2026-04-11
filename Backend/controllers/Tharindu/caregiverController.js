@@ -1,14 +1,35 @@
 import CaregiverBooking from "../../models/Tharindu/CaregiverBooking.js";
 import User from "../../models/Imasha/User.js";
 import { sendNotification } from "../../services/Tharindu/notificationService.js";
+import {
+    sendBookingRequestEmails,
+    sendBookingStatusEmail,
+    sendPatientCancellationEmails,
+} from "../../services/Tharindu/caregiverBookingEmailService.js";
+import {
+    attachPaymentRecordToBooking,
+    unlockRefundForBooking,
+} from "../../services/Tharindu/caregiverRefundService.js";
 import PDFDocument from "pdfkit";
+
+const formatBookingSlot = (booking) =>
+    `${new Date(booking.date).toLocaleDateString()} at ${booking.startTime}`;
+
+const loadBookingParticipants = async ({ patientId, caregiverId }) => {
+    const [patient, caregiver] = await Promise.all([
+        User.findById(patientId).select("firstName lastName name email role"),
+        User.findById(caregiverId).select("firstName lastName name email role"),
+    ]);
+
+    return { patient, caregiver };
+};
 
 /**
  * Request a new caregiver booking (Patient action)
  */
 export const requestBooking = async (req, res) => {
     try {
-        const { caregiverId, date, startTime, endTime, notes } = req.body;
+        const { caregiverId, date, startTime, endTime, notes, paymentIntentId } = req.body;
         const patientId = req.user._id;
 
         // Verify caregiver exists and is actually a caregiver
@@ -17,7 +38,7 @@ export const requestBooking = async (req, res) => {
             return res.status(404).json({ message: "Caregiver not found" });
         }
 
-        const booking = await CaregiverBooking.create({
+        const booking = new CaregiverBooking({
             patientId,
             caregiverId,
             date,
@@ -26,11 +47,29 @@ export const requestBooking = async (req, res) => {
             notes,
         });
 
+        await attachPaymentRecordToBooking({
+            booking,
+            userId: patientId,
+            paymentIntentId,
+        });
+        await booking.save();
+
         // Notify Caregiver
         const message = `New booking request from patient for ${date} at ${startTime}.`;
         await sendNotification(caregiverId, "inApp", message, {
             bookingId: booking._id,
             patientId,
+        });
+
+        const { patient, caregiver: refreshedCaregiver } = await loadBookingParticipants({
+            patientId,
+            caregiverId,
+        });
+
+        await sendBookingRequestEmails({
+            booking,
+            patient,
+            caregiver: refreshedCaregiver,
         });
 
         res.status(201).json({
@@ -262,10 +301,26 @@ export const updateBookingStatus = async (req, res) => {
         booking.status = status;
         await booking.save();
 
+        if (["Rejected"].includes(status)) {
+            await unlockRefundForBooking(booking);
+        }
+
         // Notify Patient
         const message = `Your caregiver booking request has been ${status.toLowerCase()}.`;
         await sendNotification(booking.patientId, "inApp", message, {
             bookingId: booking._id,
+            status,
+        });
+
+        const { patient, caregiver } = await loadBookingParticipants({
+            patientId: booking.patientId,
+            caregiverId,
+        });
+
+        await sendBookingStatusEmail({
+            booking,
+            patient,
+            caregiver,
             status,
         });
 
@@ -290,15 +345,52 @@ export const deleteBooking = async (req, res) => {
         const booking = await CaregiverBooking.findOne({
             _id: bookingId,
             $or: [{ patientId: userId }, { caregiverId: userId }]
-        });
+        })
+            .populate("patientId", "firstName lastName name email")
+            .populate("caregiverId", "firstName lastName name email");
 
         if (!booking) {
             return res.status(404).json({ message: "Booking not found or unauthorized" });
         }
 
+        const isPatientAction = booking.patientId?._id?.toString() === userId.toString();
+
+        if (isPatientAction) {
+            if (booking.status !== "Pending") {
+                return res.status(400).json({
+                    message: "You can only cancel a caregiver booking before it is approved.",
+                });
+            }
+
+            booking.status = "Cancelled";
+            await booking.save();
+            await unlockRefundForBooking(booking);
+
+            const patientName =
+                `${booking.patientId?.firstName || ""} ${booking.patientId?.lastName || ""}`.trim() ||
+                booking.patientId?.name ||
+                "The patient";
+
+            await sendNotification(booking.caregiverId._id, "inApp", `${patientName} cancelled the booking request for ${formatBookingSlot(booking)}.`, {
+                bookingId: booking._id,
+                status: "Cancelled",
+            });
+
+            await sendPatientCancellationEmails({
+                booking,
+                patient: booking.patientId,
+                caregiver: booking.caregiverId,
+            });
+
+            return res.status(200).json({
+                success: true,
+                message: "Booking cancelled successfully",
+                data: booking,
+            });
+        }
+
         await CaregiverBooking.findByIdAndDelete(bookingId);
 
-// existing line
         res.status(200).json({
             success: true,
             message: "Booking deleted successfully"

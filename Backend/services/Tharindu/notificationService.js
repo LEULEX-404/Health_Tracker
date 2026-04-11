@@ -4,6 +4,7 @@ import Nexmo from "nexmo";
 
 import Notification from "../../models/Tharindu/Notification.js";
 import config from "../../config.js";
+import { getOrCreateSettings } from "./alertSettingsService.js";
 
 /**
  * Central event emitter so Socket.IO or other layers
@@ -227,6 +228,7 @@ export const sendNotification = async (userId, type, message, meta = {}) => {
 
 export const notifyOnNewAlert = async (alert) => {
   const baseMessage = buildMessageForAlert(alert);
+  const settings = await getOrCreateSettings(alert.userId);
   console.log(`[Notification] 🔔 New alert for user ${alert.userId}: ${alert.parameter} (${alert.severity}). Target Email: ${alert.userEmail || "N/A"}`);
 
   // Always create in-app notification + toast
@@ -239,21 +241,27 @@ export const notifyOnNewAlert = async (alert) => {
 
   // High/Critical also trigger email + SMS channels
   if (alert.severity === "High" || alert.severity === "Critical") {
-    await sendNotification(alert.userId, "email", baseMessage, {
-      alertId: alert._id,
-      userEmail: alert.userEmail,
-      alertInfo: alert, // Passing full alert for UI/UX
-    });
-    await sendNotification(alert.userId, "sms", baseMessage, {
-      alertId: alert._id,
-      userPhone: alert.userPhone,
-    });
+    if (settings.emailEnabled) {
+      await sendNotification(alert.userId, "email", baseMessage, {
+        alertId: alert._id,
+        userEmail: alert.userEmail,
+        alertInfo: alert, // Passing full alert for UI/UX
+      });
+    }
+    if (settings.smsEnabled) {
+      await sendNotification(alert.userId, "sms", baseMessage, {
+        alertId: alert._id,
+        userPhone: alert.userPhone,
+      });
+    }
   }
 };
 
 export const notifyOnEscalationCandidate = async (alert) => {
   const message = `⚠️ Escalation: repeated abnormal readings for ${alert.parameter} (value: ${alert.value}).`;
   console.log(`[Escalation] 🚨 Repeating triggers for user ${alert.userId}: ${alert.parameter}. Escalating to SMS/Email.`);
+
+  const settings = await getOrCreateSettings(alert.userId);
 
   // Always create in-app notification + toast for escalations
   await sendNotification(alert.userId, "inApp", message, {
@@ -263,15 +271,19 @@ export const notifyOnEscalationCandidate = async (alert) => {
     alertId: alert._id,
   });
 
-  await sendNotification(alert.userId, "email", message, {
-    alertId: alert._id,
-    userEmail: alert.userEmail,
-    alertInfo: alert, // Passing full alert for UI/UX
-  });
-  await sendNotification(alert.userId, "sms", message, {
-    alertId: alert._id,
-    userPhone: alert.userPhone,
-  });
+  if (settings.emailEnabled) {
+    await sendNotification(alert.userId, "email", message, {
+      alertId: alert._id,
+      userEmail: alert.userEmail,
+      alertInfo: alert, // Passing full alert for UI/UX
+    });
+  }
+  if (settings.smsEnabled) {
+    await sendNotification(alert.userId, "sms", message, {
+      alertId: alert._id,
+      userPhone: alert.userPhone,
+    });
+  }
 };
 
 export const notifyOnAlertResolved = async (alert) => {

@@ -25,9 +25,25 @@ const fmtDate      = (d) => new Date(d).toLocaleDateString('en-US', { weekday: '
 const fmtDateShort = (d) => new Date(d).toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
 const fmtTime      = (t) => {
   if (!t) return '';
-  const [h, m] = t.split(':');
-  const hr = parseInt(h, 10);
-  return `${hr > 12 ? hr - 12 : hr || 12}:${m} ${hr >= 12 ? 'PM' : 'AM'}`;
+
+  const value = String(t).trim();
+  const twelveHourMatch = value.match(/^(\d{1,2}):(\d{2})\s*(AM|PM)$/i);
+
+  if (twelveHourMatch) {
+    const [, hour, minutes, period] = twelveHourMatch;
+    const normalizedHour = parseInt(hour, 10) || 12;
+    return `${normalizedHour}:${minutes} ${period.toUpperCase()}`;
+  }
+
+  const twentyFourHourMatch = value.match(/^(\d{1,2}):(\d{2})(?::\d{2})?$/);
+  if (!twentyFourHourMatch) return value;
+
+  let [, hour, minutes] = twentyFourHourMatch;
+  let normalizedHour = parseInt(hour, 10);
+  const period = normalizedHour >= 12 ? 'PM' : 'AM';
+  normalizedHour = normalizedHour % 12 || 12;
+
+  return `${normalizedHour}:${minutes} ${period}`;
 };
 const timeAgo = (d) => {
   const s = Math.floor((Date.now() - new Date(d)) / 1000);
