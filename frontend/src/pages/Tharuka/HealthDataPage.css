@@ -4088,3 +4088,308 @@
 }
 
 /* ────────────────────────────────────────────────────── */
+/* Mobile responsiveness hardening */
+@media (max-width: 1024px) {
+  .hd-hero-inner {
+    grid-template-columns: 1fr !important;
+    gap: 2rem;
+    align-items: center;
+  }
+
+  .hd-hero-left,
+  .hd-hero-right {
+    width: 100%;
+  }
+
+  .hd-hero-right {
+    min-height: 300px;
+    height: 360px;
+  }
+
+  .hd-add-layout {
+    grid-template-columns: 1fr !important;
+    gap: 2rem;
+  }
+
+  .hd-insights-grid,
+  .hd-insights-secondary {
+    grid-template-columns: 1fr !important;
+  }
+
+  .hd-score-card {
+    grid-column: auto !important;
+    grid-row: auto !important;
+  }
+}
+
+@media (max-width: 768px) {
+  .hd-page {
+    overflow-x: hidden;
+  }
+
+  .hd-hero-banner {
+    height: auto !important;
+    min-height: 620px;
+  }
+
+  .hd-hero-inner {
+    padding-top: 4.5rem;
+    padding-bottom: 2rem;
+  }
+
+  .hd-hero-title {
+    font-size: clamp(2.1rem, 12vw, 3.4rem) !important;
+    line-height: 1.05;
+  }
+
+  .hd-hero-sub {
+    font-size: 0.98rem;
+    max-width: 100%;
+  }
+
+  .hd-hero-chips {
+    gap: 0.5rem;
+  }
+
+  .pn-chip {
+    max-width: 100%;
+  }
+
+  .hd-hero-actions {
+    flex-direction: column;
+    align-items: stretch;
+    width: 100%;
+  }
+
+  .hd-hero-action {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .hd-hero-right {
+    height: 300px;
+    transform: none;
+  }
+
+  .hd-fc {
+    max-width: min(100%, 320px);
+  }
+
+  .hd-current-vitals-section .container,
+  .hd-add-section .container,
+  .hd-history-section .container,
+  .hd-insights-section .container {
+    width: min(100% - 2rem, 100%);
+  }
+
+  .hd-vitals-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 1rem;
+  }
+
+  .hd-vitals-header__right,
+  .hd-pill-row {
+    width: 100%;
+    flex-wrap: wrap;
+  }
+
+  .hd-vitals-grid {
+    grid-template-columns: 1fr !important;
+    gap: 1rem;
+  }
+
+  .hd-v-card,
+  .hd-vital-card {
+    min-width: 0;
+  }
+
+  .hd-v-card__value-row,
+  .hd-vital-card__body,
+  .hd-vitals-summary {
+    flex-wrap: wrap;
+  }
+
+  .hd-vitals-summary {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 1rem;
+  }
+
+  .hd-summary-center,
+  .hd-summary-right,
+  .hd-legend {
+    width: 100%;
+  }
+
+  .hd-legend {
+    flex-wrap: wrap;
+  }
+
+  .hd-add-section {
+    padding: 3rem 0;
+  }
+
+  .hd-add-title {
+    font-size: clamp(2rem, 11vw, 3rem);
+  }
+
+  .hd-feature-stack {
+    gap: 0.75rem;
+  }
+
+  .hd-feature-mini,
+  .hd-fc {
+    min-width: 0 !important;
+  }
+
+  .hd-doctor-promo {
+    flex-direction: column;
+  }
+
+  .hd-form-card {
+    padding: 1.25rem !important;
+    border-radius: 24px;
+  }
+
+  .hd-form-header {
+    flex-direction: column;
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+  }
+
+  .hd-form-tabs {
+    width: 100%;
+  }
+
+  .hd-form-tab {
+    flex: 1;
+    min-width: 0;
+    justify-content: center;
+    padding-inline: 0.75rem;
+  }
+
+  .hd-input-grid {
+    grid-template-columns: 1fr !important;
+    gap: 1rem;
+  }
+
+  .hd-input-box {
+    min-width: 0;
+  }
+
+  .hd-submit-btn {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .hd-history-toolbar,
+  .n-log-header {
+    flex-direction: column;
+    align-items: stretch !important;
+    gap: 1rem;
+  }
+
+  .hd-search-wrap {
+    width: 100%;
+  }
+
+  .hd-search-wrap input {
+    min-width: 0 !important;
+    width: 100%;
+  }
+
+  .hd-history-actions {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .hd-action-extra {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .n-table-wrap {
+    margin-inline: -1rem;
+    padding-inline: 1rem;
+  }
+
+  .n-table {
+    min-width: 760px;
+  }
+
+  .hd-section-head--ai {
+    gap: 1rem;
+    margin-bottom: 2.5rem;
+  }
+
+  .hd-insights-title {
+    font-size: clamp(2rem, 11vw, 3rem) !important;
+  }
+
+  .hd-insights-sub {
+    font-size: 1rem;
+    max-width: 100%;
+  }
+
+  .hd-score-card,
+  .hd-tips-col,
+  .hd-anomalies-card,
+  .hd-wellness-card {
+    border-radius: 24px;
+    padding: 1.25rem;
+  }
+
+  .hd-score-main,
+  .hd-score-top,
+  .hd-score-trend-strip,
+  .hd-tip-top,
+  .hd-anomaly-top {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .hd-score-details {
+    grid-template-columns: 1fr;
+  }
+
+  .hd-score-num {
+    font-size: clamp(3.6rem, 18vw, 5rem);
+  }
+
+  .hd-tip-item {
+    flex-direction: column;
+    gap: 1rem;
+    padding: 1.25rem;
+  }
+}
+
+@media (max-width: 420px) {
+  .hd-hero-banner {
+    min-height: 660px;
+  }
+
+  .hd-hero-right {
+    height: 280px;
+  }
+
+  .hd-fc--score {
+    min-width: 0 !important;
+    width: min(100%, 260px);
+  }
+
+  .hd-fc--heart,
+  .hd-fc--bp,
+  .hd-fc--o2,
+  .hd-fc--temp {
+    width: min(100%, 250px);
+  }
+
+  .hd-form-tab {
+    font-size: 0.78rem;
+  }
+
+  .hd-history-section {
+    padding-bottom: 4rem;
+  }
+}

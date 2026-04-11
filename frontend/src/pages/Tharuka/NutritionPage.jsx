@@ -99,7 +99,7 @@ export default function NutritionPage() {
       <BackgroundEffect />
       <Header />
 
-      <main className="page-wrapper pn-page nu-page" style={{ position: 'relative', zIndex: 1, overflow: 'hidden' }}>
+      <main className="page-wrapper pn-page nu-page" style={{ position: 'relative', zIndex: 1, overflowX: 'hidden' }}>
 
         {/* Floating neon icons behind main content */}
         <div className="pn-float-neon pn-fn-1"><Apple size={36} /></div>

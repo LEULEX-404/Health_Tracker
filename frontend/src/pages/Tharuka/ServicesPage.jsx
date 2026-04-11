@@ -1,6 +1,5 @@
 import { useMemo, useState } from 'react';
-import { motion } from 'framer-motion';
-import { useTranslation } from 'react-i18next';
+import { AnimatePresence, motion } from 'framer-motion';
 import {
   Salad,
   Dumbbell,
@@ -204,8 +203,108 @@ const PRICING = [
   },
 ];
 
+const smoothEase = [0.16, 1, 0.3, 1];
+const smoothTransition = { duration: 0.7, ease: smoothEase };
+const MotionDiv = motion.div;
+const MotionImg = motion.img;
+const MotionSpan = motion.span;
+const MotionP = motion.p;
+
+const heroStatVariants = {
+  rest: { y: 0, scale: 1 },
+  hover: { y: -3, scale: 1.008, transition: { duration: 0.55, ease: smoothEase } },
+};
+
+const serviceCardVariants = {
+  hidden: (index) => ({
+    opacity: 0,
+    x: index % 2 === 0 ? -22 : 22,
+  }),
+  visible: (index) => ({
+    opacity: 1,
+    x: 0,
+    transition: { duration: 0.52, delay: index * 0.035, ease: smoothEase },
+  }),
+  hover: { y: -3, transition: { duration: 0.3, ease: smoothEase } },
+};
+
+const serviceImageVariants = {
+  hidden: {
+    opacity: 0.88,
+    x: 14,
+  },
+  visible: {
+    opacity: 1,
+    x: 0,
+    transition: { duration: 0.48, ease: smoothEase },
+  },
+  hover: { scale: 1.015, transition: { duration: 0.35, ease: smoothEase } },
+};
+
+const serviceOverlayVariants = {
+  hidden: { opacity: 0.72 },
+  visible: { opacity: 1, transition: { duration: 0.35, ease: smoothEase } },
+};
+
+const serviceIconVariants = {
+  hover: { y: -1, transition: { duration: 0.28, ease: smoothEase } },
+};
+
+const arrowVariants = {
+  hover: { x: 2, transition: { duration: 0.24, ease: smoothEase } },
+};
+
+const pricingCardVariants = {
+  hidden: { opacity: 0, y: 18, scale: 0.994 },
+  visible: (index) => ({
+    opacity: 1,
+    y: 0,
+    scale: 1,
+    transition: { duration: 0.82, delay: index * 0.07, ease: smoothEase },
+  }),
+  hover: { y: -4, scale: 1.005, transition: smoothTransition },
+};
+
+const faqItemVariants = {
+  hidden: { opacity: 0, y: 12, scale: 0.996 },
+  visible: (index) => ({
+    opacity: 1,
+    y: 0,
+    scale: 1,
+    transition: { duration: 0.72, delay: index * 0.045, ease: smoothEase },
+  }),
+  hover: { y: -2, scale: 1.001, transition: { duration: 0.55, ease: smoothEase } },
+};
+
+const faqIconVariants = {
+  rest: { scale: 1, rotate: 0 },
+  hover: { scale: 1.02, rotate: -2, transition: { duration: 0.5, ease: smoothEase } },
+  open: { scale: 1.04, rotate: 0, transition: { duration: 0.45, ease: smoothEase } },
+};
+
+const faqToggleVariants = {
+  rest: { scale: 1 },
+  hover: { scale: 1.02, transition: { duration: 0.45, ease: smoothEase } },
+  open: { scale: 1.02, transition: { duration: 0.45, ease: smoothEase } },
+};
+
+const faqAnswerVariants = {
+  initial: { height: 0, opacity: 0, marginTop: 0 },
+  animate: {
+    height: 'auto',
+    opacity: 1,
+    marginTop: 0,
+    transition: { duration: 0.45, ease: smoothEase },
+  },
+  exit: {
+    height: 0,
+    opacity: 0,
+    marginTop: 0,
+    transition: { duration: 0.32, ease: [0.4, 0, 1, 1] },
+  },
+};
+
 export default function ServicesPage() {
-  const { t } = useTranslation();
   const [openFaq, setOpenFaq] = useState(null);
   const [billingMode, setBillingMode] = useState('monthly');
 
@@ -241,11 +340,11 @@ export default function ServicesPage() {
         <section className="pn-svc-page__hero section-pad">
           <div className="container">
             <div className="pn-hero-shell">
-              <motion.div
+              <MotionDiv
                 className="pn-hero-copy"
-                initial={{ opacity: 0, y: 32 }}
+                initial={{ opacity: 0, y: 18 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.7 }}
+                transition={{ duration: 0.95, ease: smoothEase }}
               >
                 <div className="pn-pill">
                   <CircleDot size={12} />
@@ -266,39 +365,47 @@ export default function ServicesPage() {
                     View Pricing
                   </Link>
                 </div>
-              </motion.div>
+              </MotionDiv>
 
-              <motion.div
+              <MotionDiv
                 className="pn-hero-visual"
-                initial={{ opacity: 0, x: 30, scale: 0.96 }}
+                initial={{ opacity: 0, x: 18, scale: 0.985 }}
                 animate={{ opacity: 1, x: 0, scale: 1 }}
-                transition={{ duration: 0.75, delay: 0.15 }}
+                transition={{ duration: 1.05, delay: 0.08, ease: smoothEase }}
               >
                 <div className="pn-hero-image-wrap">
-                  <img src="/images/Tharuka/services/service_main.png" alt="PulseNova services" className="pn-hero-image" fetchPriority="high" />
-                  <motion.div className="pn-floating-card" animate={{ y: [0, -12, 0] }} transition={{ repeat: Infinity, duration: 2.2, ease: "easeInOut" }}>
+                  <MotionImg
+                    src="/images/Tharuka/services/service_main.png"
+                    alt="PulseNova services"
+                    className="pn-hero-image"
+                    fetchPriority="high"
+                    initial={{ opacity: 0, x: 26, scale: 1.015 }}
+                    animate={{ opacity: 1, x: 0, scale: 1 }}
+                    transition={{ duration: 1.1, delay: 0.16, ease: smoothEase }}
+                  />
+                  <MotionDiv className="pn-floating-card" animate={{ y: [0, -5, 0] }} transition={{ repeat: Infinity, duration: 6.2, ease: 'easeInOut' }}>
                     <HeartPulse size={18} />
                     <div>
                       <strong>Health Score</strong>
                       <span>94 / 100</span>
                     </div>
-                  </motion.div>
-                  <motion.div className="pn-floating-card pn-floating-card--two" animate={{ y: [0, -14, 0] }} transition={{ repeat: Infinity, duration: 2.5, ease: "easeInOut", delay: 0.3 }}>
+                  </MotionDiv>
+                  <MotionDiv className="pn-floating-card pn-floating-card--two" animate={{ y: [0, -6, 0] }} transition={{ repeat: Infinity, duration: 6.8, ease: 'easeInOut', delay: 0.3 }}>
                     <Activity size={18} />
                     <div>
                       <strong>Daily Activity</strong>
                       <span>8,540 steps</span>
                     </div>
-                  </motion.div>
-                  <motion.div className="pn-floating-card pn-floating-card--three" animate={{ y: [0, -10, 0] }} transition={{ repeat: Infinity, duration: 1.9, ease: "easeInOut", delay: 0.15 }}>
+                  </MotionDiv>
+                  <MotionDiv className="pn-floating-card pn-floating-card--three" animate={{ y: [0, -4, 0] }} transition={{ repeat: Infinity, duration: 5.6, ease: 'easeInOut', delay: 0.2 }}>
                     <Sparkles size={18} />
                     <div>
                       <strong>AI Recommendation</strong>
                       <span>Meal plan updated</span>
                     </div>
-                  </motion.div>
+                  </MotionDiv>
                 </div>
-              </motion.div>
+              </MotionDiv>
             </div>
 
             <div className="pn-svc-page__badges">
@@ -328,12 +435,13 @@ export default function ServicesPage() {
               ].map((s) => {
                 const Icon = s.icon;
                 return (
-                  <motion.div
+                  <MotionDiv
                     className="pn-hero-stat-card"
                     key={s.label}
                     style={{ '--stat-c': s.color, '--stat-bg': s.bg }}
-                    whileHover={{ y: -3 }}
-                    transition={{ duration: 0.2 }}
+                    initial="rest"
+                    whileHover="hover"
+                    variants={heroStatVariants}
                   >
                     <div className="pn-hero-stat-icon">
                       <Icon size={18} />
@@ -342,7 +450,7 @@ export default function ServicesPage() {
                       <strong>{s.value}</strong>
                       <span>{s.label}</span>
                     </div>
-                  </motion.div>
+                  </MotionDiv>
                 );
               })}
             </div>
@@ -360,23 +468,31 @@ export default function ServicesPage() {
               {SERVICES.map((svc, i) => {
                 const Icon = svc.icon;
                 return (
-                  <motion.div
+                  <MotionDiv
                     key={svc.id}
                     className="pn-svc-card"
-                    initial={{ opacity:0, y:20 }}
-                    whileInView={{ opacity:1, y:0 }}
+                    variants={serviceCardVariants}
+                    initial="hidden"
+                    whileInView="visible"
+                    whileHover="hover"
+                    custom={i}
                     viewport={{ once:true, amount: 0.1 }}
-                    transition={{ duration: 0.4, delay: i * 0.05 }}
-                    whileHover={{ y: -4 }}
                   >
                     <div className="pn-svc-card__image-wrap">
-                      <img src={svc.image} alt={svc.title} className="pn-svc-card__image" loading="lazy" decoding="async" />
-                      <div className="pn-svc-card__overlay" />
+                      <MotionImg
+                        src={svc.image}
+                        alt={svc.title}
+                        className="pn-svc-card__image"
+                        loading="lazy"
+                        decoding="async"
+                        variants={serviceImageVariants}
+                      />
+                      <MotionDiv className="pn-svc-card__overlay" variants={serviceOverlayVariants} />
                     </div>
                     {svc.badge && <div className="pn-svc-card__badge">{svc.badge}</div>}
-                    <div className="pn-svc-card__icon">
+                    <MotionDiv className="pn-svc-card__icon" variants={serviceIconVariants}>
                       <Icon size={22} />
-                    </div>
+                    </MotionDiv>
                     <h3 className="pn-svc-card__title">{svc.title}</h3>
                     <p className="pn-svc-card__tagline">{svc.tagline}</p>
                     <p className="pn-svc-card__desc">{svc.desc}</p>
@@ -392,9 +508,12 @@ export default function ServicesPage() {
                       ))}
                     </div>
                     <Link to="/dashboard" className="pn-svc-card__cta">
-                      {svc.cta} <ArrowRight size={14} />
+                      {svc.cta}{' '}
+                      <MotionSpan variants={arrowVariants} style={{ display: 'inline-flex' }}>
+                        <ArrowRight size={14} />
+                      </MotionSpan>
                     </Link>
-                  </motion.div>
+                  </MotionDiv>
                 );
               })}
             </div>
@@ -436,14 +555,15 @@ export default function ServicesPage() {
 
             <div className="pn-svc-page__pricing">
               {pricing.map((plan, i) => (
-                <motion.div
+                <MotionDiv
                   key={plan.name}
                   className={`pn-price-card ${plan.highlight ? 'pn-price-card--highlight' : ''}`}
-                  initial={{ opacity:0, y:20 }}
-                  whileInView={{ opacity:1, y:0 }}
+                  variants={pricingCardVariants}
+                  initial="hidden"
+                  whileInView="visible"
+                  whileHover="hover"
+                  custom={i}
                   viewport={{ once:true, amount: 0.1 }}
-                  transition={{ duration:0.4, delay: i * 0.08 }}
-                  whileHover={{ y: -4 }}
                 >
                   {plan.highlight && <div className="pn-price-card__top-badge">Most Popular</div>}
                   <h4 className="pn-price-card__name">{plan.name}</h4>
@@ -463,7 +583,7 @@ export default function ServicesPage() {
                   <Link to="/signup" className={plan.highlight ? 'btn-primary' : 'btn-outline'} style={{ width:'100%', justifyContent:'center', marginTop:'auto' }}>
                     {plan.cta}
                   </Link>
-                </motion.div>
+                </MotionDiv>
               ))}
             </div>
 
@@ -489,30 +609,59 @@ export default function ServicesPage() {
             </div>
             <div className="pn-svc-page__faq">
               {faqs.map((f, i) => (
-                <motion.div
+                <MotionDiv
                   key={i}
                   className={`pn-svc-page__faq-item ${openFaq === i ? 'open' : ''}`}
                   style={{ '--faq-c': f.color }}
-                  initial={{ opacity: 0, y: 10 }}
-                  whileInView={{ opacity: 1, y: 0 }}
+                  variants={faqItemVariants}
+                  initial="hidden"
+                  whileInView="visible"
+                  whileHover="hover"
+                  custom={i}
                   viewport={{ once: true, amount: 0.1 }}
-                  transition={{ duration: 0.3, delay: i * 0.05 }}
-                  whileHover={{ y: -2 }}
                 >
                   <button className="pn-svc-page__faq-q" onClick={() => setOpenFaq(openFaq === i ? null : i)}>
                     <div className="pn-svc-page__faq-q-left">
-                      <span className="pn-svc-page__faq-icon"><f.icon size={14} /></span>
+                      <MotionSpan
+                        className="pn-svc-page__faq-icon"
+                        variants={faqIconVariants}
+                        animate={openFaq === i ? 'open' : 'rest'}
+                      >
+                        <f.icon size={14} />
+                      </MotionSpan>
                       <div>
                         <em className="pn-svc-page__faq-tag">{f.tag}</em>
                         <span>{f.q}</span>
                       </div>
                     </div>
-                    <span className="pn-svc-page__faq-toggle">
-                      <ChevronDown size={18} style={{ flexShrink:0, transition:'transform 0.25s', transform: openFaq===i ? 'rotate(180deg)' : 'none' }} />
-                    </span>
+                    <MotionSpan
+                      className="pn-svc-page__faq-toggle"
+                      variants={faqToggleVariants}
+                      animate={openFaq === i ? 'open' : 'rest'}
+                    >
+                      <MotionSpan
+                        style={{ display: 'inline-flex', flexShrink: 0 }}
+                        animate={{ rotate: openFaq === i ? 180 : 0 }}
+                        transition={{ duration: 0.35, ease: smoothEase }}
+                      >
+                        <ChevronDown size={18} />
+                      </MotionSpan>
+                    </MotionSpan>
                   </button>
-                  {openFaq === i && <p className="pn-svc-page__faq-a">{f.a}</p>}
-                </motion.div>
+                  <AnimatePresence initial={false}>
+                    {openFaq === i && (
+                      <MotionP
+                        className="pn-svc-page__faq-a"
+                        variants={faqAnswerVariants}
+                        initial="initial"
+                        animate="animate"
+                        exit="exit"
+                      >
+                        {f.a}
+                      </MotionP>
+                    )}
+                  </AnimatePresence>
+                </MotionDiv>
               ))}
             </div>
 
