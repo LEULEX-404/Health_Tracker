@@ -36,6 +36,7 @@ React + Vite frontend, Node.js + Express backend, MongoDB persistence, and produ
 <a href="#installation">Installation</a> |
 <a href="#environment-configuration">Environment</a> |
 <a href="#running-the-application">Run</a> |
+<a href="#testing-report">Testing</a> |
 <a href="#deployment-blueprint">Deployment</a> |
 <a href="#api-reference">API Reference</a>
 
@@ -173,6 +174,88 @@ npm run build
 ```
 
 **Output Directory:** `frontend/dist`
+
+---
+
+## Testing Report
+
+This section documents the verification activities used for the Health Tracker MERN application. Testing covers backend API behavior, frontend build validation, role-based workflows, and manual end-to-end checks across the main modules.
+
+### Test Environment
+
+| Area | Configuration |
+|------|---------------|
+| Frontend | React + Vite running on `http://localhost:5173` |
+| Backend | Node.js + Express running on `http://localhost:5000` |
+| Database | MongoDB development database configured through `Backend/.env` |
+| API Documentation | Swagger UI available under `/api-docs/*` after starting the backend |
+| Authentication | JWT access token with refresh token support |
+
+### Automated Verification Commands
+
+Run these commands before final submission:
+
+```bash
+cd Backend
+npm test
+```
+
+```bash
+cd frontend
+npm run lint
+npm run build
+```
+
+| Command | Purpose | Expected Result |
+|---------|---------|-----------------|
+| `cd Backend && npm test` | Runs backend Vitest test suite when test files are available | Tests complete without failures |
+| `cd frontend && npm run lint` | Checks frontend source code quality | No lint errors |
+| `cd frontend && npm run build` | Validates production frontend build | `frontend/dist` is generated successfully |
+
+### API Testing Checklist
+
+| Module | Test Area | Expected Result |
+|--------|-----------|-----------------|
+| Authentication | Register, login, logout, refresh token, email verification, forgot/reset password | Valid users can authenticate and protected routes reject invalid tokens |
+| User Management | View users, update profile, upload profile image, soft delete user | User data is persisted and access rules are enforced |
+| Admin Management | Create, update, list, and delete doctors/caregivers | Admin-only operations work with proper validation |
+| Reports | Generate, list, preview/download PDF, delete report | Reports are created and exported correctly |
+| Health Data | Add manual vitals, upload PDF, view records, resolve alerts | Health records and alert history are saved correctly |
+| Nutrition | Log meals, check nutrition, update/delete meals, add recommendations | Nutrition entries and analysis views return correct data |
+| Meal Plans | Create, suggest, filter, update, delete meal plans | Patient meal plans are managed correctly |
+| Appointments | Create, update, cancel, approve/reject appointments | Appointment status changes follow the expected workflow |
+| Alerts and Notifications | Generate alerts, acknowledge/resolve alerts, mark notifications read | Alert and notification states update correctly |
+| Caregiver Bookings | Request booking, view bookings, update status, download report | Booking lifecycle works for patients, caregivers, and admins |
+| Payments | Create Stripe payment intent | Payment intent is created with valid request data |
+
+### Manual End-to-End Scenarios
+
+| Scenario | Steps | Expected Result |
+|----------|-------|-----------------|
+| Patient onboarding | Register patient, verify email, login, complete profile | Patient reaches the correct dashboard with saved profile data |
+| Admin user management | Login as admin, open dashboard, manage patients/doctors/caregivers | Admin can view and update operational records |
+| Report generation | Login as admin, generate a user activity or system report, download PDF | Report appears in the reports table and downloads as PDF |
+| Health monitoring | Add vitals or upload health data, check alerts and reports | Records are visible and alert status is accurate |
+| Appointment workflow | Patient creates appointment, admin approves/rejects, user views status | Appointment status is updated across relevant dashboards |
+| Caregiver booking workflow | Patient requests caregiver, caregiver/admin updates booking status | Booking records reflect the latest status |
+| Notification workflow | Trigger alert or booking update, open notifications, mark as read | Notification read state is updated |
+| Responsive UI check | Open core pages on desktop and mobile viewport sizes | Layout remains usable without overlapping content |
+
+### Test Data Used
+
+| Role | Purpose |
+|------|---------|
+| Admin | Validate dashboard, user management, reports, audit logs, and approval workflows |
+| Patient | Validate registration, profile, health data, nutrition, appointments, bookings, and payments |
+| Doctor | Validate doctor profile and appointment-related views |
+| Caregiver | Validate caregiver profile and booking-related workflows |
+
+### Testing Notes
+
+- Backend API endpoints can be verified through Swagger UI or an API client such as Postman.
+- Private endpoints must include `Authorization: Bearer <token>`.
+- Third-party features such as Google OAuth, Gmail, Cloudinary, Stripe, and Vonage require valid environment variables.
+- PDF export tests should confirm that generated files open correctly and contain the expected user/report data.
 
 ---
 

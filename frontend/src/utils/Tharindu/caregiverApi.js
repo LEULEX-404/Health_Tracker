@@ -38,6 +38,13 @@ export async function deleteBooking(token, bookingId) {
   });
 }
 
+export async function requestBookingRefund(token, bookingId) {
+  return request(`${API_BASE}/tharindu/payment/refund/${bookingId}`, {
+    method: 'POST',
+    headers: headers(token),
+  });
+}
+
 /* ═══════════════════════════════════════════
    NOTIFICATIONS  –  /api/notifications
    ═══════════════════════════════════════════ */

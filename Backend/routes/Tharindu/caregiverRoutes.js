@@ -8,7 +8,7 @@ import {
     getAvailableCaregivers,
     downloadMyBookingsReport
 } from "../../controllers/Tharindu/caregiverController.js";
-import { authenticate, isPatient, isCaregiver } from "../../middleware/Imasha/authMiddleware.js";
+import { authenticate, isPatient, isCaregiver, isAdmin } from "../../middleware/Imasha/authMiddleware.js";
 
 const router = express.Router();
 
@@ -21,6 +21,6 @@ router.get("/my-bookings", getMyBookings);
 router.get("/my-bookings/report", isPatient, downloadMyBookingsReport);
 router.patch("/status/:bookingId", isCaregiver, updateBookingStatus);
 router.delete("/:bookingId", deleteBooking);
-router.get("/admin/all", getAllBookingsAdmin);
+router.get("/admin/all", isAdmin, getAllBookingsAdmin);
 
 export default router;

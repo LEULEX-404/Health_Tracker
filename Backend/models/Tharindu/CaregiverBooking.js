@@ -32,6 +32,56 @@ const caregiverBookingSchema = new mongoose.Schema(
         notes: {
             type: String,
         },
+        paymentIntentId: {
+            type: String,
+            index: true,
+            sparse: true,
+        },
+        paymentRecordId: {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: "Payment",
+        },
+        baseAmount: {
+            type: Number,
+            default: 0,
+        },
+        totalPaidAmount: {
+            type: Number,
+            default: 0,
+        },
+        refundProtectionSelected: {
+            type: Boolean,
+            default: false,
+        },
+        refundProtectionFee: {
+            type: Number,
+            default: 0,
+        },
+        refundableAmount: {
+            type: Number,
+            default: 0,
+        },
+        refundStatus: {
+            type: String,
+            enum: ["not_applicable", "locked", "available", "pending", "refunded", "failed"],
+            default: "not_applicable",
+        },
+        refundId: {
+            type: String,
+        },
+        refundAmount: {
+            type: Number,
+            default: 0,
+        },
+        refundRequestedAt: {
+            type: Date,
+        },
+        refundedAt: {
+            type: Date,
+        },
+        refundFailureMessage: {
+            type: String,
+        },
     },
     {
         timestamps: true,

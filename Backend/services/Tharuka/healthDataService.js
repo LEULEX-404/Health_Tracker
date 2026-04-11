@@ -1,5 +1,6 @@
 import HealthData from "../../models/Tharuka/HealthData.js";
 import { createRequire } from "module";
+import { analyzeHealthData } from "../Tharindu/alertService.js";
 const require = createRequire(import.meta.url);
 const pdf = require("pdf-parse");
 import fs from "fs";
@@ -13,7 +14,9 @@ const saveManualEntry = async (userId, vitals) => {
     recordedAt: new Date(),
   });
 
-  return { entry, alerts: [] };
+  const { alerts } = await analyzeHealthData(entry);
+
+  return { entry, alerts };
 };
 
 // ─── PDF Upload ───────────────────────────────────────────────
@@ -62,7 +65,9 @@ const savePdfEntry = async (userId, file) => {
     recordedAt:  new Date(),
   });
 
-  return { entry, alerts: [], extractedText: rawText.substring(0, 500) };
+  const { alerts } = await analyzeHealthData(entry);
+
+  return { entry, alerts, extractedText: rawText.substring(0, 500) };
 };
 
 // ─── Get Recent Records ───────────────────────────────────────
