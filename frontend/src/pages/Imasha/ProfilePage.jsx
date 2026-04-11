@@ -474,8 +474,15 @@ export default function ProfilePage() {
             if (res.ok) {
                 const d = await res.json();
                 toast.success('Photo updated!');
-                if (updateUser && d.user)         updateUser(d.user);
-                else if (updateUser && d.profileImage) updateUser({ profileImage: d.profileImage });
+
+                if (updateUser && d.user) {
+                    updateUser(d.user);
+                } else if (updateUser && d.data?.profileImage) {
+                    updateUser({ profileImage: d.data.profileImage });
+                } else if (updateUser && d.profileImage) {
+                    updateUser({ profileImage: d.profileImage });
+                }
+
             } else {
                 const d = await res.json();
                 toast.error(d.message || 'Upload failed');
@@ -939,6 +946,7 @@ export default function ProfilePage() {
                                         <div className="ims-profile__avatar-wrap">
                                             {user?.profileImage
                                                 ? <img 
+                                                    src={user.profileImage}
                                                     fetchPriority="high"
                                                     loading="eager"
                                                     alt={displayName} 

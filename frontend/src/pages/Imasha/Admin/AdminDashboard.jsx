@@ -1,3 +1,4 @@
+/* eslint-disable no-unused-vars */
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { useAuth } from '../../../context/Imasha/AuthContext';
@@ -34,7 +35,7 @@ const StatCardBackground = ({ src, alt }) => {
 
 const AdminDashboard = () => {
     const { user, logout, token } = useAuth();
-    const [theme, setTheme] = useState('dark');
+    const [theme, setTheme] = useState('light');
     const [activeTab, setActiveTab] = useState('overview');
     const [isSidebarOpen, setIsSidebarOpen] = useState(true);
     const [heroLoaded, setHeroLoaded] = useState(false);
