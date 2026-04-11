@@ -1,3 +1,4 @@
+/* eslint-disable no-unused-vars */
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { useAuth } from '../../context/Imasha/AuthContext';
 import { getAllUsers } from '../../utils/Imasha/adminApi';
@@ -248,7 +249,7 @@ export default function AdminAlertsTab() {
                           {' '} {a.parameter}
                         </div>
                         <div className="font-bold text-danger mt-1">{a.value}</div>
-                        <div className="text-xs admin-text-muted mt-1" title={a._id}>ID: {...a._id.slice(-6)}</div>
+                        <div className="text-xs admin-text-muted mt-1" title={a._id}>ID: ...{a._id.slice(-6)}</div>
                       </td>
                       <td>
                         <div className="font-medium">{a.patientName}</div>

@@ -414,10 +414,10 @@
   border-radius: var(--p-card-radius);
   opacity: 0.35;
   animation: glowScan 4s linear infinite;
-  mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
-  mask-composite: exclude;
   -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
   -webkit-mask-composite: xor;
+  mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  mask-composite: exclude;
   padding: 2px;
 }
 
@@ -783,8 +783,8 @@
   width: 40px;
   height: 40px;
   background: rgba(255, 255, 255, 0.2);
-  backdrop-filter: blur(4px);
   -webkit-backdrop-filter: blur(4px);
+  backdrop-filter: blur(4px);
   border: 1px solid rgba(255, 255, 255, 0.4);
   color: white;
   border-radius: 12px;
@@ -838,8 +838,8 @@
   inset: 0;
   z-index: 2;
   background: linear-gradient(135deg, rgba(34, 197, 94, 0.7), rgba(21, 128, 61, 0.8));
-  backdrop-filter: blur(2px);
   -webkit-backdrop-filter: blur(2px);
+  backdrop-filter: blur(2px);
 }
 
 .ims-profile__banner-content-new {
@@ -898,8 +898,8 @@
   align-items: center;
   gap: 6px;
   background: rgba(0, 0, 0, 0.25);
-  backdrop-filter: blur(4px);
   -webkit-backdrop-filter: blur(4px);
+  backdrop-filter: blur(4px);
   color: white;
   padding: 6px 14px;
   border-radius: 100px;
@@ -990,8 +990,8 @@
   width: 40px;
   height: 40px;
   background: rgba(255, 255, 255, 0.2);
-  backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
+  backdrop-filter: blur(12px);
   border: 1px solid rgba(255, 255, 255, 0.3);
   border-radius: 12px;
   display: flex;
@@ -1003,8 +1003,8 @@
 
 .ims-profile__stat-status-badge {
   background: rgba(255, 255, 255, 0.15);
-  backdrop-filter: blur(8px);
   -webkit-backdrop-filter: blur(8px);
+  backdrop-filter: blur(8px);
   padding: 0.3rem 0.85rem;
   border-radius: 100px;
   font-size: 0.65rem;
@@ -1304,8 +1304,8 @@
 /* --- Content Header --- */
 .ims-profile__header {
   background: var(--glass-bg);
-  backdrop-filter: blur(20px) saturate(180%);
   -webkit-backdrop-filter: blur(20px) saturate(180%);
+  backdrop-filter: blur(20px) saturate(180%);
   border: 1px solid var(--glass-border);
   border-radius: 18px;
   padding: 1.2rem 1.5rem;
@@ -1396,8 +1396,8 @@
 /* --- Body Card --- */
 .ims-profile__body {
   background: var(--glass-bg);
-  backdrop-filter: blur(20px) saturate(180%);
   -webkit-backdrop-filter: blur(20px) saturate(180%);
+  backdrop-filter: blur(20px) saturate(180%);
   border: 1px solid var(--glass-border);
   border-radius: 18px;
   padding: 1.5rem;
@@ -1515,8 +1515,8 @@
 
 .ims-profile__input-wrapper select {
   cursor: pointer;
-  appearance: none;
   -webkit-appearance: none;
+  appearance: none;
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%2364748b' stroke-width='2.5'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E") !important;
   background-repeat: no-repeat !important;
   background-position: right 1rem center !important;

@@ -1,3 +1,4 @@
+/* eslint-disable react-hooks/exhaustive-deps */
 /* eslint-disable no-unused-vars */
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { useAuth } from '../../../context/Imasha/AuthContext';
