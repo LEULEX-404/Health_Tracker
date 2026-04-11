@@ -15,6 +15,7 @@ import {
   AUDIT_ACTIONS,
 } from '../../constants/Imasha/index.js';
 import authService from './authService.js';
+import { sendWelcomeEmail } from './emailService.js';
 
 /**
  * Google OAuth Service
@@ -69,6 +70,7 @@ class GoogleAuthService {
       const lastName = payload.family_name || '';
       const profileImage = payload.picture || '';
       const isEmailVerified = payload.email_verified || false;
+      let shouldSendWelcomeEmail = false;
 
       // Find or create user
       let user = await User.findOne({
@@ -80,12 +82,18 @@ class GoogleAuthService {
 
       if (user) {
         // Update existing user
+        const wasEmailVerified = user.isEmailVerified;
+
         if (!user.googleId) {
           user.googleId = googleId;
         }
 
         if (!user.isEmailVerified && isEmailVerified) {
           user.isEmailVerified = true;
+        }
+
+        if (!wasEmailVerified && user.isEmailVerified) {
+          shouldSendWelcomeEmail = true;
         }
 
         if (!user.profileImage && profileImage) {
@@ -112,6 +120,7 @@ class GoogleAuthService {
         });
 
         await user.save();
+        shouldSendWelcomeEmail = true;
       }
 
       // Check if account is active
@@ -125,6 +134,14 @@ class GoogleAuthService {
 
       // Save refresh token
       await authService.saveRefreshToken(user._id, refreshToken, ipAddress);
+
+      if (shouldSendWelcomeEmail) {
+        try {
+          await sendWelcomeEmail(user.email, user.firstName || firstName || 'there');
+        } catch (emailError) {
+          console.error('Failed to send Google welcome email:', emailError);
+        }
+      }
 
       // Create audit log
       await this.createAuditLog({
