@@ -12,10 +12,12 @@ const EMAIL_THEME = {
   primary: '#00c897',
   primaryDark: '#059669',
   accent: '#39ff14',
+  deepGreen: '#052e2b',
+  headerInk: '#0b1f19',
   ink: '#0f172a',
   muted: '#64748b',
   surface: '#ffffff',
-  surfaceAlt: '#f8fffc',
+  surfaceAlt: '#f3fffa',
   border: '#d7f5ea',
   successBg: '#ecfdf5',
   successBorder: '#a7f3d0',
@@ -33,10 +35,10 @@ const escapeHtml = (value = '') =>
     .replace(/'/g, '&#39;');
 
 const renderLogoMarkup = () => `
-  <table role="presentation" cellpadding="0" cellspacing="0" border="0" style="margin: 0 auto;">
+  <table role="presentation" cellpadding="0" cellspacing="0" border="0">
     <tr>
-      <td style="padding-right: 12px; vertical-align: middle;">
-        <svg width="42" height="42" viewBox="0 0 36 36" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+      <td style="padding-right: 10px; vertical-align: middle;">
+        <svg width="40" height="40" viewBox="0 0 36 36" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
           <circle cx="18" cy="18" r="17" stroke="#00c897" stroke-width="2"/>
           <path d="M4 18 L10 18 L13 11 L16 25 L19 14 L22 20 L25 18 L32 18" stroke="url(#pulseGradEmail)" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
           <defs>
@@ -49,10 +51,10 @@ const renderLogoMarkup = () => `
         </svg>
       </td>
       <td style="vertical-align: middle; text-align: left;">
-        <div style="font-family: Arial, sans-serif; font-size: 24px; font-weight: 800; line-height: 1; color: #ffffff; letter-spacing: -0.02em;">
-          Pulse<span style="color: #39ff14;">Nova</span>
+        <div style="font-family: Arial, sans-serif; font-size: 22px; font-weight: 800; line-height: 1; color: ${EMAIL_THEME.headerInk}; letter-spacing: -0.02em;">
+          Pulse<span style="color: ${EMAIL_THEME.primary};">Nova</span>
         </div>
-        <div style="font-family: Arial, sans-serif; font-size: 10px; font-weight: 700; letter-spacing: 0.18em; text-transform: uppercase; color: rgba(255, 255, 255, 0.72); padding-top: 4px;">
+        <div style="font-family: Arial, sans-serif; font-size: 10px; font-weight: 700; letter-spacing: 0.14em; text-transform: uppercase; color: #5f7f72; padding-top: 4px;">
           Every Pulse Matters
         </div>
       </td>
@@ -140,19 +142,27 @@ const renderEmailLayout = ({
           <td align="center" style="padding: 36px 16px;">
             <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="max-width: 640px;">
               <tr>
-                <td style="padding-bottom: 20px; text-align: center;">
-                  ${renderLogoMarkup()}
+                <td style="background: ${EMAIL_THEME.surface}; border: 1px solid ${EMAIL_THEME.border}; border-radius: 28px 28px 0 0; padding: 18px 24px;">
+                  <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%">
+                    <tr>
+                      <td style="vertical-align: middle;">
+                        ${renderLogoMarkup()}
+                      </td>
+                      <td style="text-align: right; vertical-align: middle;">
+                        <div style="display: inline-block; padding: 8px 14px; border-radius: 999px; background: rgba(0, 200, 151, 0.08); border: 1px solid rgba(0, 200, 151, 0.18); font-family: Arial, sans-serif; font-size: 11px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.14em; color: ${EMAIL_THEME.primaryDark};">
+                          ${badge}
+                        </div>
+                      </td>
+                    </tr>
+                  </table>
                 </td>
               </tr>
               <tr>
-                <td style="background: linear-gradient(135deg, #052e2b 0%, #0c4a44 60%, #0d5f56 100%); border-radius: 28px 28px 0 0; padding: 28px 32px 26px; text-align: left;">
-                  <div style="display: inline-block; padding: 8px 14px; border-radius: 999px; background: rgba(255, 255, 255, 0.12); border: 1px solid rgba(255, 255, 255, 0.18); font-family: Arial, sans-serif; font-size: 11px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.14em; color: #d1fae5;">
-                    ${badge}
-                  </div>
-                  <h1 style="margin: 18px 0 10px; font-family: Arial, sans-serif; font-size: 34px; line-height: 1.15; letter-spacing: -0.03em; color: #ffffff;">
+                <td style="background: linear-gradient(135deg, ${EMAIL_THEME.deepGreen} 0%, #0a201a 55%, #0f3d34 100%); border-left: 1px solid ${EMAIL_THEME.border}; border-right: 1px solid ${EMAIL_THEME.border}; padding: 30px 32px 28px; text-align: left;">
+                  <h1 style="margin: 0 0 10px; font-family: Arial, sans-serif; font-size: 34px; line-height: 1.15; letter-spacing: -0.03em; color: #ffffff;">
                     ${title}
                   </h1>
-                  <p style="margin: 0; font-family: Arial, sans-serif; font-size: 16px; line-height: 1.75; color: rgba(255, 255, 255, 0.82);">
+                  <p style="margin: 0; font-family: Arial, sans-serif; font-size: 16px; line-height: 1.8; color: #d8f7eb;">
                     ${intro}
                   </p>
                 </td>
