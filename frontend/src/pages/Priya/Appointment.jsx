@@ -29,14 +29,14 @@ function normalizePhone(phone) {
 }
 
 function isValidSriLankaMobile(phone) {
-  return /^(070|071|072|074|076|077|078)\d{7}$/.test(normalizePhone(phone));
+  return /^(070|071|072|074|075|076|077|078)\d{7}$/.test(normalizePhone(phone));
 }
 
 function getPhoneValidationMessage(phone) {
   const digits = normalizePhone(phone);
   if (!digits) return 'Phone is required';
-  if (digits.length >= 3 && !/^(070|071|072|074|076|077|078)/.test(digits)) {
-    return 'Phone must start with 070, 071, 072, 074, 076, 077, or 078.';
+  if (digits.length >= 3 && !/^(070|071|072|074|075|076|077|078)/.test(digits)) {
+    return 'Phone must start with 070, 071, 072, 074, 075, 076, 077, or 078.';
   }
   if (digits.length < 10) {
     return 'Phone must contain exactly 10 digits.';

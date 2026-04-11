@@ -306,6 +306,7 @@ export default function ProfilePage() {
     const [updateSection, setUpdateSection] = useState('personal');
     const [imageLoading, setImageLoading]     = useState(false);
     const [refreshTrigger, setRefreshTrigger] = useState(0);
+    const [appointmentView, setAppointmentView] = useState('doctor');
 
     const triggerStatsRefresh = useCallback(() => {
         setRefreshTrigger(prev => prev + 1);
@@ -757,79 +758,78 @@ export default function ProfilePage() {
                     exit={{ opacity: 0, y: -10 }}
                     className="ims-profile__settings"
                 >
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
-                        <h3 className="ims-profile__form-section-title" style={{ margin: 0 }}>
-                            <ClipboardList size={12} />Appointments &amp; Bookings
-                        </h3>
-                        <Link
-                            to={user?.role === 'caregiver' ? '/caregiver-dashboard' : '/Appointment'}
-                            className="ims-profile__save-btn"
-                            style={{
-                                textDecoration: 'none',
-                                display: 'inline-flex',
-                                alignItems: 'center',
-                                justifyContent: 'center',
-                                width: 'auto',
-                                padding: '0 14px',
-                                height: 36,
-                                fontSize: '13px',
-                            }}
-                        >
-                            {user?.role === 'caregiver' ? 'Go to Dashboard' : 'View All History'}
-                        </Link>
-                    </div>
-
-                    <div className="ims-profile__appointments-layout" style={{ display: 'flex', flexDirection: 'column', gap: '30px' }}>
-
-                        {/* Caregiver Bookings Section */}
-                        <div className="ims-profile__section">
-                            <h4 style={{ fontSize: '14px', marginBottom: '15px', color: 'var(--p-cyan)', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                                <Sparkles size={14} /> Caregiver Services
-                            </h4>
-                            <PatientAppointmentsTab onBookingSuccess={triggerStatsRefresh} />
+                    <div className="ims-profile__appointments-shell">
+                        <div className="ims-profile__appointments-tabs" role="tablist" aria-label="Appointments View">
+                            <button
+                                type="button"
+                                role="tab"
+                                aria-selected={appointmentView === 'doctor'}
+                                className={`ims-profile__appointments-tab ${appointmentView === 'doctor' ? 'is-active' : ''}`}
+                                onClick={() => setAppointmentView('doctor')}
+                            >
+                                <Stethoscope size={16} />
+                                <span>Doctor Appointments</span>
+                            </button>
+                            <button
+                                type="button"
+                                role="tab"
+                                aria-selected={appointmentView === 'caregiver'}
+                                className={`ims-profile__appointments-tab ${appointmentView === 'caregiver' ? 'is-active' : ''}`}
+                                onClick={() => setAppointmentView('caregiver')}
+                            >
+                                <Heart size={16} />
+                                <span>Caregiver Appointments</span>
+                            </button>
                         </div>
 
-                        <div className="ims-profile__divider" style={{ margin: '10px 0' }} />
-
-                        {/* Recent Doctor Appointments */}
-                        <div className="ims-profile__section">
-                            <h4 style={{ fontSize: '14px', marginBottom: '15px', opacity: 0.8 }}>Recent Doctor Appointments</h4>
-                            {appointmentsLoading ? (
-                                <div className="ims-profile__placeholder-content">
-                                    <p>Loading appointments...</p>
-                                </div>
-                            ) : recentAppointments.length === 0 ? (
-                                <div className="ims-profile__placeholder-content">
-                                    <p>No recent doctor appointments found.</p>
-                                </div>
-                            ) : (
-                                <div className="ims-profile__form-grid">
-                                    {recentAppointments.slice(0, 4).map((apt) => (
-                                        <div key={apt._id} className="ims-profile__appointment-card full">
-                                            <div className="ims-profile__appointment-left">
-                                                <img
-                                                    src={apt.avatar || '/images/Priya/doctor-01.png'}
-                                                    alt={apt.doctor || 'Doctor'}
-                                                    className="ims-profile__appointment-avatar"
-                                                />
-                                                <div>
-                                                    <label>{apt.doctor || 'Doctor'}</label>
-                                                    <div style={{ color: 'var(--text-secondary)', fontSize: 13 }}>{apt.date || '-'} at {apt.time || '-'}</div>
-                                                    <div className={`ims-profile__status-tag ${apt.status?.toLowerCase() || 'pending'}`}>
-                                                        {apt.status || 'Scheduled'}
+                        {appointmentView === 'doctor' ? (
+                            <div className="ims-profile__appointments-stage">
+                                <div className="ims-profile__appointments-history ims-profile__appointments-history--embedded">
+                                    <div className="ims-profile__appointments-history-head">
+                                        <h5>Recent Doctor Appointments</h5>
+                                        <Link to="/Appointment" className="ims-profile__appointments-history-link">
+                                            View All Doctor Appointments
+                                        </Link>
+                                    </div>
+                                    {appointmentsLoading ? (
+                                        <div className="ims-profile__placeholder-content">
+                                            <p>Loading appointments...</p>
+                                        </div>
+                                    ) : recentAppointments.length === 0 ? (
+                                        <div className="ims-profile__placeholder-content ims-profile__placeholder-content--doctor">
+                                            <p>No recent doctor appointments found.</p>
+                                        </div>
+                                    ) : (
+                                        <div className="ims-profile__form-grid">
+                                            {recentAppointments.slice(0, 4).map((apt) => (
+                                                <div key={apt._id} className="ims-profile__appointment-card full">
+                                                    <div className="ims-profile__appointment-left">
+                                                        <div className="ims-profile__appointment-avatar ims-profile__appointment-avatar--icon" aria-hidden="true">
+                                                            <Stethoscope size={20} />
+                                                        </div>
+                                                        <div>
+                                                            <label>{apt.doctor || 'Doctor'}</label>
+                                                            <div style={{ color: 'var(--text-secondary)', fontSize: 13 }}>{apt.date || '-'} at {apt.time || '-'}</div>
+                                                            <div className={`ims-profile__status-tag ${apt.status?.toLowerCase() || 'pending'}`}>
+                                                                {apt.status || 'Scheduled'}
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                    <div className="ims-profile__appointment-actions">
+                                                        <button type="button" onClick={() => navigate('/Appointment')}>Manage</button>
+                                                        <button type="button" className="cancel-btn" onClick={() => handleDeleteAppointment(apt._id)}>Cancel</button>
                                                     </div>
                                                 </div>
-                                            </div>
-                                            <div className="ims-profile__appointment-actions">
-                                                <button type="button" onClick={() => navigate('/Appointment')}>Manage</button>
-                                                <button type="button" className="cancel-btn" onClick={() => handleDeleteAppointment(apt._id)}>Cancel</button>
-                                            </div>
+                                            ))}
                                         </div>
-                                    ))}
+                                    )}
                                 </div>
-                            )}
-                        </div>
-
+                            </div>
+                        ) : (
+                            <div className="ims-profile__appointments-stage">
+                                <PatientAppointmentsTab onBookingSuccess={triggerStatsRefresh} />
+                            </div>
+                        )}
                     </div>
                 </motion.div>
             );
