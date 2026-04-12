@@ -266,7 +266,7 @@ const DoctorsTab = () => {
 
                             <div className="modal-actions">
                                 <button type="button" className="admin-btn-secondary" onClick={() => setIsModalOpen(false)}>Cancel</button>
-                                <button type="submit" className="Imasha-btn-primary">Save Doctor</button>
+                                <button type="submit" className="admin-btn-primary">Save Doctor</button>
                             </div>
                         </form>
                     </div>
