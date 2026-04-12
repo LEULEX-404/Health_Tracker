@@ -25,6 +25,10 @@ const doctorSchema = new mongoose.Schema(
       type: String,
       trim: true,
     },
+    experienceYears: {
+      type: Number,
+      min: 0,
+    },
     isDeleted: {
       type: Boolean,
       default: false,

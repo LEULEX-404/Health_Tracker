@@ -1,12 +1,9 @@
 /* eslint-disable no-unused-vars */
-import React, { useState, useEffect, useCallback, useMemo } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useAuth } from '../../../context/Imasha/AuthContext';
-import { getAllUsers, updateUserStatus, deleteUser, createDoctor, updateDoctor } from '../../../utils/Imasha/adminApi';
-import { Search, Filter, Plus, Edit2, Trash2, UserX, UserCheck, Mail, Award, Stethoscope } from 'lucide-react';
+import { getAllDoctors, updateUserStatus, createDoctor, updateDoctor, deleteDoctorRecord } from '../../../utils/Imasha/adminApi';
+import { Search, Filter, Plus, Edit2, Trash2, UserX, UserCheck, Mail, Stethoscope } from 'lucide-react';
 import { toast } from 'react-hot-toast';
-import AdminTablePagination from '../../../components/Imasha/Admin/AdminTablePagination';
-
-const ROWS_PER_PAGE = 10;
 
 const DoctorsTab = () => {
     const { token } = useAuth();
@@ -14,7 +11,6 @@ const DoctorsTab = () => {
     const [loading, setLoading] = useState(true);
     const [search, setSearch] = useState('');
     const [statusFilter, setStatusFilter] = useState('all');
-    const [currentPage, setCurrentPage] = useState(1);
 
     // Form Modal State
     const [isModalOpen, setIsModalOpen] = useState(false);
@@ -22,21 +18,16 @@ const DoctorsTab = () => {
     const [currentDoctorId, setCurrentDoctorId] = useState(null);
     const [formData, setFormData] = useState({
         firstName: '', lastName: '', email: '', password: '',
-        specialty: '', qualifications: '', experienceYears: ''
+        specialization: '', qualifications: '', experienceYears: ''
     });
 
     const fetchDoctors = useCallback(async () => {
         setLoading(true);
         try {
-            const data = await getAllUsers(token, {
-                role: 'doctor',
-                limit: 1000,
+            const data = await getAllDoctors(token, {
                 search: search || undefined,
                 isActive: statusFilter === 'all' ? undefined : statusFilter === 'active'
             });
-            // We fetch the basic user data. To get doctor specific info, 
-            // the backend might need to populate it if it's stored in a separate collection,
-            // or the user schema might hold it. 
             setDoctors(data.data || []);
         } catch (err) {
             toast.error('Failed to fetch doctors.');
@@ -50,26 +41,9 @@ const DoctorsTab = () => {
         return () => clearTimeout(timer);
     }, [fetchDoctors]);
 
-    useEffect(() => {
-        setCurrentPage(1);
-    }, [search, statusFilter]);
-
-    const totalPages = Math.max(1, Math.ceil(doctors.length / ROWS_PER_PAGE));
-
-    useEffect(() => {
-        if (currentPage > totalPages) {
-            setCurrentPage(totalPages);
-        }
-    }, [currentPage, totalPages]);
-
-    const paginatedDoctors = useMemo(() => {
-        const startIndex = (currentPage - 1) * ROWS_PER_PAGE;
-        return doctors.slice(startIndex, startIndex + ROWS_PER_PAGE);
-    }, [doctors, currentPage]);
-
     const handleToggleActive = async (doctor) => {
         try {
-            await updateUserStatus(token, doctor._id, !doctor.isActive);
+            await updateUserStatus(token, doctor.userId, !doctor.isActive);
             toast.success(`Doctor ${doctor.isActive ? 'deactivated' : 'activated'} successfully.`);
             fetchDoctors();
         } catch (err) {
@@ -77,10 +51,10 @@ const DoctorsTab = () => {
         }
     };
 
-    const handleDelete = async (userId) => {
+    const handleDelete = async (doctorId) => {
         if (!window.confirm('Are you sure you want to delete this doctor?')) return;
         try {
-            await deleteUser(token, userId);
+            await deleteDoctorRecord(token, doctorId);
             toast.success('Doctor removed successfully.');
             fetchDoctors();
         } catch (err) {
@@ -92,13 +66,12 @@ const DoctorsTab = () => {
         if (doctor) {
             setIsEditing(true);
             setCurrentDoctorId(doctor._id);
-            // Pre-fill with available data. For a real app, you might fetch full doctor profile here
             setFormData({
-                firstName: doctor.firstName,
-                lastName: doctor.lastName,
-                email: doctor.email,
+                firstName: doctor.firstName || '',
+                lastName: doctor.lastName || '',
+                email: doctor.email || '',
                 password: '',
-                specialty: doctor.specialty || '', // Assuming it's in user or we just mock it for now
+                specialization: doctor.specialization || '',
                 qualifications: doctor.qualifications || '',
                 experienceYears: doctor.experienceYears || ''
             });
@@ -107,7 +80,7 @@ const DoctorsTab = () => {
             setCurrentDoctorId(null);
             setFormData({
                 firstName: '', lastName: '', email: '', password: '',
-                specialty: '', qualifications: '', experienceYears: ''
+                specialization: '', qualifications: '', experienceYears: ''
             });
         }
         setIsModalOpen(true);
@@ -117,8 +90,14 @@ const DoctorsTab = () => {
         e.preventDefault();
         try {
             if (isEditing) {
-                // Determine the correct data payload based on your admin routes
-                await updateDoctor(token, currentDoctorId, formData);
+                const updatePayload = {
+                    firstName: formData.firstName,
+                    lastName: formData.lastName,
+                    specialization: formData.specialization,
+                    qualifications: formData.qualifications,
+                    experienceYears: formData.experienceYears,
+                };
+                await updateDoctor(token, currentDoctorId, updatePayload);
                 toast.success('Doctor updated successfully.');
             } else {
                 await createDoctor(token, formData);
@@ -153,17 +132,8 @@ const DoctorsTab = () => {
                         </select>
                     </div>
                 </div>
-                <button
-                    className="Imasha-btn-primary admin-add-btn admin-add-btn--doctor"
-                    onClick={() => handleOpenModal()}
-                >
-                    <span className="admin-add-btn__icon-wrap">
-                        <Plus size={18} />
-                    </span>
-                    <span className="admin-add-btn__content">
-                        <span className="admin-add-btn__eyebrow">Staff Management</span>
-                        <span className="admin-add-btn__label">Add Doctor</span>
-                    </span>
+                <button className="Imasha-btn-primary admin-add-btn" onClick={() => handleOpenModal()}>
+                    <Plus size={18} /> Add Doctor
                 </button>
             </div>
 
@@ -183,7 +153,7 @@ const DoctorsTab = () => {
                             <tr><td colSpan="5" className="loading-state">Loading doctors...</td></tr>
                         ) : doctors.length === 0 ? (
                             <tr><td colSpan="5" className="empty-state">No doctors found.</td></tr>
-                        ) : paginatedDoctors.map((d) => (
+                        ) : doctors.map((d) => (
                             <tr key={d._id}>
                                 <td>
                                     <div className="user-info-cell">
@@ -236,16 +206,6 @@ const DoctorsTab = () => {
                 </table>
             </div>
 
-            {!loading && (
-                <AdminTablePagination
-                    currentPage={currentPage}
-                    totalItems={doctors.length}
-                    itemsPerPage={ROWS_PER_PAGE}
-                    onPageChange={setCurrentPage}
-                    itemLabel="doctors"
-                />
-            )}
-
             {/* Simple Modal for Add/Edit */}
             {isModalOpen && (
                 <div className="admin-modal-overlay">
@@ -256,12 +216,12 @@ const DoctorsTab = () => {
                                 <input type="text" placeholder="First Name" value={formData.firstName} onChange={e => setFormData({ ...formData, firstName: e.target.value })} required />
                                 <input type="text" placeholder="Last Name" value={formData.lastName} onChange={e => setFormData({ ...formData, lastName: e.target.value })} required />
                             </div>
-                            <input type="email" placeholder="Email Address" value={formData.email} onChange={e => setFormData({ ...formData, email: e.target.value })} required={!isEditing} />
+                            <input type="email" placeholder="Email Address" value={formData.email} onChange={e => setFormData({ ...formData, email: e.target.value })} required={!isEditing} readOnly={isEditing} />
                             {!isEditing && (
                                 <input type="password" placeholder="Temporary Password" value={formData.password} onChange={e => setFormData({ ...formData, password: e.target.value })} required />
                             )}
                             <div className="form-row">
-                                <input type="text" placeholder="Specialty" value={formData.specialty} onChange={e => setFormData({ ...formData, specialty: e.target.value })} required />
+                                <input type="text" placeholder="Specialization" value={formData.specialization} onChange={e => setFormData({ ...formData, specialization: e.target.value })} required />
                                 <input type="number" placeholder="Experience (Years)" value={formData.experienceYears} onChange={e => setFormData({ ...formData, experienceYears: e.target.value })} />
                             </div>
                             <input type="text" placeholder="Qualifications" value={formData.qualifications} onChange={e => setFormData({ ...formData, qualifications: e.target.value })} />

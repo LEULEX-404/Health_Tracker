@@ -15,7 +15,7 @@ const USER_FIELDS = [
   'phone', 'dateOfBirth', 'gender', 'address',
   'isActive', 'isEmailVerified',
 ];
-const DOCTOR_FIELDS = ['specialization', 'licenseNumber', 'hospitalOrClinic', 'qualifications'];
+const DOCTOR_FIELDS = ['specialization', 'licenseNumber', 'hospitalOrClinic', 'qualifications', 'experienceYears'];
 
 const userSelect = '-password -emailVerificationToken -passwordResetToken';
 
@@ -37,7 +37,27 @@ function toDoctorResponse(doctorDoc, userDoc) {
     licenseNumber: doctor.licenseNumber,
     hospitalOrClinic: doctor.hospitalOrClinic,
     qualifications: doctor.qualifications,
+    experienceYears: doctor.experienceYears,
   };
+}
+
+function normalizeOptionalString(value) {
+  if (value === undefined) return undefined;
+  if (typeof value !== 'string') return value;
+  const trimmed = value.trim();
+  return trimmed === '' ? undefined : trimmed;
+}
+
+function normalizeOptionalNumber(value) {
+  if (value === undefined || value === null || value === '') return undefined;
+  const parsed = Number(value);
+  if (Number.isNaN(parsed)) {
+    throw new BadRequestError('Experience years must be a valid number.');
+  }
+  if (parsed < 0) {
+    throw new BadRequestError('Experience years cannot be negative.');
+  }
+  return parsed;
 }
 
 /**
@@ -46,7 +66,7 @@ function toDoctorResponse(doctorDoc, userDoc) {
 export const createDoctor = async (doctorData) => {
   const {
     firstName, lastName, email, password, phone, dateOfBirth, gender, address,
-    specialization, licenseNumber, hospitalOrClinic, qualifications,
+    specialization, licenseNumber, hospitalOrClinic, qualifications, experienceYears,
   } = doctorData;
 
   if (!firstName || !lastName || !email || !password) {
@@ -78,10 +98,11 @@ export const createDoctor = async (doctorData) => {
 
   const doctor = new Doctor({
     user: user._id,
-    specialization: specialization || undefined,
-    licenseNumber: licenseNumber || undefined,
-    hospitalOrClinic: hospitalOrClinic || undefined,
-    qualifications: qualifications || undefined,
+    specialization: normalizeOptionalString(specialization),
+    licenseNumber: normalizeOptionalString(licenseNumber),
+    hospitalOrClinic: normalizeOptionalString(hospitalOrClinic),
+    qualifications: normalizeOptionalString(qualifications),
+    experienceYears: normalizeOptionalNumber(experienceYears),
   });
   await doctor.save();
 
@@ -154,6 +175,7 @@ export const getAllDoctors = async ({ page = 1, limit = 10, search, isActive }) 
         licenseNumber: 1,
         hospitalOrClinic: 1,
         qualifications: 1,
+        experienceYears: 1,
         createdAt: 1,
         updatedAt: 1,
         'userDoc._id': 1,
@@ -197,6 +219,7 @@ export const getAllDoctors = async ({ page = 1, limit = 10, search, isActive }) 
         licenseNumber: d.licenseNumber,
         hospitalOrClinic: d.hospitalOrClinic,
         qualifications: d.qualifications,
+        experienceYears: d.experienceYears,
       },
       userDoc
     );
@@ -249,25 +272,45 @@ export const updateDoctor = async (doctorId, updateData) => {
 
   const userId = user._id;
 
-  if (updateData.email && updateData.email.toLowerCase() !== user.email) {
-    validateEmail(updateData.email);
+  const normalizedEmail = typeof updateData.email === 'string'
+    ? updateData.email.trim().toLowerCase()
+    : updateData.email;
+  const normalizedPassword = typeof updateData.password === 'string'
+    ? updateData.password.trim()
+    : updateData.password;
+
+  if (normalizedEmail && normalizedEmail !== user.email) {
+    validateEmail(normalizedEmail);
     const existingUser = await User.findOne({
-      email: updateData.email.toLowerCase(),
+      email: normalizedEmail,
       _id: { $ne: userId },
     });
     if (existingUser) {
       throw new ConflictError('A user with this email already exists.');
     }
   }
-  if (updateData.password) {
-    validatePassword(updateData.password);
+  if (normalizedPassword) {
+    validatePassword(normalizedPassword);
   }
 
   const userUpdates = {};
   USER_FIELDS.forEach((field) => {
-    if (updateData[field] !== undefined) {
-      userUpdates[field] = field === 'email' ? updateData[field].toLowerCase() : updateData[field];
+    if (updateData[field] === undefined) {
+      return;
     }
+    if (field === 'password') {
+      if (normalizedPassword) {
+        userUpdates.password = normalizedPassword;
+      }
+      return;
+    }
+    if (field === 'email') {
+      if (normalizedEmail) {
+        userUpdates.email = normalizedEmail;
+      }
+      return;
+    }
+    userUpdates[field] = updateData[field];
   });
   if (userUpdates.password) {
     const salt = await bcrypt.genSalt(12);
@@ -279,9 +322,14 @@ export const updateDoctor = async (doctorId, updateData) => {
 
   const doctorUpdates = {};
   DOCTOR_FIELDS.forEach((field) => {
-    if (updateData[field] !== undefined) {
-      doctorUpdates[field] = updateData[field];
+    if (updateData[field] === undefined) {
+      return;
     }
+    if (field === 'experienceYears') {
+      doctorUpdates.experienceYears = normalizeOptionalNumber(updateData.experienceYears);
+      return;
+    }
+    doctorUpdates[field] = normalizeOptionalString(updateData[field]);
   });
   if (Object.keys(doctorUpdates).length) {
     await Doctor.findByIdAndUpdate(doctorId, { $set: doctorUpdates }, { runValidators: true });
@@ -332,7 +380,10 @@ export const deleteDoctor = async (doctorId) => {
  * Create a new caregiver
  */
 export const createCaregiver = async (caregiverData) => {
-  const { firstName, lastName, email, password, phone, dateOfBirth, gender, address } = caregiverData;
+  const {
+    firstName, lastName, email, password, phone, dateOfBirth, gender, address,
+    qualifications, experienceYears,
+  } = caregiverData;
 
   // Validate required fields
   if (!firstName || !lastName || !email || !password) {
@@ -361,6 +412,8 @@ export const createCaregiver = async (caregiverData) => {
     dateOfBirth,
     gender,
     address,
+    qualifications: normalizeOptionalString(qualifications),
+    experienceYears: normalizeOptionalNumber(experienceYears),
     role: USER_ROLES.CAREGIVER,
     isActive: true,
     isEmailVerified: true, // Admin-created caregivers are pre-verified
@@ -457,38 +510,65 @@ export const updateCaregiver = async (caregiverId, updateData) => {
   }
 
   // Validate email if provided
-  if (updateData.email && updateData.email !== caregiver.email) {
-    validateEmail(updateData.email);
+  const normalizedEmail = typeof updateData.email === 'string'
+    ? updateData.email.trim().toLowerCase()
+    : updateData.email;
+  const normalizedPassword = typeof updateData.password === 'string'
+    ? updateData.password.trim()
+    : updateData.password;
+
+  if (normalizedEmail && normalizedEmail !== caregiver.email) {
+    validateEmail(normalizedEmail);
 
     // Check if email already exists
     const existingUser = await User.findOne({
-      email: updateData.email.toLowerCase(),
+      email: normalizedEmail,
       _id: { $ne: caregiverId }
     });
     if (existingUser) {
       throw new ConflictError('A user with this email already exists.');
     }
-    updateData.email = updateData.email.toLowerCase();
   }
 
   // Validate password if provided
-  if (updateData.password) {
-    validatePassword(updateData.password);
+  if (normalizedPassword) {
+    validatePassword(normalizedPassword);
   }
 
   // Allowed fields for update
   const allowedFields = [
     'firstName', 'lastName', 'email', 'password',
     'phone', 'dateOfBirth', 'gender', 'address',
-    'isActive', 'isEmailVerified'
+    'isActive', 'isEmailVerified', 'qualifications', 'experienceYears',
   ];
 
   // Build update object
   const updates = {};
   allowedFields.forEach((field) => {
-    if (updateData[field] !== undefined) {
-      updates[field] = updateData[field];
+    if (updateData[field] === undefined) {
+      return;
     }
+    if (field === 'password') {
+      if (normalizedPassword) {
+        updates.password = normalizedPassword;
+      }
+      return;
+    }
+    if (field === 'email') {
+      if (normalizedEmail) {
+        updates.email = normalizedEmail;
+      }
+      return;
+    }
+    if (field === 'experienceYears') {
+      updates.experienceYears = normalizeOptionalNumber(updateData.experienceYears);
+      return;
+    }
+    if (field === 'qualifications') {
+      updates.qualifications = normalizeOptionalString(updateData.qualifications);
+      return;
+    }
+    updates[field] = updateData[field];
   });
 
   if (updates.password) {
