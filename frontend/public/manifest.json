@@ -1,0 +1,23 @@
+{
+  "name": "PulseNova",
+  "short_name": "PulseNova",
+  "description": "Intelligent health tracking platform",
+  "icons": [
+    {
+      "src": "/images/Tharuka/logopulsenova.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/images/Tharuka/logopulsenova.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    }
+  ],
+  "theme_color": "#00C897",
+  "background_color": "#FFFFFF",
+  "display": "standalone",
+  "start_url": "/"
+}
