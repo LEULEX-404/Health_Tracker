@@ -38,6 +38,8 @@ function toDoctorResponse(doctorDoc, userDoc) {
     hospitalOrClinic: doctor.hospitalOrClinic,
     qualifications: doctor.qualifications,
     experienceYears: doctor.experienceYears,
+    createdAt: user.createdAt || doctor.createdAt,
+    updatedAt: user.updatedAt || doctor.updatedAt,
   };
 }
 
@@ -190,6 +192,8 @@ export const getAllDoctors = async ({ page = 1, limit = 10, search, isActive }) 
         'userDoc.isEmailVerified': 1,
         'userDoc.profileImage': 1,
         'userDoc.linkedPatients': 1,
+        'userDoc.createdAt': 1,
+        'userDoc.updatedAt': 1,
         linkedPatients: 1,
       },
     },
@@ -210,6 +214,8 @@ export const getAllDoctors = async ({ page = 1, limit = 10, search, isActive }) 
       isEmailVerified: d.userDoc.isEmailVerified,
       profileImage: d.userDoc.profileImage,
       linkedPatients: d.linkedPatients && d.linkedPatients.length ? d.linkedPatients : (d.userDoc.linkedPatients || []),
+      createdAt: d.userDoc.createdAt,
+      updatedAt: d.userDoc.updatedAt,
     };
     return toDoctorResponse(
       {
