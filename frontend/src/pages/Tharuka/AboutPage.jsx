@@ -1,4 +1,4 @@
-/* eslint-disable no-unused-vars */
+﻿/* eslint-disable no-unused-vars */
 import { motion } from 'framer-motion';
 import {
   Activity,
@@ -41,7 +41,7 @@ const TIMELINE = [
   { year: '2019', title: 'Founded', desc: 'PulseNova started as a small team of doctors and engineers passionate about digital health.' },
   { year: '2021', title: 'AI Launch', desc: 'Launched our proprietary AI health engine with personalized coaching capabilities.' },
   { year: '2023', title: '100K Users', desc: 'Crossed 100,000 active users across 20+ countries with HIPAA certification secured.' },
-  { year: '2025', title: 'Global Scale', desc: 'Expanding to 40+ countries with multi-language support and clinical partnerships.' },
+  { year: '2026', title: 'Global Scale', desc: 'Expanding to 40+ countries with multi-language support and clinical partnerships.' },
 ];
 
 const STORY_CARDS = [
@@ -469,3 +469,4 @@ export default function AboutPage() {
     </>
   );
 }
+
