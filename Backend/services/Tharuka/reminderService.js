@@ -30,6 +30,12 @@ function addDays(date, days) {
   return d;
 }
 
+function addMinutes(date, minutes) {
+  const d = new Date(date);
+  d.setMinutes(d.getMinutes() + minutes);
+  return d;
+}
+
 function getDayOfWeek(date) {
   return new Date(date).getDay(); // 0 = Sunday, 6 = Saturday
 }
@@ -59,6 +65,12 @@ function buildScheduledDate(date) {
   const scheduledDate = new Date(date);
   scheduledDate.setHours(0, 0, 0, 0);
   return scheduledDate;
+}
+
+function getReminderDeliveryGraceMinutes() {
+  const parsed = Number(process.env.MEAL_REMINDER_SEND_GRACE_MINUTES);
+  if (Number.isNaN(parsed)) return 10;
+  return Math.min(Math.max(1, parsed), 60);
 }
 
 /**
@@ -226,17 +238,45 @@ async function generateRemindersForActivePlans(userId) {
 }
 
 /**
- * Get reminders that are due to be sent.
- * We do NOT limit to only the last 12 hours, because that can permanently miss
- * old pending reminders if the worker was down.
+ * Cancel stale pending reminders that missed their delivery window.
+ * This prevents old reminders from being sent when the server restarts.
  */
-async function getPendingReminders(userId, limit = 50) {
+async function expireStalePendingReminders(userId, graceMinutes = getReminderDeliveryGraceMinutes()) {
   const now = new Date();
-  const safeLimit = Math.min(Math.max(1, Number(limit) || 50), 200);
+  const staleBefore = addMinutes(now, -graceMinutes);
 
   const query = {
     status: "pending",
-    reminderTime: { $lte: now },
+    reminderTime: { $lt: staleBefore },
+  };
+
+  if (userId) {
+    query.userId = userId;
+  }
+
+  const result = await MealReminder.updateMany(query, {
+    $set: {
+      status: "cancelled",
+      lastError: `Missed delivery window by more than ${graceMinutes} minute(s)`,
+    },
+  });
+
+  return result.modifiedCount || 0;
+}
+
+/**
+ * Get reminders that are due to be sent within a small grace window.
+ * This keeps reminder emails aligned to schedule and avoids backfilling
+ * stale emails after the server restarts.
+ */
+async function getPendingReminders(userId, limit = 50, graceMinutes = getReminderDeliveryGraceMinutes()) {
+  const now = new Date();
+  const safeLimit = Math.min(Math.max(1, Number(limit) || 50), 200);
+  const dueAfter = addMinutes(now, -graceMinutes);
+
+  const query = {
+    status: "pending",
+    reminderTime: { $gte: dueAfter, $lte: now },
   };
 
   if (userId) {
@@ -398,6 +438,7 @@ async function getUserReminders(userId, options = {}) {
 
 export default {
   generateRemindersForActivePlans,
+  expireStalePendingReminders,
   getPendingReminders,
   sendReminder,
   markReminderCompleted,
