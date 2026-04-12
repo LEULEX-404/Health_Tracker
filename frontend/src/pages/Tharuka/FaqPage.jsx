@@ -17,7 +17,7 @@ const FAQS = [
   { q: 'Is my health data private and secure?', a: 'Absolutely. We use AES-256 encryption for all stored data and TLS 1.3 for data in transit. We are fully GDPR-compliant and never sell your personal health data to third parties.' },
   { q: 'Does the app work in Sinhala and Tamil?', a: 'Yes! PulseNova fully supports English, Sinhala (සිංහල), and Tamil (தமிழ்). You can switch languages at any time using the language selector in the header — it takes effect instantly across the entire app.' },
   { q: 'Can I change the text size for easier reading?', a: 'Yes, we designed PulseNova with accessibility in mind. Use the A- / A / A+ buttons in the top navigation bar to adjust the font size to small, medium, or large at any time.' },
-  { q: 'Which devices does PulseNova support?', a: 'PulseNova is a fully responsive web application that works seamlessly on desktop, tablet, and mobile devices. A native mobile app is on our roadmap for 2025.' },
+  { q: 'Which devices does PulseNova support?', a: 'PulseNova is a fully responsive web application that works seamlessly on desktop, tablet, and mobile devices. A native mobile app is on our roadmap for 2026.' },
   { q: 'How do I reset my password?', a: 'Click "Login" in the header, then "Forgot Password?". Enter your registered email and you\'ll receive a secure password reset link within 2 minutes. Check your spam folder if you don\'t see it.' },
 ];
 
