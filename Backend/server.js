@@ -272,6 +272,9 @@ const startMealReminderProcessor = () => {
                 // Generate reminders for active meal plans
                 await reminderService.generateRemindersForActivePlans(user._id.toString());
 
+                // Cancel reminders that missed their delivery window while the worker was down
+                await reminderService.expireStalePendingReminders(user._id.toString());
+
                 // Get pending reminders that are due
                 const pendingReminders = await reminderService.getPendingReminders(user._id.toString(), 10);
 
