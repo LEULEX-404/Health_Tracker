@@ -70,6 +70,14 @@ const userSchema = new mongoose.Schema(
       type: String,
       trim: true,
     },
+    qualifications: {
+      type: String,
+      trim: true,
+    },
+    experienceYears: {
+      type: Number,
+      min: 0,
+    },
     emergencyContactName: {
       type: String,
       trim: true,

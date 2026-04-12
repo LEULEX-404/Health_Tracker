@@ -48,6 +48,11 @@ export const updateDoctor = async (token, doctorId, doctorData) => {
     return response.data;
 };
 
+export const deleteDoctorRecord = async (token, doctorId) => {
+    const response = await axios.delete(`${API_URL}/admin/doctors/${doctorId}`, getAuthHeader(token));
+    return response.data;
+};
+
 // --- Caregiver Management ---
 export const getAllCaregivers = async (token, params = {}) => {
     const response = await axios.get(`${API_URL}/admin/caregivers`, {
@@ -64,6 +69,11 @@ export const createCaregiver = async (token, caregiverData) => {
 
 export const updateCaregiver = async (token, caregiverId, caregiverData) => {
     const response = await axios.put(`${API_URL}/admin/caregivers/${caregiverId}`, caregiverData, getAuthHeader(token));
+    return response.data;
+};
+
+export const deleteCaregiverRecord = async (token, caregiverId) => {
+    const response = await axios.delete(`${API_URL}/admin/caregivers/${caregiverId}`, getAuthHeader(token));
     return response.data;
 };
 

@@ -1,12 +1,9 @@
 /* eslint-disable no-unused-vars */
-import React, { useState, useEffect, useCallback, useMemo } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useAuth } from '../../../context/Imasha/AuthContext';
-import { getAllUsers, updateUserStatus, deleteUser, createCaregiver, updateCaregiver } from '../../../utils/Imasha/adminApi';
+import { getAllCaregivers, updateUserStatus, createCaregiver, updateCaregiver, deleteCaregiverRecord } from '../../../utils/Imasha/adminApi';
 import { Search, Filter, Plus, Edit2, Trash2, UserX, UserCheck, Mail, HeartHandshake } from 'lucide-react';
 import { toast } from 'react-hot-toast';
-import AdminTablePagination from '../../../components/Imasha/Admin/AdminTablePagination';
-
-const ROWS_PER_PAGE = 10;
 
 const CaregiversTab = () => {
     const { token } = useAuth();
@@ -14,7 +11,6 @@ const CaregiversTab = () => {
     const [loading, setLoading] = useState(true);
     const [search, setSearch] = useState('');
     const [statusFilter, setStatusFilter] = useState('all');
-    const [currentPage, setCurrentPage] = useState(1);
 
     // Form Modal State
     const [isModalOpen, setIsModalOpen] = useState(false);
@@ -28,9 +24,7 @@ const CaregiversTab = () => {
     const fetchCaregivers = useCallback(async () => {
         setLoading(true);
         try {
-            const data = await getAllUsers(token, {
-                role: 'caregiver',
-                limit: 1000,
+            const data = await getAllCaregivers(token, {
                 search: search || undefined,
                 isActive: statusFilter === 'all' ? undefined : statusFilter === 'active'
             });
@@ -47,23 +41,6 @@ const CaregiversTab = () => {
         return () => clearTimeout(timer);
     }, [fetchCaregivers]);
 
-    useEffect(() => {
-        setCurrentPage(1);
-    }, [search, statusFilter]);
-
-    const totalPages = Math.max(1, Math.ceil(caregivers.length / ROWS_PER_PAGE));
-
-    useEffect(() => {
-        if (currentPage > totalPages) {
-            setCurrentPage(totalPages);
-        }
-    }, [currentPage, totalPages]);
-
-    const paginatedCaregivers = useMemo(() => {
-        const startIndex = (currentPage - 1) * ROWS_PER_PAGE;
-        return caregivers.slice(startIndex, startIndex + ROWS_PER_PAGE);
-    }, [caregivers, currentPage]);
-
     const handleToggleActive = async (user) => {
         try {
             await updateUserStatus(token, user._id, !user.isActive);
@@ -77,7 +54,7 @@ const CaregiversTab = () => {
     const handleDelete = async (userId) => {
         if (!window.confirm('Are you sure you want to delete this caregiver?')) return;
         try {
-            await deleteUser(token, userId);
+            await deleteCaregiverRecord(token, userId);
             toast.success('Caregiver removed successfully.');
             fetchCaregivers();
         } catch (err) {
@@ -90,9 +67,9 @@ const CaregiversTab = () => {
             setIsEditing(true);
             setCurrentId(user._id);
             setFormData({
-                firstName: user.firstName,
-                lastName: user.lastName,
-                email: user.email,
+                firstName: user.firstName || '',
+                lastName: user.lastName || '',
+                email: user.email || '',
                 password: '',
                 qualifications: user.qualifications || '',
                 experienceYears: user.experienceYears || ''
@@ -112,7 +89,13 @@ const CaregiversTab = () => {
         e.preventDefault();
         try {
             if (isEditing) {
-                await updateCaregiver(token, currentId, formData);
+                const updatePayload = {
+                    firstName: formData.firstName,
+                    lastName: formData.lastName,
+                    qualifications: formData.qualifications,
+                    experienceYears: formData.experienceYears,
+                };
+                await updateCaregiver(token, currentId, updatePayload);
                 toast.success('Caregiver updated successfully.');
             } else {
                 await createCaregiver(token, formData);
@@ -147,17 +130,8 @@ const CaregiversTab = () => {
                         </select>
                     </div>
                 </div>
-                <button
-                    className="Imasha-btn-primary admin-add-btn admin-add-btn--caregiver"
-                    onClick={() => handleOpenModal()}
-                >
-                    <span className="admin-add-btn__icon-wrap">
-                        <Plus size={18} />
-                    </span>
-                    <span className="admin-add-btn__content">
-                        <span className="admin-add-btn__eyebrow">Care Team</span>
-                        <span className="admin-add-btn__label">Add Caregiver</span>
-                    </span>
+                <button className="Imasha-btn-primary admin-add-btn" onClick={() => handleOpenModal()}>
+                    <Plus size={18} /> Add Caregiver
                 </button>
             </div>
 
@@ -177,7 +151,7 @@ const CaregiversTab = () => {
                             <tr><td colSpan="5" className="loading-state">Loading caregivers...</td></tr>
                         ) : caregivers.length === 0 ? (
                             <tr><td colSpan="5" className="empty-state">No caregivers found.</td></tr>
-                        ) : paginatedCaregivers.map((c) => (
+                        ) : caregivers.map((c) => (
                             <tr key={c._id}>
                                 <td>
                                     <div className="user-info-cell">
@@ -230,16 +204,6 @@ const CaregiversTab = () => {
                 </table>
             </div>
 
-            {!loading && (
-                <AdminTablePagination
-                    currentPage={currentPage}
-                    totalItems={caregivers.length}
-                    itemsPerPage={ROWS_PER_PAGE}
-                    onPageChange={setCurrentPage}
-                    itemLabel="caregivers"
-                />
-            )}
-
             {/* Simple Modal for Add/Edit */}
             {isModalOpen && (
                 <div className="admin-modal-overlay">
@@ -250,7 +214,7 @@ const CaregiversTab = () => {
                                 <input type="text" placeholder="First Name" value={formData.firstName} onChange={e => setFormData({ ...formData, firstName: e.target.value })} required />
                                 <input type="text" placeholder="Last Name" value={formData.lastName} onChange={e => setFormData({ ...formData, lastName: e.target.value })} required />
                             </div>
-                            <input type="email" placeholder="Email Address" value={formData.email} onChange={e => setFormData({ ...formData, email: e.target.value })} required={!isEditing} />
+                            <input type="email" placeholder="Email Address" value={formData.email} onChange={e => setFormData({ ...formData, email: e.target.value })} required={!isEditing} readOnly={isEditing} />
                             {!isEditing && (
                                 <input type="password" placeholder="Temporary Password" value={formData.password} onChange={e => setFormData({ ...formData, password: e.target.value })} required />
                             )}
